@@ -1,3 +1,3 @@
 # Dns Analyzer
 
-![Alt](Docs/Overview Diagram.drawio)
+[Alt](Docs/Overview Diagram.png)

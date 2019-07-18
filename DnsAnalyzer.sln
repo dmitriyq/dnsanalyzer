@@ -17,6 +17,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{7F95F74F-C7FE-40ED-BE54-E4C7B99F6A5D}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Overview Diagram.drawio = Docs\Overview Diagram.drawio
+		Docs\Overview Diagram.png = Docs\Overview Diagram.png
 	EndProjectSection
 EndProject
 Global
