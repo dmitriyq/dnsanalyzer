@@ -1,3 +1,6 @@
 # Dns Analyzer
 
-[Alt](Docs/Overview Diagram.png)
+
+
+## Example Architecture  
+![Alt](Docs/Overview Diagram.png)
