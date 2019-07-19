@@ -1,0 +1,105 @@
+image: docker:stable
+services:
+  - docker:dind
+
+#stages:
+#  - build
+#  - release
+#  - prepare-storage
+#  - deploy
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
+  API_TEST_IMAGE: $CI_REGISTRY_IMAGE/api:$CI_COMMIT_REF_SLUG
+  API_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/api:latest
+  CRON_TEST_IMAGE: $CI_REGISTRY_IMAGE/cron:$CI_COMMIT_REF_SLUG
+  CRON_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/cron:latest
+
+before_script:
+  - docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY
+
+build-hyperlocal:
+  stage: build
+  script:
+    - docker build --pull -t $HYPERLOCAL_IMAGE -f Hyperlocal/Dockerfile .
+    - docker tag $HYPERLOCAL_IMAGE $HYPERLOCAL_IMAGE
+    - docker push $HYPERLOCAL_IMAGE
+  only:
+    changes:
+      - Hyperlocal/*
+
+
+build-cron:
+  stage: build
+  script:
+    - docker build --pull -t $CRON_TEST_IMAGE -f Vigruzki.Client/Dockerfile .
+    - docker push $CRON_TEST_IMAGE
+
+build-api:
+  stage: build
+  script:
+    - docker build --pull -t $API_TEST_IMAGE -f Vigruzki.API/Dockerfile .
+    - docker push $API_TEST_IMAGE
+
+release-cron:
+  stage: release
+  script:
+    - docker pull $CRON_TEST_IMAGE
+    - docker tag $CRON_TEST_IMAGE $CRON_RELEASE_IMAGE
+    - docker push $CRON_RELEASE_IMAGE
+  only:
+    - master
+
+release-api:
+  stage: release
+  script:
+    - docker pull $API_TEST_IMAGE
+    - docker tag $API_TEST_IMAGE $API_RELEASE_IMAGE
+    - docker push $API_RELEASE_IMAGE
+  only:
+    - master
+
+prepare-storage:
+  stage: prepare-storage
+  script:
+    - 'which ss-agent || (apk update && apk add openssh)'
+    - 'which rsync || (apk update && apk add rsync)'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - mkdir -p $CI_PROJECT_NAME
+    - cp docker-compose.yml $CI_PROJECT_NAME
+    - cp init-db.sql $CI_PROJECT_NAME
+    - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
+    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql
+        && exit"
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - 'which ss-agent || (apk update && apk add openssh)'
+    - 'which rsync || (apk update && apk add rsync)'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - mkdir -p $CI_PROJECT_NAME
+    - cp docker-compose.yml $CI_PROJECT_NAME
+    - cp init-db.sql $CI_PROJECT_NAME
+    - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
+    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
+        export API_IMAGE=$API_RELEASE_IMAGE &&
+        export CRON_IMAGE=$CRON_RELEASE_IMAGE &&
+        docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
+        docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
+  only:
+    - master

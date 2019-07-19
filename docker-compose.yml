@@ -1,0 +1,50 @@
+version: '3.7'
+
+x-shared-variables: &shared-variables
+  CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=vigruzkidb;User Id=vigruzkiuser;Password=vigruzkiuser;'
+  CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=vigruzkidb;User Id=vigruzkiuser;Password=vigruzkiuser;'
+  ASPNETCORE_ENVIRONMENT: 'Production'
+
+services:
+  hyperlocal:
+    image: ${HYPERLOCAL_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/hyperlocal}
+    ports:
+      - "53:53"
+      - "53:53/udp"
+    networks:
+      - default
+    deploy:
+      replicas: 10
+
+  api:
+    image: ${API_IMAGE:-registry.cmim.ru/grfc/vigruzki/api}
+    ports:
+      - 9000:80
+    environment: *shared-variables
+    networks:
+      - postgre_pg-net
+      - default
+    deploy:
+      replicas: 2
+  cron:
+    image: ${CRON_IMAGE:-registry.cmim.ru/grfc/vigruzki/cron}
+    networks:
+      - postgre_pg-net
+      - default
+    deploy:
+      mode: replicated
+      replicas: 0
+      labels:
+        - "swarm.cronjob.enable=true"
+        - "swarm.cronjob.skip-running=true"
+        - "swarm.cronjob.schedule=* */5 * * * *"
+      restart_policy:
+        condition: none
+    environment: 
+      <<: *shared-variables
+      VIGRUZKI_ENDPOINT: 'https://vigruzki2.rkn.gov.ru/services/OperatorRequest2/'
+      VIGRUZKI_LOGIN: 'rknSc'
+      VIGRUZKI_PASSWORD: 'OwlkHsm2jhH'
+networks:
+  postgre_pg-net:
+    internal: true

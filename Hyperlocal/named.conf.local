@@ -1,0 +1,41 @@
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+view root {
+	match-destinations { 127.0.0.1; };
+	zone "." {
+		type slave;
+		file "rootzone.db";
+		notify no;
+		masters {
+			192.228.79.201;
+			192.33.4.12;
+			192.5.5.241;
+			192.112.36.4;
+			193.0.14.129;
+			192.0.47.132;
+			192.0.32.132;
+			2001:500:84::b;
+			2001:500:2f::f;
+			2001:7fd::1;
+			2620:0:2830:202::132;
+			2620:0:2d0:202::132;
+			};
+		};
+    include "/etc/bind/zones.rfc1918";
+};
+
+view recursive {
+	dnssec-validation auto;
+	allow-recursion { any; };
+	recursion yes;
+	zone "." {
+	type static-stub;
+	server-addresses { 127.0.0.1; };
+	};
+};
