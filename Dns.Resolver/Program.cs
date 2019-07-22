@@ -55,6 +55,7 @@ namespace Dns.Resolver
 			services.AddSingleton(_ =>
 				new RedisService(opts => 
 					opts.ConnectionString = EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION)));
+			services.AddTransient<Bootstrapper>();
 		}
 
 		private static void ApplyMigrations(IServiceProvider services)
