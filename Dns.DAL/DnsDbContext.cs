@@ -233,6 +233,7 @@ namespace Dns.DAL
 
 			modelBuilder
 				.Entity<SuspectDomainsView>()
+				.HasNoKey()
 				.ToTable("vSuspectDomains");
 		}
 	}

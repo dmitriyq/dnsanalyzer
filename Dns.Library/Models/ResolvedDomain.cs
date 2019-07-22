@@ -16,5 +16,8 @@ namespace Dns.Library.Models
 
 		[ProtoMember(3)]
 		public HashSet<string> NameServers { get; set; }
+
+		[ProtoMember(4)]
+		public bool IsResolved { get; set; }
 	}
 }

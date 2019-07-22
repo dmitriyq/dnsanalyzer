@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Dns.Resolver": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

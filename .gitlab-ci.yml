@@ -12,10 +12,8 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
-  API_TEST_IMAGE: $CI_REGISTRY_IMAGE/api:$CI_COMMIT_REF_SLUG
-  API_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/api:latest
-  CRON_TEST_IMAGE: $CI_REGISTRY_IMAGE/cron:$CI_COMMIT_REF_SLUG
-  CRON_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/cron:latest
+  RESOLVER_TEST_IMAGE: $CI_REGISTRY_IMAGE/resolver:$CI_COMMIT_REF_SLUG
+  RESOLVER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/resolver:latest
 
 before_script:
   - docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY
@@ -27,39 +25,34 @@ build-hyperlocal:
     - docker tag $HYPERLOCAL_IMAGE $HYPERLOCAL_IMAGE
     - docker push $HYPERLOCAL_IMAGE
   only:
+    refs:
+      - master
     changes:
       - Hyperlocal/*
 
-
-build-cron:
+build-resolver:
   stage: build
   script:
-    - docker build --pull -t $CRON_TEST_IMAGE -f Vigruzki.Client/Dockerfile .
-    - docker push $CRON_TEST_IMAGE
+    - docker build --pull -t $RESOLVER_TEST_IMAGE -f Dns.Resolver/Dockerfile .
+    - docker push $RESOLVER_TEST_IMAGE
+  only:
+    refs:
+      - master
+    changes:
+      - Dns.Resolver/*
 
-build-api:
-  stage: build
-  script:
-    - docker build --pull -t $API_TEST_IMAGE -f Vigruzki.API/Dockerfile .
-    - docker push $API_TEST_IMAGE
 
-release-cron:
+release-resolver:
   stage: release
   script:
-    - docker pull $CRON_TEST_IMAGE
-    - docker tag $CRON_TEST_IMAGE $CRON_RELEASE_IMAGE
-    - docker push $CRON_RELEASE_IMAGE
+    - docker pull $RESOLVER_TEST_IMAGE
+    - docker tag $RESOLVER_TEST_IMAGE $RESOLVER_RELEASE_IMAGE
+    - docker push $RESOLVER_RELEASE_IMAGE
   only:
-    - master
-
-release-api:
-  stage: release
-  script:
-    - docker pull $API_TEST_IMAGE
-    - docker tag $API_TEST_IMAGE $API_RELEASE_IMAGE
-    - docker push $API_RELEASE_IMAGE
-  only:
-    - master
+    refs:
+      - master
+    changes:
+      - Dns.Resolver/*
 
 prepare-storage:
   stage: prepare-storage
@@ -79,7 +72,10 @@ prepare-storage:
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql
         && exit"
   only:
-    - master
+    refs:
+      - master
+    changes:
+      - init-db.sql
 
 deploy:
   stage: deploy
@@ -97,8 +93,9 @@ deploy:
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
-        export API_IMAGE=$API_RELEASE_IMAGE &&
-        export CRON_IMAGE=$CRON_RELEASE_IMAGE &&
+        export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
+        export RESOLVER_IMAGE=$RESOLVER_RELEASE_IMAGE &&
+        export REDIS_CONNECTION=$REDIS_CONNECTION &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
   only:

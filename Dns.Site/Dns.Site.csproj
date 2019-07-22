@@ -5,7 +5,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grfc.Library.Auth" Version="0.0.2.8" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.2.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0-preview5-19227-01" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.0.0-preview5.19227.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
+    <ProjectReference Include="..\Dns.Library\Dns.Library.csproj" />
   </ItemGroup>
 
 </Project>

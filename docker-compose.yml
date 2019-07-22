@@ -1,8 +1,9 @@
 version: '3.7'
 
 x-shared-variables: &shared-variables
-  CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=vigruzkidb;User Id=vigruzkiuser;Password=vigruzkiuser;'
-  CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=vigruzkidb;User Id=vigruzkiuser;Password=vigruzkiuser;'
+  CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  REDIS_CONNECTION: '${REDIS_CONNECTION:-redis-master,redis-slave-1,redis-slave-2}'
   ASPNETCORE_ENVIRONMENT: 'Production'
 
 services:
@@ -14,7 +15,17 @@ services:
     networks:
       - default
     deploy:
-      replicas: 10
+      replicas: 4
+
+  resolver:
+    image: ${RESOLVER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver}
+    networks:
+      - postgre_pg-net
+      - redis-net
+      - default
+    environment: 
+      <<: *shared-variables
+      HYPERLOCAL_SERVER: 'hyperlocal'
 
   api:
     image: ${API_IMAGE:-registry.cmim.ru/grfc/vigruzki/api}
@@ -48,3 +59,5 @@ services:
 networks:
   postgre_pg-net:
     internal: true
+  redis-net:
+    external: true

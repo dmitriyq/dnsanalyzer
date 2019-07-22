@@ -3,6 +3,25 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DNS" Version="5.0.0" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.2.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0-preview5.19227.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview5.19227.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview5.19227.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0-preview5.19227.9" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.7.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
+    <ProjectReference Include="..\Dns.Library\Dns.Library.csproj" />
+  </ItemGroup>
 
 </Project>
