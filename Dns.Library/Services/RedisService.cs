@@ -33,17 +33,25 @@ namespace Dns.Library.Services
 			if (!domains.Any())
 				return;
 
-			_logger.LogInformation($"Begin serialization of {domains.Count()} domain");
 			var protoSerialized = domains.Select(x => x.ProtoSerialize()).ToArray();
-			_logger.LogInformation($"Begin cast to RedisValue byte arrays");
 			var redisArray = protoSerialized.Select(x => (RedisValue)x).ToArray();
-			_logger.LogInformation($"Begin transaction");
 			var db = _redis.GetDatabase();
 			var transaction = db.CreateTransaction();
 			var deleteResult = transaction.KeyDeleteAsync(key);
 			var addResult = transaction.ListRightPushAsync(key, redisArray);
 			var transactionResult = await transaction.ExecuteAsync();
-			_logger.LogInformation($"Redis Transaction result - {transactionResult}, Added domains count - {await addResult}");
+			_logger.LogInformation($"Redis Key - {key}, Transaction result - {transactionResult}, Added domains count - {await addResult}");
+		}
+
+		public async Task<IEnumerable<ResolvedDomain>> GetResolvedDomains(string key)
+		{
+			var db = _redis.GetDatabase();
+			var redisArray = await db.ListRangeAsync(key);
+			var domains = redisArray.Select(x => (byte[])x)
+				.ToArray()
+				.Select(x => x.ProtoDeserialize<ResolvedDomain>())
+				.ToArray();
+			return domains;
 		}
 	}
 	public class RedisKeys

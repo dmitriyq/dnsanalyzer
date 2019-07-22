@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dns.DAL;
+using Dns.Library;
 using Dns.Library.Models;
 using Dns.Library.Services;
+using Grfc.Library.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -39,8 +42,15 @@ namespace Dns.Resolver.Services
 			var blackDomains = await GetBlackDomains();
 
 			_logger.LogInformation("3. Resolving domains");
+			var stopWatch = new Stopwatch();
+			stopWatch.Start();
 			var resolvedWhiteDomains = await _resolve.ResolveDomainsWithRetry(whiteDomains, 3);
+			stopWatch.Stop();
+			_logger.LogWarning($"[RESOLVING, PARALLELISM - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM)}, BUFFER - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_BUFFER_BLOCK_SIZE)}] {resolvedWhiteDomains.Count()} domains took {stopWatch.Elapsed}");
+			stopWatch.Restart();
 			var resolvedBlackDomains = await _resolve.ResolveDomainsWithRetry(blackDomains, 3);
+			_logger.LogWarning($"[RESOLVING, PARALLELISM - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM)}, BUFFER - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_BUFFER_BLOCK_SIZE)}] {resolvedBlackDomains.Count()} domains took {stopWatch.Elapsed}");
+			stopWatch.Stop();
 
 			_logger.LogInformation("4. Saving resolve result");
 			await _redis.SaveResolvedDomains(RedisKeys.WHITE_DOMAINS_RESOLVED, resolvedWhiteDomains);

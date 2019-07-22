@@ -20,6 +20,9 @@ namespace Dns.Resolver.Services
 		private readonly ILogger<ResolveService> _logger;
 		private readonly string _dnsServer;
 
+		private readonly int _maxParallelism = int.Parse(EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM));
+		private readonly int _bufferSize = int.Parse(EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_BUFFER_BLOCK_SIZE));
+
 		public ResolveService(ILogger<ResolveService> logger)
 		{
 			_logger = logger;
@@ -48,8 +51,8 @@ namespace Dns.Resolver.Services
 			var results = new List<ResolvedDomain>(domains.Count());
 
 			var resolveBlock = new TransformBlock<string, ResolvedDomain>(d => Resolve(d),
-				new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 2000 });
-			var bufferBlock = new BatchBlock<ResolvedDomain>(500);
+				new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = _maxParallelism });
+			var bufferBlock = new BatchBlock<ResolvedDomain>(_bufferSize);
 			var insertBlock = new ActionBlock<ResolvedDomain[]>(domMod => results.AddRange(domMod));
 			resolveBlock.LinkTo(bufferBlock, new DataflowLinkOptions { PropagateCompletion = true });
 			bufferBlock.LinkTo(insertBlock, new DataflowLinkOptions { PropagateCompletion = true });

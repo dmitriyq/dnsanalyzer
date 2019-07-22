@@ -26,6 +26,8 @@ services:
     environment: 
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
+      RESOLVER_MAX_DEGREE_OF_PARALLELISM: 1000
+      RESOLVER_BUFFER_BLOCK_SIZE: 250
     deploy:
       replicas: 1
 

@@ -10,5 +10,8 @@ namespace Dns.Library
 		public const string PG_CONNECTION_STRING_WRITE = nameof(PG_CONNECTION_STRING_WRITE);
 		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);
 		public const string HYPERLOCAL_SERVER = nameof(HYPERLOCAL_SERVER);
+
+		public const string RESOLVER_MAX_DEGREE_OF_PARALLELISM = nameof(RESOLVER_MAX_DEGREE_OF_PARALLELISM);
+		public const string RESOLVER_BUFFER_BLOCK_SIZE = nameof(RESOLVER_BUFFER_BLOCK_SIZE);
 	}
 }
