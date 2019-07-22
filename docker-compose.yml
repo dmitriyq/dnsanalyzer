@@ -26,36 +26,9 @@ services:
     environment: 
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
+    deploy:
+      replicas: 1
 
-  api:
-    image: ${API_IMAGE:-registry.cmim.ru/grfc/vigruzki/api}
-    ports:
-      - 9000:80
-    environment: *shared-variables
-    networks:
-      - postgre_pg-net
-      - default
-    deploy:
-      replicas: 2
-  cron:
-    image: ${CRON_IMAGE:-registry.cmim.ru/grfc/vigruzki/cron}
-    networks:
-      - postgre_pg-net
-      - default
-    deploy:
-      mode: replicated
-      replicas: 0
-      labels:
-        - "swarm.cronjob.enable=true"
-        - "swarm.cronjob.skip-running=true"
-        - "swarm.cronjob.schedule=* */5 * * * *"
-      restart_policy:
-        condition: none
-    environment: 
-      <<: *shared-variables
-      VIGRUZKI_ENDPOINT: 'https://vigruzki2.rkn.gov.ru/services/OperatorRequest2/'
-      VIGRUZKI_LOGIN: 'rknSc'
-      VIGRUZKI_PASSWORD: 'OwlkHsm2jhH'
 networks:
   postgre_pg-net:
     internal: true
