@@ -2,9 +2,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-preview5-buster AS build
 WORKDIR /build
 
 COPY . .
-RUN dotnet restore "Dns.Resolver/Dns.Resolver.csproj"
-RUN dotnet build "Dns.Resolver/Dns.Resolver.csproj" -c Release -o /app
-RUN dotnet publish "Dns.Resolver/Dns.Resolver.csproj" -c Release -o /app
+RUN dotnet restore -s https://api.nuget.org/v3/index.json -s https://nuget.cmim.ru "Dns.Resolver/Dns.Resolver.csproj"
+RUN dotnet build "Dns.Resolver/Dns.Resolver.csproj" -c Release --no-restore -o /app
+RUN dotnet publish "Dns.Resolver/Dns.Resolver.csproj" -c Release --no-restore -o /app
 WORKDIR /app
 
 
