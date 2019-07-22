@@ -41,6 +41,8 @@ build-resolver:
       - master
     changes:
       - Dns.Resolver/*
+      - Dns.Library/*
+      - Dns.DAL/*
 
 
 release-resolver:
@@ -54,6 +56,9 @@ release-resolver:
       - master
     changes:
       - Dns.Resolver/*
+      - Dns.Resolver/*
+      - Dns.Library/*
+      - Dns.DAL/*
 
 prepare-storage:
   stage: prepare-storage
