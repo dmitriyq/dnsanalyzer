@@ -4,4 +4,4 @@ COPY Hyperlocal/* /etc/bind/
 COPY Hyperlocal/start.sh /usr/local/bin/
 EXPOSE 53
 EXPOSE 53/udp
-ENTRYPOINT ["start.sh"]
+ENTRYPOINT ["/usr/local/bin/start.sh"]

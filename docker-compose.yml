@@ -1,8 +1,8 @@
 version: '3.7'
 
 x-shared-variables: &shared-variables
-  CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
-  CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  PG_CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis-master,redis-slave-1,redis-slave-2}'
   ASPNETCORE_ENVIRONMENT: 'Production'
 
@@ -31,6 +31,6 @@ services:
 
 networks:
   postgre_pg-net:
-    internal: true
+    external: true
   redis-net:
     external: true
