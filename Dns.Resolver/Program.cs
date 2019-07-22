@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library;
@@ -14,8 +15,10 @@ namespace Dns.Resolver
 {
 	public class Program
 	{
+		public static ManualResetEventSlim resetEventSlim = new ManualResetEventSlim();
 		public static void Main(string[] args)
 		{
+
 			EnvironmentExtensions.CheckVariables(
 				EnvVars.HYPERLOCAL_SERVER,
 				EnvVars.PG_CONNECTION_STRING_READ,
@@ -38,8 +41,7 @@ namespace Dns.Resolver
 					await bootstrapper.ResolveDomains();
 			});
 
-			Console.WriteLine("Press any key to exit");
-			Console.ReadLine();
+			resetEventSlim.Wait();
 		}
 
 		private static void ConfigureServices(IServiceCollection services)
