@@ -56,7 +56,6 @@ release-resolver:
       - master
     changes:
       - Dns.Resolver/*
-      - Dns.Resolver/*
       - Dns.Library/*
       - Dns.DAL/*
 
