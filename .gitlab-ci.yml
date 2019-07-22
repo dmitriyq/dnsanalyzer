@@ -40,9 +40,9 @@ build-resolver:
     refs:
       - master
     changes:
-      - Dns.Resolver/*
-      - Dns.Library/*
-      - Dns.DAL/*
+      - Dns.Resolver/**/*
+      - Dns.Library/**/*
+      - Dns.DAL/**/*
 
 
 release-resolver:
@@ -55,9 +55,9 @@ release-resolver:
     refs:
       - master
     changes:
-      - Dns.Resolver/*
-      - Dns.Library/*
-      - Dns.DAL/*
+      - Dns.Resolver/**/*
+      - Dns.Library/**/*
+      - Dns.DAL/**/*
 
 prepare-storage:
   stage: prepare-storage

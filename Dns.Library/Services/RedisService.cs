@@ -35,17 +35,14 @@ namespace Dns.Library.Services
 
 			_logger.LogInformation($"Begin serialization of {domains.Count()} domain");
 			var protoSerialized = domains.Select(x => x.ProtoSerialize()).ToArray();
-
 			_logger.LogInformation($"Begin cast to RedisValue byte arrays");
 			var redisArray = protoSerialized.Select(x => (RedisValue)x).ToArray();
-
 			_logger.LogInformation($"Begin transaction");
 			var db = _redis.GetDatabase();
 			var transaction = db.CreateTransaction();
 			var deleteResult = transaction.KeyDeleteAsync(key);
 			var addResult = transaction.ListRightPushAsync(key, redisArray);
 			var transactionResult = await transaction.ExecuteAsync();
-
 			_logger.LogInformation($"Redis Transaction result - {transactionResult}, Added domains count - {await addResult}");
 		}
 	}
