@@ -21,6 +21,7 @@ before_script:
 build-hyperlocal:
   stage: build
   script:
+    - chmod +x Hyperlocal/start.sh
     - docker build --pull -t $HYPERLOCAL_IMAGE -f Hyperlocal/Dockerfile .
     - docker tag $HYPERLOCAL_IMAGE $HYPERLOCAL_IMAGE
     - docker push $HYPERLOCAL_IMAGE
