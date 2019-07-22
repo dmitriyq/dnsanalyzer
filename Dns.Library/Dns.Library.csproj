@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.2.8" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview5.19227.9" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />

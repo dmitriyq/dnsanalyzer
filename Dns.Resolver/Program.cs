@@ -54,9 +54,7 @@ namespace Dns.Resolver
 				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_READ)));
 
 			services.AddTransient<ResolveService>();
-			services.AddSingleton(_ =>
-				new RedisService(opts => 
-					opts.ConnectionString = EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION)));
+			services.AddSingleton<RedisService>();
 			services.AddTransient<Bootstrapper>();
 		}
 

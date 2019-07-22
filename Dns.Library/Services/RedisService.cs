@@ -7,18 +7,18 @@ using Dns.Library.Models;
 using Dns.Library.Helpers;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
+using Grfc.Library.Common.Extensions;
 
 namespace Dns.Library.Services
 {
 	public class RedisService
 	{
 		private readonly ConnectionMultiplexer _redis;
-		private readonly RedisOptions _options = new RedisOptions();
-
-		public RedisService(Action<RedisOptions> opts)
+		private readonly ILogger<RedisService> _logger;
+		public RedisService(ILogger<RedisService> logger)
 		{
-			opts.Invoke(_options);
-			_redis = ConnectionMultiplexer.Connect(_options.ConnectionString);
+			_logger = logger;
+			_redis = ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION));
 		}
 
 		public async Task<HashSet<string>> GetBlackDomains()
@@ -38,6 +38,7 @@ namespace Dns.Library.Services
 			var deleteResult = transaction.KeyDeleteAsync(key);
 			var addResult = transaction.SetAddAsync(key, redisArray);
 			var transactionResult = await transaction.ExecuteAsync();
+			_logger.LogInformation($"Redis Transaction result - {transactionResult}, Added domains count - {await addResult}");
 		}
 	}
 	public class RedisKeys
