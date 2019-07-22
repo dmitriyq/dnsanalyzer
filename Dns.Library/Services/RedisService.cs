@@ -30,9 +30,11 @@ namespace Dns.Library.Services
 
 		public async Task SaveResolvedDomains(string key, IEnumerable<ResolvedDomain> domains)
 		{
-			var redisArray = domains.Select(x => x.ProtoSerialize())
-				.Select(x => (RedisValue)x)
-				.ToArray();
+			_logger.LogInformation($"Begin serialization of {domains.Count()} domain");
+			var protoSerialized = domains.Select(x => x.ProtoSerialize()).ToArray();
+			_logger.LogInformation($"Begin cast to RedisValue byte arrays");
+			var redisArray = protoSerialized.Select(x => (RedisValue)x).ToArray();
+			_logger.LogInformation($"Begin transaction");
 			var db = _redis.GetDatabase();
 			var transaction = db.CreateTransaction();
 			var deleteResult = transaction.KeyDeleteAsync(key);
