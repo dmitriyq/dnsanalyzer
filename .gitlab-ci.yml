@@ -2,11 +2,11 @@ image: docker:stable
 services:
   - docker:dind
 
-#stages:
-#  - build
-#  - release
-#  - prepare-storage
-#  - deploy
+stages:
+  - build
+  - release
+  - prepare-storage
+  - deploy
 
 variables:
   DOCKER_HOST: tcp://docker:2375
