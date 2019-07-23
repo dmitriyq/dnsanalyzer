@@ -12,8 +12,12 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
+
   RESOLVER_TEST_IMAGE: $CI_REGISTRY_IMAGE/resolver:$CI_COMMIT_REF_SLUG
   RESOLVER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/resolver:latest
+
+  ANALYZER_TEST_IMAGE: $CI_REGISTRY_IMAGE/analyzer:$CI_COMMIT_REF_SLUG
+  ANALYZER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
 
 before_script:
   - docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY
@@ -44,6 +48,19 @@ build-resolver:
       - Dns.Library/**/*
       - Dns.DAL/**/*
 
+build-analyzer:
+  stage: build
+  script:
+    - docker build --pull -t $ANALYZER_TEST_IMAGE -f Dns.Analyzer/Dockerfile .
+    - docker push $ANALYZER_TEST_IMAGE
+  only:
+    refs:
+      - master
+    changes:
+      - Dns.Analyzer/**/*
+      - Dns.Library/**/*
+      - Dns.DAL/**/*
+
 
 release-resolver:
   stage: release
@@ -58,6 +75,21 @@ release-resolver:
       - Dns.Resolver/**/*
       - Dns.Library/**/*
       - Dns.DAL/**/*
+
+release-analyzer:
+  stage: release
+  script:
+    - docker pull $ANALYZER_TEST_IMAGE
+    - docker tag $ANALYZER_TEST_IMAGE $ANALYZER_RELEASE_IMAGE
+    - docker push $ANALYZER_RELEASE_IMAGE
+  only:
+    refs:
+      - master
+    changes:
+      - Dns.Analyzer/**/*
+      - Dns.Library/**/*
+      - Dns.DAL/**/*
+
 
 prepare-storage:
   stage: prepare-storage
@@ -101,6 +133,7 @@ deploy:
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
         export RESOLVER_IMAGE=$RESOLVER_RELEASE_IMAGE &&
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
+        export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
   only:

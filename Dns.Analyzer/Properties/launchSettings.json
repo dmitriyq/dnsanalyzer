@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Dns.Analyzer": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

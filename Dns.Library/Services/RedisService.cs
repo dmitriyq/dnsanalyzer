@@ -21,11 +21,11 @@ namespace Dns.Library.Services
 			_redis = ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION));
 		}
 
-		public async Task<HashSet<string>> GetBlackDomains()
+		public async Task<HashSet<string>> GetStringSetMembers(string key)
 		{
 			var db = _redis.GetDatabase();
-			var domains = await db.SetMembersAsync(RedisKeys.BLACK_DOMAINS);
-			return domains.ToStringArray().ToHashSet();
+			var set = await db.SetMembersAsync(key);
+			return set.ToStringArray().ToHashSet();
 		}
 
 		public async Task SaveResolvedDomains(string key, IEnumerable<ResolvedDomain> domains)
@@ -53,15 +53,27 @@ namespace Dns.Library.Services
 				.ToArray();
 			return domains;
 		}
+
+		public async Task PublishResolveComplete(string channel, string message)
+		{
+			var subscriber = _redis.GetSubscriber();
+			await subscriber.PublishAsync(channel, message);
+		}
+		public async Task Subscribe(string channel, Action<string> onMessage)
+		{
+			var subscriber = _redis.GetSubscriber();
+			await subscriber.SubscribeAsync(channel, (channel, message) => onMessage(message));
+		}
 	}
 	public class RedisKeys
 	{
 		public const string BLACK_DOMAINS = "Vigruzki_Domains";
+		public const string BLACK_IPS = "Vigruzki_Ips";
+		public const string BLACK_SUBNETS = "Vigruzki_Subnets";
+
 		public const string BLACK_DOMAINS_RESOLVED = "DNS_Resolver_Black";
 		public const string WHITE_DOMAINS_RESOLVED = "DNS_Resolver_White";
-	}
-	public class RedisOptions
-	{
-		public string ConnectionString { get; set; }
+
+		public const string RESOLVE_COMPLETE_CHANNEL = "DNS_Resolve_Complete";
 	}
 }

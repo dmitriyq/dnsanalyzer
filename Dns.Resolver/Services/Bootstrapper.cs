@@ -35,13 +35,9 @@ namespace Dns.Resolver.Services
 
 		public async Task ResolveDomains()
 		{
-			_logger.LogInformation("1. Starting resolve domains");
-
-			_logger.LogInformation("2. Getting domains to resolve");
 			var whiteDomains = await GetWhiteDomains();
 			var blackDomains = await GetBlackDomains();
 
-			_logger.LogInformation("3. Resolving domains");
 			var stopWatch = new Stopwatch();
 			stopWatch.Start();
 			var resolvedWhiteDomains = await _resolve.ResolveDomainsWithRetry(whiteDomains, 3);
@@ -52,17 +48,18 @@ namespace Dns.Resolver.Services
 			_logger.LogWarning($"[RESOLVING, PARALLELISM - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM)}, BUFFER - {EnvironmentExtensions.GetVariable(EnvVars.RESOLVER_BUFFER_BLOCK_SIZE)}] {resolvedBlackDomains.Count()} domains took {stopWatch.Elapsed}");
 			stopWatch.Stop();
 
-			_logger.LogInformation("4. Saving resolve result");
 			await _redis.SaveResolvedDomains(RedisKeys.WHITE_DOMAINS_RESOLVED, resolvedWhiteDomains);
 			await _redis.SaveResolvedDomains(RedisKeys.BLACK_DOMAINS_RESOLVED, resolvedBlackDomains);
-			_logger.LogInformation("5. Finishing resolve domains");
 		}
 
-		
+		public async Task NotifyCompletion()
+		{
+			await _redis.PublishResolveComplete(RedisKeys.RESOLVE_COMPLETE_CHANNEL, DateTimeOffset.UtcNow.ToString("o"));
+		}
 
 		private async Task<List<string>> GetWhiteDomains() =>
 			await _dnsReadOnly.WhiteDomains.Select(x => x.Domain).ToListAsync();
 		private async Task<List<string>> GetBlackDomains() =>
-			(await _redis.GetBlackDomains()).ToList();
+			(await _redis.GetStringSetMembers(RedisKeys.BLACK_DOMAINS)).ToList();
 	}
 }

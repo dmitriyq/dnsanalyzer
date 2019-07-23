@@ -26,8 +26,20 @@ services:
     environment: 
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
-      RESOLVER_MAX_DEGREE_OF_PARALLELISM: 10000
+      RESOLVER_MAX_DEGREE_OF_PARALLELISM: 500
       RESOLVER_BUFFER_BLOCK_SIZE: 250
+    deploy:
+      replicas: 1
+
+  analyzer:
+    image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
+    networks:
+      - postgre_pg-net
+      - redis-net
+      - default
+    environment: 
+      <<: *shared-variables
+      ANALYZER_SUSPECT_IP_COUNT: 10
     deploy:
       replicas: 1
 

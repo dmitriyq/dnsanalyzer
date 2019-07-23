@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Site", "Dns.Site\Dns.Site.csproj", "{551D3DF7-B758-4FE5-960E-3CCD5CA7C402}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Site", "Dns.Site\Dns.Site.csproj", "{551D3DF7-B758-4FE5-960E-3CCD5CA7C402}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.DAL", "Dns.DAL\Dns.DAL.csproj", "{ECCE4874-8217-465A-9954-8B2C57E6E9E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.DAL", "Dns.DAL\Dns.DAL.csproj", "{ECCE4874-8217-465A-9954-8B2C57E6E9E5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0B7AAAA1-2168-4D67-9A23-6026C9A4307F}"
 	ProjectSection(SolutionItems) = preProject
@@ -34,11 +34,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hyperlocal", "Hyperlocal", 
 		Hyperlocal\zones.rfc1918 = Hyperlocal\zones.rfc1918
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Resolver", "Dns.Resolver\Dns.Resolver.csproj", "{01E2EF17-EA29-4F37-83B0-D6ADE37A8D14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver", "Dns.Resolver\Dns.Resolver.csproj", "{01E2EF17-EA29-4F37-83B0-D6ADE37A8D14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Analyzer", "Dns.Analyzer\Dns.Analyzer.csproj", "{F7DA3E55-8290-4DE2-90F1-3E86DC8CF83F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Analyzer", "Dns.Analyzer\Dns.Analyzer.csproj", "{F7DA3E55-8290-4DE2-90F1-3E86DC8CF83F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Library", "Dns.Library\Dns.Library.csproj", "{765558E9-FF14-4D7C-9F06-92D20B1E47A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Library", "Dns.Library\Dns.Library.csproj", "{765558E9-FF14-4D7C-9F06-92D20B1E47A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.DAL.DataMigration", "Dns.DAL.DataMigration\Dns.DAL.DataMigration.csproj", "{68893D34-C9A7-4A58-B017-5B947BFF88AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,6 +112,18 @@ Global
 		{765558E9-FF14-4D7C-9F06-92D20B1E47A4}.Release|x64.Build.0 = Release|Any CPU
 		{765558E9-FF14-4D7C-9F06-92D20B1E47A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{765558E9-FF14-4D7C-9F06-92D20B1E47A4}.Release|x86.Build.0 = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|x64.Build.0 = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Debug|x86.Build.0 = Debug|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x64.ActiveCfg = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x64.Build.0 = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x86.ActiveCfg = Release|Any CPU
+		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

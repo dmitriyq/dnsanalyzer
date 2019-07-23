@@ -13,5 +13,7 @@ namespace Dns.Library
 
 		public const string RESOLVER_MAX_DEGREE_OF_PARALLELISM = nameof(RESOLVER_MAX_DEGREE_OF_PARALLELISM);
 		public const string RESOLVER_BUFFER_BLOCK_SIZE = nameof(RESOLVER_BUFFER_BLOCK_SIZE);
+
+		public const string ANALYZER_SUSPECT_IP_COUNT = nameof(ANALYZER_SUSPECT_IP_COUNT);
 	}
 }

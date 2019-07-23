@@ -9,6 +9,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview5.19227.9" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+    <PackageReference Include="WhoisClient.NET" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
   </ItemGroup>
 
 </Project>

@@ -23,7 +23,9 @@ namespace Dns.Resolver
 				EnvVars.HYPERLOCAL_SERVER,
 				EnvVars.PG_CONNECTION_STRING_READ,
 				EnvVars.PG_CONNECTION_STRING_WRITE,
-				EnvVars.REDIS_CONNECTION
+				EnvVars.REDIS_CONNECTION,
+				EnvVars.RESOLVER_BUFFER_BLOCK_SIZE,
+				EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM
 				);
 
 			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
@@ -38,7 +40,10 @@ namespace Dns.Resolver
 			Task.Run(async () =>
 			{
 				while (true)
+				{
 					await bootstrapper.ResolveDomains();
+					await bootstrapper.NotifyCompletion();
+				}
 			});
 
 			resetEventSlim.Wait();
