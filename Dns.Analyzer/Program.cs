@@ -18,11 +18,11 @@ namespace Dns.Analyzer
 		public static void Main(string[] args)
 		{
 			EnvironmentExtensions.CheckVariables(
-				EnvVars.HYPERLOCAL_SERVER,
 				EnvVars.PG_CONNECTION_STRING_READ,
 				EnvVars.PG_CONNECTION_STRING_WRITE,
 				EnvVars.REDIS_CONNECTION,
-				EnvVars.ANALYZER_SUSPECT_IP_COUNT
+				EnvVars.ANALYZER_SUSPECT_IP_COUNT,
+				EnvVars.NOTIFICATION_EMAIL_FROM
 				);
 
 			var serviceCollection = new ServiceCollection();
@@ -52,6 +52,7 @@ namespace Dns.Analyzer
 			services.AddTransient<SuspectDomainSevice>();
 			services.AddTransient<IpInfoService>();
 			services.AddTransient<Bootstrapper>();
+			services.AddTransient<NotifyService>();
 
 			services.AddSingleton<RedisService>();
 			

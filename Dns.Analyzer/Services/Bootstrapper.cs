@@ -17,6 +17,7 @@ namespace Dns.Analyzer.Services
 		private readonly AttackService _attackService;
 		private readonly IpInfoService _ipInfoService;
 		private readonly SuspectDomainSevice _suspectDomainSevice;
+		private readonly NotifyService _notifyService;
 		private readonly int SuspectIpCount = int.Parse(EnvironmentExtensions.GetVariable(EnvVars.ANALYZER_SUSPECT_IP_COUNT));
 
 		public Bootstrapper(
@@ -24,13 +25,15 @@ namespace Dns.Analyzer.Services
 			RedisService redisService,
 			AttackService attackService,
 			IpInfoService ipInfoService,
-			SuspectDomainSevice suspectDomainSevice)
+			SuspectDomainSevice suspectDomainSevice,
+			NotifyService notifyService)
 		{
 			_logger = logger;
 			_redis = redisService;
 			_attackService = attackService;
 			_ipInfoService = ipInfoService;
 			_suspectDomainSevice = suspectDomainSevice;
+			_notifyService = notifyService;
 		}
 
 		public async Task StartAnalyzer()
@@ -48,14 +51,15 @@ namespace Dns.Analyzer.Services
 				var attacks = await _attackService.FindAttacks(resolvedBlackDomain, resolvedWhiteDomain);
 				attacks = await _attackService.ExcludeDomains(attacks);
 
-				await _attackService.UpdateDnsAttacks(attacks);
-				await _attackService.UpdateDnsAttackGroups();
+				var attackToNotify = await _attackService.UpdateDnsAttacks(attacks);
+				var groupToNotify = await _attackService.UpdateDnsAttackGroups();
 
 				await _ipInfoService.UpdateIpInfo(true);
 
-				//TODO: Send Notifications
-				//await _notifyService.AttackNotitications(newerAttackIds);
-				//await _notifyService.GroupNotitications(completedGroups);
+				var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attackToNotify.ToArray());
+				var groupMessage = await _notifyService.BuildGroupMessage(string.Empty, groupToNotify.ToArray());
+				await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, attackMessage.ProtoSerialize());
+				await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, groupMessage.ProtoSerialize());
 
 				_logger.LogInformation("Completed Analyzer Job");
 			});

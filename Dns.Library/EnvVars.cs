@@ -15,5 +15,7 @@ namespace Dns.Library
 		public const string RESOLVER_BUFFER_BLOCK_SIZE = nameof(RESOLVER_BUFFER_BLOCK_SIZE);
 
 		public const string ANALYZER_SUSPECT_IP_COUNT = nameof(ANALYZER_SUSPECT_IP_COUNT);
+
+		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
 	}
 }

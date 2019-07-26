@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dns.Library.Models;
-using Dns.Library.Helpers;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using Grfc.Library.Common.Extensions;
@@ -54,7 +53,7 @@ namespace Dns.Library.Services
 			return domains;
 		}
 
-		public async Task PublishResolveComplete(string channel, string message)
+		public async Task Publish(string channel, RedisValue message)
 		{
 			var subscriber = _redis.GetSubscriber();
 			await subscriber.PublishAsync(channel, message);
@@ -75,5 +74,7 @@ namespace Dns.Library.Services
 		public const string WHITE_DOMAINS_RESOLVED = "DNS_Resolver_White";
 
 		public const string RESOLVE_COMPLETE_CHANNEL = "DNS_Resolve_Complete";
+
+		public const string NOTIFY_SEND_CHANNEL = "Notification_Send_Message";
 	}
 }

@@ -54,7 +54,7 @@ namespace Dns.Resolver.Services
 
 		public async Task NotifyCompletion()
 		{
-			await _redis.PublishResolveComplete(RedisKeys.RESOLVE_COMPLETE_CHANNEL, DateTimeOffset.UtcNow.ToString("o"));
+			await _redis.Publish(RedisKeys.RESOLVE_COMPLETE_CHANNEL, DateTimeOffset.UtcNow.ToString("o"));
 		}
 
 		private async Task<List<string>> GetWhiteDomains() =>

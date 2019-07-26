@@ -40,6 +40,7 @@ services:
     environment: 
       <<: *shared-variables
       ANALYZER_SUSPECT_IP_COUNT: 10
+      NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
     deploy:
       replicas: 1
 
