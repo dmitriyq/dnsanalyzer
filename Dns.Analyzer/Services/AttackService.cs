@@ -178,7 +178,7 @@ namespace Dns.Analyzer.Services
 		{
 			var completedAttack = new List<AttackGroups>();
 			var attackGroups = await _dbContext.AttackGroups
-				.Where(x => x.StatusEnum != AttackGroupStatusEnum.Complete)
+				.Where(x => x.Status != (int)AttackGroupStatusEnum.Complete)
 				.Include(x => x.Attacks)
 				.ToListAsync();
 			foreach (var group in attackGroups)
