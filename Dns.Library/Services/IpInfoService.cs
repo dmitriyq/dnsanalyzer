@@ -42,7 +42,7 @@ namespace Dns.Library.Services
 					if (info != null)
 					{
 						var prevInfo = await _dbContext.IpInfo.FirstOrDefaultAsync(x => x.Ip == info.Ip);
-						if (prevInfo != null)
+						if (prevInfo == null)
 						{
 							prevInfo = new IpInfo { Ip = info.Ip };
 							_dbContext.IpInfo.Add(prevInfo);
