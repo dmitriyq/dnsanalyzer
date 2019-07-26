@@ -53,7 +53,7 @@ namespace Dns.Library.Services
 				}
 				catch (Exception ex)
 				{
-					_logger.LogWarning(ex.Message, ex);
+					_logger.LogWarning(ex, ip);
 				}
 			}
 			await _dbContext.SaveChangesAsync();
