@@ -22,7 +22,7 @@ namespace Dns.Analyzer
 				EnvVars.PG_CONNECTION_STRING_WRITE,
 				EnvVars.REDIS_CONNECTION,
 				EnvVars.ANALYZER_SUSPECT_IP_COUNT,
-				EnvVars.NOTIFICATION_EMAIL_FROM
+				EnvVars.NOTIFICATION_EMAIL_FROM,
 				);
 
 			var serviceCollection = new ServiceCollection();

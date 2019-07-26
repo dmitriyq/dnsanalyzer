@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.DAL.Models;
+using Grfc.Library.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Whois.NET;
@@ -36,6 +37,7 @@ namespace Dns.Library.Services
 			{
 				try
 				{
+					_logger.LogInformation($"Trying get information about {ip}");
 					var info = GetInfo(ip);
 					if (info != null)
 					{
@@ -71,8 +73,9 @@ namespace Dns.Library.Services
 				response = query;
 				return ParseResponse(query, ip);
 			}
-			catch
+			catch (Exception ex)
 			{
+				_logger.LogError(ex, $"Query failed for ip {ip}");
 				try
 				{
 					if (response != null && response.OrganizationName != null)
@@ -91,9 +94,9 @@ namespace Dns.Library.Services
 						return ParseResponse(q1, ip);
 					}
 				}
-				catch (Exception ex)
+				catch (Exception iex)
 				{
-					_logger.LogWarning(ex, $"Ошибка при получении информации об IP: {ip}");
+					_logger.LogWarning(iex, $"Ошибка при получении информации об IP: {ip}");
 				}
 
 			}
@@ -122,6 +125,7 @@ namespace Dns.Library.Services
 
 		private IpInfo ParseResponse(WhoisResponse response, string ip)
 		{
+			_logger.LogInformation($"Trying parse response for ip {ip}");
 			var lines = response.Raw.Split('\n').Select(x => TrimAll(x));
 			var result = new IpInfo
 			{
