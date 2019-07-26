@@ -4,20 +4,16 @@ services:
 
 stages:
   - build
-  - release
   - prepare-storage
   - deploy
 
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
+
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
-
-  RESOLVER_TEST_IMAGE: $CI_REGISTRY_IMAGE/resolver:$CI_COMMIT_REF_SLUG
-  RESOLVER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/resolver:latest
-
-  ANALYZER_TEST_IMAGE: $CI_REGISTRY_IMAGE/analyzer:$CI_COMMIT_REF_SLUG
-  ANALYZER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
+  RESOLVER_IMAGE: $CI_REGISTRY_IMAGE/resolver:latest
+  ANALYZER_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
 
 before_script:
   - docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY
@@ -38,8 +34,8 @@ build-hyperlocal:
 build-resolver:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_TEST_IMAGE -f Dns.Resolver/Dockerfile .
-    - docker push $RESOLVER_TEST_IMAGE
+    - docker build --pull -t $RESOLVER_IMAGE -f Dns.Resolver/Dockerfile .
+    - docker push $RESOLVER_IMAGE
   only:
     refs:
       - master
@@ -51,8 +47,8 @@ build-resolver:
 build-analyzer:
   stage: build
   script:
-    - docker build --pull -t $ANALYZER_TEST_IMAGE -f Dns.Analyzer/Dockerfile .
-    - docker push $ANALYZER_TEST_IMAGE
+    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
+    - docker push $ANALYZER_IMAGE
   only:
     refs:
       - master
@@ -60,36 +56,6 @@ build-analyzer:
       - Dns.Analyzer/**/*
       - Dns.Library/**/*
       - Dns.DAL/**/*
-
-
-release-resolver:
-  stage: release
-  script:
-    - docker pull $RESOLVER_TEST_IMAGE
-    - docker tag $RESOLVER_TEST_IMAGE $RESOLVER_RELEASE_IMAGE
-    - docker push $RESOLVER_RELEASE_IMAGE
-  only:
-    refs:
-      - master
-    changes:
-      - Dns.Resolver/**/*
-      - Dns.Library/**/*
-      - Dns.DAL/**/*
-
-release-analyzer:
-  stage: release
-  script:
-    - docker pull $ANALYZER_TEST_IMAGE
-    - docker tag $ANALYZER_TEST_IMAGE $ANALYZER_RELEASE_IMAGE
-    - docker push $ANALYZER_RELEASE_IMAGE
-  only:
-    refs:
-      - master
-    changes:
-      - Dns.Analyzer/**/*
-      - Dns.Library/**/*
-      - Dns.DAL/**/*
-
 
 prepare-storage:
   stage: prepare-storage
