@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library;
+using Dns.Site.Hubs;
+using Dns.Site.Services;
+using Grfc.Library.Auth.Helpers;
+using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,11 +17,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 
 namespace Dns.Site
 {
 	public class Startup
 	{
+		private static bool IsDbMigrated = false;
+
 		public Startup(IConfiguration configuration)
 		{
 			Configuration = configuration;
@@ -33,26 +40,84 @@ namespace Dns.Site
 			services.AddDbContext<DnsReadOnlyDbContext>(opt =>
 				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_READ)));
 
+			services.AddSwaggerGen(x =>
+			{
+				x.SwaggerDoc("v1", new OpenApiInfo
+				{
+					Version = "v1",
+					Title = "DNS API",
+					Description = "Service of analyze domains"
+				});
+				x.IncludeXmlComments("Dns.Site.xml");
+				x.DescribeAllEnumsAsStrings();
+			});
+
+			services.AddCors(options =>
+			{
+				options.AddPolicy("AllowAll",
+					builder =>
+					{
+						builder
+						.AllowAnyOrigin()
+						.AllowAnyMethod()
+						.AllowAnyHeader();
+					});
+			});
+
 			services.AddControllers()
 				.AddNewtonsoftJson();
+			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
+				.AddJsonProtocol(opt => opt.WriteIndented = false);
+
+			services.ConfigureSharedCookieAuthentication();
+
+			services.AddAuthorization(opts =>
+			{
+				opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer)));
+			});
+
+			//ADD SERVICES
+			services.AddScoped<AttackService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider provider)
 		{
+			MigrateDataBase(provider);
+
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
 			}
 
+			app.UseStaticFiles();
+
+			app.UseCookiePolicy();
+			app.UseCors("AllowAll");
 			app.UseRouting();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
-
+			app.UseSwagger();
+			app.UseSwaggerUI(x =>
+			{
+				x.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API");
+			});
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapControllers();
+				endpoints.MapHub<AttackHub>("/attackHub");
 			});
+		}
+
+		private void MigrateDataBase(IServiceProvider provider)
+		{
+			if (!IsDbMigrated)
+			{
+				var context = provider.GetService<DnsDbContext>();
+				context.Database.Migrate();
+				IsDbMigrated = true;
+			}
 		}
 	}
 }

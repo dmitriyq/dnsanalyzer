@@ -37,7 +37,6 @@ namespace Dns.Library.Services
 			{
 				try
 				{
-					_logger.LogInformation($"Trying get information about {ip}");
 					var info = GetInfo(ip);
 					if (info != null)
 					{
@@ -75,7 +74,7 @@ namespace Dns.Library.Services
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, $"Query failed for ip {ip}");
+				_logger.LogError(ex, $"Parsing failed for ip {ip}");
 				try
 				{
 					if (response != null && response.OrganizationName != null)
