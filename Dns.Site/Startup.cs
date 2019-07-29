@@ -66,8 +66,7 @@ namespace Dns.Site
 
 			services.AddControllers()
 				.AddNewtonsoftJson();
-			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
-				.AddJsonProtocol(opt => opt.WriteIndented = false);
+			services.AddSignalR(opts => opts.EnableDetailedErrors = true);
 
 			services.ConfigureSharedCookieAuthentication();
 
