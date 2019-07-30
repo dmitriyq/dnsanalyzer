@@ -59,7 +59,20 @@ namespace Dns.Resolver.Services
 
 		private async Task<List<string>> GetWhiteDomains() =>
 			await _dnsReadOnly.WhiteDomains.Select(x => x.Domain).ToListAsync();
-		private async Task<List<string>> GetBlackDomains() =>
-			(await _redis.GetStringSetMembers(RedisKeys.BLACK_DOMAINS)).ToList();
+		private async Task<List<string>> GetBlackDomains()
+		{
+			var domains = await _redis.GetStringSetMembers(RedisKeys.BLACK_DOMAINS);
+
+			var dottedDomains = domains.Where(x => x.EndsWith(".")).ToHashSet();
+			var maskedDomains = domains.Where(x => x.StartsWith("*.")).ToHashSet();
+			
+			var normalizedDotted = dottedDomains.Select(x => x.Substring(0, x.Length - 1));
+			var normalizedMasked = maskedDomains.Select(x => x.Remove(0, 2));
+
+			var allDomains = domains.Except(dottedDomains).Except(maskedDomains).ToList();
+			allDomains.AddRange(normalizedDotted);
+			allDomains.AddRange(normalizedMasked);
+			return allDomains.Distinct().ToList();
+		}
 	}
 }

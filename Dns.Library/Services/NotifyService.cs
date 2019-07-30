@@ -139,7 +139,7 @@ namespace Dns.Library.Services
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
 				From = EnvironmentExtensions.GetVariable(EnvVars.NOTIFICATION_EMAIL_FROM),
-				Subject = "[Система выявления DNS атак]"
+				Subject = EMAIL_SUBJECT
 			};
 		}
 	}
