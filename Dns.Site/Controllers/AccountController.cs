@@ -43,7 +43,18 @@ namespace Dns.Site.Controllers
 			await _userService.LoginAsync(User);
 			var user = await _userService.GetCurrentUserAsync();
 
-			return new JsonResult(user);
+			return new JsonResult(new {
+				user.CanChangePass,
+				user.Id,
+				user.Login,
+				user.LoginUrl,
+				user.LogoutUrl,
+				user.Name,
+				user.PasswordHash,
+				user.ResetPasswordUrl,
+				user.Roles,
+				IsDnsAdmin = User.HasRole(UserRoles.DnsAdmin)
+			});
 		}
 
 		/// <summary>

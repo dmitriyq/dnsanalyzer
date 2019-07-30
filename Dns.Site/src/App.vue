@@ -113,7 +113,7 @@
 						Utils.setUser(this,
 							{ canChangePass: !!data.canChangePass,
                             name: data.name,
-                            changePassUrl: data.changePassUrl,
+                            changePassUrl: data.resetPasswordUrl,
                             logoutUrl: data.logoutUrl,
                             isDnsAdmin: data.isDnsAdmin,
                         });

@@ -1,7 +1,7 @@
 ﻿<template>
 	<v-data-table class="elevation-1"
 				  :hide-actions="true"
-				  :headers="tableHeaders"
+				  :headers="tableHeader"
 				  :items="dnsAttacks"
 				  must-sort
 				  disable-initial-sort
@@ -133,6 +133,15 @@
 
 		get isDnsAdmin(): boolean {
 			return Utils.getUser(this).isDnsAdmin;
+		}
+
+		get tableHeader(): IDataTableHeaders[] {
+			if (!this.isDnsAdmin) {
+				return this.tableHeaders
+					.filter((val, indx) => indx !== 0);
+			} else {
+				return this.tableHeaders;
+			}
 		}
 
 		@Watch('checkBoxedAttacks')

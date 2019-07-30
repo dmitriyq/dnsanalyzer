@@ -5,8 +5,13 @@ COPY . .
 WORKDIR /build/Dns.Site
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt update && apt install nodejs -y
-RUN node -v
-RUN npm -v
+# install System.Drawing native dependencies
+RUN apt-get update \
+    && apt-get install -y --allow-unauthenticated \
+        libc6-dev \
+        libgdiplus \
+        libx11-dev \
+     && rm -rf /var/lib/apt/lists/*
 RUN npm install -g typescript && npm install -g @vue/cli && npm install vue
 WORKDIR /build/Dns.Site
 RUN ./node_modules/.bin/vue-cli-service build
