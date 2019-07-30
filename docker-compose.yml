@@ -58,6 +58,7 @@ services:
     environment: 
       <<: *shared-variables
       AUTH_SERVER_URL: '${AUTH_SERVER_URL}'
+      AUTH_COOKIE_BASE_DOMAIN: '${AUTH_COOKIE_BASE_DOMAIN}'
       NOTIFY_SERVICE_URL: 'http://notification_api:80/'
       VIGRUZKI_SERVICE_URL: 'http://vigruzki_api:80/'
     deploy:

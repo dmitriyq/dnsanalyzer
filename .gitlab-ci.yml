@@ -115,6 +115,7 @@ deploy:
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
+        export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
         export SITE_IMAGE=$SITE_IMAGE &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
