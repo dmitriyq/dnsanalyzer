@@ -1,0 +1,55 @@
+{
+  "name": "dns-core",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm run build",
+    "dev": "vue-cli-service build --watch",
+    "serve": "vue-cli-service serve",
+    "dtos": "cd src && typescript-ref",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "publish": "vue-cli-service build && dotnet publish -c Release",
+    "publish-debug": "vue-cli-service build --mode development && dotnet publish -c Debug"
+  },
+  "dependencies": {
+    "@aspnet/signalr": "^1.1.4",
+    "axios": "^0.18.0",
+    "date-fns": "^1.30.1",
+    "es6-shim": "^0.35.5",
+    "font-awesome": "^4.7.0",
+    "promise-polyfill": "8.1.0",
+    "vue": "^2.6.10",
+    "vue-class-component": "^6.3.2",
+    "vue-property-decorator": "^7.3.0",
+    "vue-router": "^3.0.6",
+    "vuetify": "^1.5.14",
+    "whatwg-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "@babel/polyfill": "^7.4.4",
+    "@vue/cli-plugin-babel": "^3.8.0",
+    "@vue/cli-plugin-typescript": "^3.8.1",
+    "@vue/cli-service": "^3.8.0",
+    "babel-core": "7.0.0-bridge.0",
+    "gulp": "^3.9.1",
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.0.1",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2",
+    "typescript": "^3.5.1",
+    "vue-cli-plugin-vuetify": "^0.2.1",
+    "vue-template-compiler": "^2.6.10",
+    "webpack-bundle-analyzer": "^3.3.2"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}

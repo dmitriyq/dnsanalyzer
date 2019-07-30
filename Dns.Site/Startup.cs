@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library;
+using Dns.Library.Services;
 using Dns.Site.Hubs;
 using Dns.Site.Services;
 using Grfc.Library.Auth.Helpers;
@@ -25,12 +26,14 @@ namespace Dns.Site
 	{
 		private static bool IsDbMigrated = false;
 
-		public Startup(IConfiguration configuration)
+		public Startup(IConfiguration configuration, IWebHostEnvironment hostEnvironment)
 		{
 			Configuration = configuration;
+			HostEnvironment = hostEnvironment;
 		}
 
 		public IConfiguration Configuration { get; }
+		public IWebHostEnvironment HostEnvironment { get; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
@@ -39,6 +42,7 @@ namespace Dns.Site
 				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
 			services.AddDbContext<DnsReadOnlyDbContext>(opt =>
 				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_READ)));
+
 
 			services.AddSwaggerGen(x =>
 			{
@@ -52,6 +56,7 @@ namespace Dns.Site
 				x.DescribeAllEnumsAsStrings();
 			});
 
+
 			services.AddCors(options =>
 			{
 				options.AddPolicy("AllowAll",
@@ -64,21 +69,49 @@ namespace Dns.Site
 					});
 			});
 
-			services.AddControllers()
+			services.AddStackExchangeRedisCache(opts =>
+			{
+				opts.Configuration = EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION);
+				opts.InstanceName = "Dns_Redis_Cache";
+			});
+
+			services.AddControllersWithViews()
 				.AddNewtonsoftJson();
+
 			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
 				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION), opt =>
 					opt.Configuration.ChannelPrefix = "Dns_SignalR_");
 
-			services.ConfigureSharedCookieAuthentication();
-
-			services.AddAuthorization(opts =>
+			if (HostEnvironment.IsProduction())
 			{
-				opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer)));
-			});
+				services.ConfigureSharedCookieAuthentication();
+
+				services.AddAuthorization(opts =>
+				{
+					opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer)));
+				});
+			}
 
 			//ADD SERVICES
 			services.AddScoped<AttackService>();
+			services.AddScoped<NotifyService>();
+			services.AddScoped<ExcelService>();
+
+			services.AddHttpClient<IUserService, AuthService.Client>((provider, client) =>
+			{
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.AUTH_SERVER_URL));
+			});
+
+			services.AddHttpClient<INotifyApiService, NotificationService.Client>((provider, client) =>
+			{
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.NOTIFY_SERVICE_URL));
+			});
+			services.AddHttpClient<IVigruzkiService, VigruzkiService.Client>((provider, client) =>
+			{
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.VIGRUZKI_SERVICE_URL));
+			});
+
+			services.AddSingleton<RedisService>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,8 +130,12 @@ namespace Dns.Site
 			app.UseCors("AllowAll");
 			app.UseRouting();
 
-			app.UseAuthentication();
-			app.UseAuthorization();
+			if (env.IsProduction())
+			{
+				app.UseAuthentication();
+				app.UseAuthorization();
+			}
+			
 			app.UseSwagger();
 			app.UseSwaggerUI(x =>
 			{
@@ -106,7 +143,8 @@ namespace Dns.Site
 			});
 			app.UseEndpoints(endpoints =>
 			{
-				endpoints.MapControllers();
+				endpoints.MapDefaultControllerRoute();
+				endpoints.MapFallbackToController("Index", "Home");
 				endpoints.MapHub<AttackHub>("/attackHub");
 			});
 		}

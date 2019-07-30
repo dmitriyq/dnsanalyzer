@@ -44,8 +44,38 @@ services:
     deploy:
       replicas: 1
 
+  site:
+    image: ${SITE_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/site}
+    ports:
+      - 9004:80
+    networks:
+      - postgre_pg-net
+      - redis-net
+      - default
+      - notification_default
+      - vigruzki_default
+      - traefik-net
+    environment: 
+      <<: *shared-variables
+      AUTH_SERVER_URL: '${AUTH_SERVER_URL}'
+      NOTIFY_SERVICE_URL: 'http://notification_api:80/'
+      VIGRUZKI_SERVICE_URL: 'http://vigruzki_api:80/'
+    deploy:
+      replicas: 1
+      labels:
+        traefik.frontend.rule: "Host:dns-test.cmim.ru"
+        traefik.enable: "true"
+        traefik.port: "80"
+        traefik.docker.network: "traefik-net"
+
 networks:
   postgre_pg-net:
     external: true
   redis-net:
+    external: true
+  notification_default:
+    external: true
+  vigruzki_default:
+    external: true
+  traefik-net:
     external: true

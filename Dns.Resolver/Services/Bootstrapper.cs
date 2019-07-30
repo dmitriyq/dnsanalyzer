@@ -18,13 +18,13 @@ namespace Dns.Resolver.Services
 	{
 		private readonly ILogger<Bootstrapper> _logger;
 		private readonly ResolveService _resolve;
-		private readonly DnsDbContext _dnsReadOnly;
+		private readonly DnsReadOnlyDbContext _dnsReadOnly;
 		private readonly RedisService _redis;
 
 		public Bootstrapper(
 			ILogger<Bootstrapper> logger, 
 			ResolveService resolve,
-			DnsDbContext dnsReadOnly, 
+			DnsReadOnlyDbContext dnsReadOnly, 
 			RedisService redisService)
 		{
 			_logger = logger;

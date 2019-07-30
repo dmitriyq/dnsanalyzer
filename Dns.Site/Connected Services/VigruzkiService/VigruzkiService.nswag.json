@@ -1,0 +1,109 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Vigruzki API",
+    "description": "Microservice for obtaining information from the local copy of the RKN registry",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/Reestr/Equal": {
+      "get": {
+        "tags": [
+          "Reestr"
+        ],
+        "summary": "Поиск по точному соответсвию",
+        "operationId": "Equal",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "description": "домен, URL, IP или подсеть",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VigruzkiRecordModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Reestr/Contain": {
+      "get": {
+        "tags": [
+          "Reestr"
+        ],
+        "summary": "Неточный поиск по реестру",
+        "operationId": "Contain",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": true,
+            "description": "домен, URL, IP или подсеть",
+            "schema": {
+              "type": "string",
+              "default": ""
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VigruzkiRecordModel"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "VigruzkiRecordModel": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "domain": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "ip": {
+            "type": "string"
+          },
+          "subnet": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

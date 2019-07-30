@@ -6,6 +6,10 @@ namespace Dns.Library
 {
 	public class EnvVars
 	{
+		public const string AUTH_SERVER_URL = nameof(AUTH_SERVER_URL);
+		public const string NOTIFY_SERVICE_URL = nameof(NOTIFY_SERVICE_URL);
+		public const string VIGRUZKI_SERVICE_URL = nameof(VIGRUZKI_SERVICE_URL);
+
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
 		public const string PG_CONNECTION_STRING_WRITE = nameof(PG_CONNECTION_STRING_WRITE);
 		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);

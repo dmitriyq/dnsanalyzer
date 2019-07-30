@@ -35,3 +35,17 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+
+
+# Vue
+wwwroot/js/
+wwwroot/css/
+.DS_Store
+Thumbs.db
+db.json
+*.log
+node_modules/
+public/
+.deploy*/
+src/_drafts
+package-lock.json

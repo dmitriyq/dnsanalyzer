@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Dns.Site</name>
+    </assembly>
+    <members>
+        <member name="M:Dns.Site.AuthService.Client.CheckAuthAsync">
+            <summary>Проверка авторизации</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.CheckAuthAsync(System.Threading.CancellationToken)">
+            <summary>Проверка авторизации</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.LoginAsync(Dns.Site.AuthService.LoginModel)">
+            <summary>Авторизация по логину и паролю</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.LoginAsync(Dns.Site.AuthService.LoginModel,System.Threading.CancellationToken)">
+            <summary>Авторизация по логину и паролю</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.LogoutAsync">
+            <summary>Завершение сессии авторизации</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.LogoutAsync(System.Threading.CancellationToken)">
+            <summary>Завершение сессии авторизации</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.UserAllAsync">
+            <summary>Получение списка всех юзеров</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.UserAllAsync(System.Threading.CancellationToken)">
+            <summary>Получение списка всех юзеров</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.UserAsync(System.String)">
+            <summary>Получение пользователя по логину</summary>
+            <param name="user">логин</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.UserAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Получение пользователя по логину</summary>
+            <param name="user">логин</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.SelfAsync">
+            <summary>Получение текущего авторизованного пользователя</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.AuthService.Client.SelfAsync(System.Threading.CancellationToken)">
+            <summary>Получение текущего авторизованного пользователя</summary>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.AuthService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.NotificationAllAsync">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.NotificationAllAsync(System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.NotificationAsync(Dns.Site.NotificationService.NotifyModel)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.NotificationAsync(Dns.Site.NotificationService.NotifyModel,System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification2Async(System.String)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification2Async(System.String,System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification3Async(System.String,Dns.Site.NotificationService.Site)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification3Async(System.String,Dns.Site.NotificationService.Site,System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification4Async(System.Int32,Dns.Site.NotificationService.NotifyModel)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification4Async(System.Int32,Dns.Site.NotificationService.NotifyModel,System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification5Async(System.Int32)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.NotificationService.Client.Notification5Async(System.Int32,System.Threading.CancellationToken)">
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.NotificationService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.VigruzkiService.Client.EqualAsync(System.String)">
+            <summary>Поиск по точному соответсвию</summary>
+            <param name="search">домен, URL, IP или подсеть</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.VigruzkiService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.VigruzkiService.Client.EqualAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Поиск по точному соответсвию</summary>
+            <param name="search">домен, URL, IP или подсеть</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.VigruzkiService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.VigruzkiService.Client.ContainAsync(System.String)">
+            <summary>Неточный поиск по реестру</summary>
+            <param name="search">домен, URL, IP или подсеть</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.VigruzkiService.SwaggerException">A server side error occurred.</exception>
+        </member>
+        <member name="M:Dns.Site.VigruzkiService.Client.ContainAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Неточный поиск по реестру</summary>
+            <param name="search">домен, URL, IP или подсеть</param>
+            <returns>Success</returns>
+            <exception cref="T:Dns.Site.VigruzkiService.SwaggerException">A server side error occurred.</exception>
+            <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        </member>
+        <member name="M:Dns.Site.Controllers.AccountController.GetUserInfo">
+            <summary>
+            Получение информации о текущем пользователе
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Dns.Site.Controllers.AccountController.CheckAuth">
+            <summary>
+            Проверка авторизации
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Dns.Site.Controllers.AccountController.UserNotifications">
+            <summary>
+            Список адресов для уведомлений текущего пользователя
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Dns.Site.Controllers.AccountController.UserNotifications(System.String[])">
+            <summary>
+            Замена всех адресов уведомлений на новые
+            </summary>
+            <param name="notifies">новые адреса уведомлений</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
