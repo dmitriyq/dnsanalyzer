@@ -56,10 +56,17 @@ namespace Dns.Analyzer.Services
 
 				await _ipInfoService.UpdateIpInfo(true);
 
-				var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attackToNotify.ToArray());
-				var groupMessage = await _notifyService.BuildGroupMessage(string.Empty, groupToNotify.ToArray());
-				await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, attackMessage.ProtoSerialize());
-				await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, groupMessage.ProtoSerialize());
+				if (attackToNotify.Any())
+				{
+					var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attackToNotify.ToArray());
+					await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, attackMessage.ProtoSerialize());
+				}
+				if (groupToNotify.Any())
+				{
+					var groupMessage = await _notifyService.BuildGroupMessage(string.Empty, groupToNotify.ToArray());
+					await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, groupMessage.ProtoSerialize());
+				}
+
 
 				_logger.LogInformation("Completed Analyzer Job");
 			});

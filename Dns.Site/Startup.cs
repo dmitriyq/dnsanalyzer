@@ -67,7 +67,8 @@ namespace Dns.Site
 			services.AddControllers()
 				.AddNewtonsoftJson();
 			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
-				.AddJsonProtocol(opt => opt.WriteIndented = false);
+				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION), opt =>
+					opt.Configuration.ChannelPrefix = "Dns_SignalR_");
 
 			services.ConfigureSharedCookieAuthentication();
 
