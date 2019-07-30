@@ -103,8 +103,8 @@
 	import { Component } from 'vue-property-decorator';
 	import Axios from 'axios';
 	import IDataTableHeaders from '@/models/data-table';
-	import IWhiteDomain from '@/whitelist/white-domain';
 	import Utils from '@/utils/Utils';
+	import IWhiteDomain from './white-domain';
 
 	@Component({
 		filters: {

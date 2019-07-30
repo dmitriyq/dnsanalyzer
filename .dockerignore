@@ -20,3 +20,4 @@
 **/.toolstarget
 bin\
 obj\
+**/node_modules
