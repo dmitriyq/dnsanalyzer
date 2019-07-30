@@ -12,4 +12,4 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.0.0-preview5-bionic AS base
 WORKDIR /app
 COPY --from=build /app .
-ENTRYPOINT ["dotnet", "Auth.MVC.dll"]
+ENTRYPOINT ["dotnet", "Dns.Site.dll"]
