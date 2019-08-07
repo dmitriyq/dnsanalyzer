@@ -37,15 +37,23 @@ namespace Dns.Resolver
 			ApplyMigrations(services);
 
 			var bootstrapper = services.GetService<Bootstrapper>();
+			var logger = services.GetService<ILoggerFactory>().CreateLogger<Program>();
 			Task.Run(async () =>
 			{
-				while (true)
+				try
 				{
-					await bootstrapper.ResolveDomains();
-					await bootstrapper.NotifyCompletion();
+					while (true)
+					{
+						await bootstrapper.ResolveDomains();
+						await bootstrapper.NotifyCompletion();
+					}
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, ex.Message);
+					throw;
 				}
 			});
-
 			resetEventSlim.Wait();
 		}
 
