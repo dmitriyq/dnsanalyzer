@@ -5,6 +5,7 @@ x-shared-variables: &shared-variables
   PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis-master,redis-slave-1,redis-slave-2}'
   ASPNETCORE_ENVIRONMENT: 'Production'
+  NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
 
 services:
   hyperlocal:
@@ -40,7 +41,6 @@ services:
     environment: 
       <<: *shared-variables
       ANALYZER_SUSPECT_IP_COUNT: 10
-      NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
     deploy:
       replicas: 1
 

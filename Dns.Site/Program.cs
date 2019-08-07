@@ -21,6 +21,7 @@ namespace Dns.Site
 				EnvVars.VIGRUZKI_SERVICE_URL,
 				EnvVars.REDIS_CONNECTION,
 				EnvVars.PG_CONNECTION_STRING_READ,
+				EnvVars.NOTIFICATION_EMAIL_FROM,
 				EnvVars.PG_CONNECTION_STRING_WRITE);
 
 			CreateHostBuilder(args).Build().Run();
