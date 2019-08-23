@@ -9,7 +9,6 @@ using Dns.Site.Hubs;
 using Dns.Site.Models;
 using Dns.Site.Services;
 using Grfc.Library.Common.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;

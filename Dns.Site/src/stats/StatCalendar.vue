@@ -153,14 +153,16 @@
     }
 </script>
 <style>
-	.disable-calendar-link .v-calendar-weekly__day-label{
-		cursor:default;
+	.disable-calendar-link .v-calendar-weekly__day-label {
+		cursor: default;
 	}
-	.disable-calendar-link .v-calendar-weekly__day-label:hover{
-		text-decoration:none;
-	}
-	.list-item-height-20 div[role=listitem] .v-list__tile{
-		height:20px;
-		padding:0;
+
+		.disable-calendar-link .v-calendar-weekly__day-label:hover {
+			text-decoration: none;
+		}
+
+	.list-item-height-20 div[role=listitem] .v-list__tile {
+		height: 20px;
+		padding: 0;
 	}
 </style>

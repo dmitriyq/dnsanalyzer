@@ -38,8 +38,7 @@
 									  hide-details></v-text-field>
 					</v-flex>
 				</v-card-title>
-				<AttackTable
-							 @selectedupdate="showMultiActionButton"
+				<AttackTable @selectedupdate="showMultiActionButton"
 							 @showattackinfo="showInfo"
 							 :isShowingInfo="isShowInfo"
 							 :attacks="dnsAttacks"
@@ -209,6 +208,7 @@
 		box-sizing: border-box;
 		border: solid #2196f3 1px;
 	}
+
 	.rowHover:hover {
 		background: #E3F2FD !important;
 	}

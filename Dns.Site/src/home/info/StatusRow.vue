@@ -70,5 +70,4 @@ export default class StatusRow extends Vue {
 </script>
 
 <style scoped>
-
 </style>

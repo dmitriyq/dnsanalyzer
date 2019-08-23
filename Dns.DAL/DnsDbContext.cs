@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Dns.DAL.Models;
+﻿using Dns.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL
 {
-	public class DnsDbContext: DbContext
+	public class DnsDbContext : DbContext
 	{
 		public DnsDbContext()
 		{
@@ -16,6 +13,7 @@ namespace Dns.DAL
 			: base(options)
 		{
 		}
+
 		public virtual DbSet<Attacks> DnsAttacks { get; set; }
 		public virtual DbSet<AttackHistories> AttackHistories { get; set; }
 		public virtual DbSet<AttackGroups> AttackGroups { get; set; }
@@ -35,7 +33,6 @@ namespace Dns.DAL
 		{
 			modelBuilder.HasPostgresExtension("dblink");
 			modelBuilder.HasPostgresExtension("citext");
-
 
 			modelBuilder.Entity<Attacks>(entity =>
 			{
@@ -72,15 +69,16 @@ namespace Dns.DAL
 					.HasConstraintName("FK_Attacks_AttackGroups_AttackGroupId");
 			});
 
-			modelBuilder.Entity<AttackGroups>(entity => {
+			modelBuilder.Entity<AttackGroups>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_AttackGroups_Id");
 				entity.Property(e => e.DateBegin).HasColumnType("timestamptz");
 				entity.Property(e => e.DateClose).HasColumnType("timestamptz");
-
 			});
 
-			modelBuilder.Entity<AttackHistories>(entity => {
+			modelBuilder.Entity<AttackHistories>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_AttackHistories_Id");
 
@@ -92,7 +90,8 @@ namespace Dns.DAL
 					.HasConstraintName("FK_AttackHistories_Attacks_AttackId");
 			});
 
-			modelBuilder.Entity<AttackGroupHistories>(entity => {
+			modelBuilder.Entity<AttackGroupHistories>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_AttackGroupHistories_Id");
 
@@ -104,7 +103,8 @@ namespace Dns.DAL
 					.HasConstraintName("FK_AttackGroupHistories_AttackGroups_AttackGroupId");
 			});
 
-			modelBuilder.Entity<AttackNotes>(entity => {
+			modelBuilder.Entity<AttackNotes>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_AttackNotes_Id");
 

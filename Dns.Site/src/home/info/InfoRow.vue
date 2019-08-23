@@ -54,11 +54,12 @@ export default class InfoRow extends Vue {
 </script>
 
 <style scoped>
-	.text-wrap-word{
+	.text-wrap-word {
 		white-space: normal;
-		word-break:break-word;
+		word-break: break-word;
 	}
-	.height-auto{
-		height:auto;
+
+	.height-auto {
+		height: auto;
 	}
 </style>

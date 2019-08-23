@@ -12,9 +12,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Analyzer
 {
-	public class Program
+	public static class Program
 	{
 		public static ManualResetEventSlim resetEventSlim = new ManualResetEventSlim();
+
 		public static void Main(string[] args)
 		{
 			EnvironmentExtensions.CheckVariables(
@@ -55,7 +56,6 @@ namespace Dns.Analyzer
 			services.AddTransient<NotifyService>();
 
 			services.AddSingleton<RedisService>();
-			
 		}
 
 		private static void ApplyMigrations(IServiceProvider services)

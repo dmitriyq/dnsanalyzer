@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.DAL.Models;
-using Grfc.Library.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Whois.NET;
@@ -30,7 +28,7 @@ namespace Dns.Library.Services
 			_logger.LogInformation("Starting update ip information");
 
 			HashSet<string> ips = onlyUnresolved ?
-				await UnResolvedIps() : 
+				await UnResolvedIps() :
 				_readOnlyDbContext.DnsAttacks.Select(x => x.Ip).Distinct().ToHashSet();
 
 			foreach (var ip in ips)
@@ -97,7 +95,6 @@ namespace Dns.Library.Services
 				{
 					_logger.LogWarning(iex, $"Ошибка при получении информации об IP: {ip}");
 				}
-
 			}
 			return null;
 		}
@@ -140,7 +137,7 @@ namespace Dns.Library.Services
 				result.Subnet = response.AddressRange.ToString();
 			}
 
-			var countryLine = lines.FirstOrDefault(x => x.ToLower().Contains("country:"));
+			var countryLine = lines.FirstOrDefault(x => x.Contains("country:", StringComparison.CurrentCultureIgnoreCase));
 			if (countryLine != null)
 			{
 				var country = TrimAll(countryLine.Split(':')[1]);

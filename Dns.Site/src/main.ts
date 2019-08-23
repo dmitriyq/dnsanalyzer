@@ -16,18 +16,18 @@ import router from './router';
 import Store from '@/models/store';
 
 const store: Store = {
-    user: {
-        canChangePass: false,
-        name: null,
-        changePassUrl: null,
-        logoutUrl: null,
-        isDnsAdmin: false,
-    },
+	user: {
+		canChangePass: false,
+		name: null,
+		changePassUrl: null,
+		logoutUrl: null,
+		isDnsAdmin: false,
+	},
 };
 
 const app = new Vue({
-    el: '#app',
-    render: (h) => h(App),
+	el: '#app',
+	render: (h) => h(App),
 	router,
 	data: store,
 });

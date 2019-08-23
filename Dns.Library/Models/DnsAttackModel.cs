@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dns.Library.Models
+﻿namespace Dns.Library.Models
 {
 	public class DnsAttackModel
 	{

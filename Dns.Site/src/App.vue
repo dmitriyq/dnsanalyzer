@@ -121,11 +121,9 @@
             }
 		}
 	}
-
 </script>
 <style scoped>
-	.v-btn{
-		color:white;
+	.v-btn {
+		color: white;
 	}
-	
 </style>

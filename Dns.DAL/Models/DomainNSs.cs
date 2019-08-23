@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dns.DAL.Models
+﻿namespace Dns.DAL.Models
 {
 	public class DomainNSs
 	{

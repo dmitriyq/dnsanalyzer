@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dns.Library
+﻿namespace Dns.Library
 {
-	public class EnvVars
+	public static class EnvVars
 	{
 		public const string AUTH_SERVER_URL = nameof(AUTH_SERVER_URL);
 		public const string NOTIFY_SERVICE_URL = nameof(NOTIFY_SERVICE_URL);

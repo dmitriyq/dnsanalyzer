@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Dns.Library.Models;
+using Grfc.Library.Common.Extensions;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
-using Grfc.Library.Common.Extensions;
 
 namespace Dns.Library.Services
 {
@@ -14,6 +13,7 @@ namespace Dns.Library.Services
 	{
 		private readonly ConnectionMultiplexer _redis;
 		private readonly ILogger<RedisService> _logger;
+
 		public RedisService(ILogger<RedisService> logger)
 		{
 			_logger = logger;
@@ -58,13 +58,15 @@ namespace Dns.Library.Services
 			var subscriber = _redis.GetSubscriber();
 			await subscriber.PublishAsync(channel, message);
 		}
+
 		public async Task Subscribe(string channel, Action<string> onMessage)
 		{
 			var subscriber = _redis.GetSubscriber();
 			await subscriber.SubscribeAsync(channel, (channel, message) => onMessage(message));
 		}
 	}
-	public class RedisKeys
+
+	public static class RedisKeys
 	{
 		public const string BLACK_DOMAINS = "Vigruzki_Domains";
 		public const string BLACK_IPS = "Vigruzki_Ips";

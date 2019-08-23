@@ -8,11 +8,9 @@ using ClosedXML.Excel;
 using Dns.DAL;
 using Dns.DAL.Models;
 using Dns.Site.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Text.Encodings.Web;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -165,13 +163,22 @@ namespace Dns.Site.Controllers
 
 		private WhiteDomainViewModel CastToModel(WhiteDomains item)
 			=> new WhiteDomainViewModel { DateAdded = item.DateAdded, Domain = item.Domain, Id = item.Id };
+
 		private IQueryable<WhiteDomainViewModel> CastToModel(IQueryable<WhiteDomains> items)
 			=> items.Select(x => CastToModel(x));
+
 		public class ErrorMessage
 		{
 			public string Msg { get; set; }
-			public ErrorMessage() { }
-			public ErrorMessage(string msg) { this.Msg = msg; }
+
+			public ErrorMessage()
+			{
+			}
+
+			public ErrorMessage(string msg)
+			{
+				this.Msg = msg;
+			}
 
 			public static ErrorMessage InvalidId => new ErrorMessage("Не корректный домен");
 			public static ErrorMessage NotFound => new ErrorMessage("Указанный домен не найден");

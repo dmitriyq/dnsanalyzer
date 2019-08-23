@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library;
-using Dns.Library.Models;
 using Dns.Library.Services;
 using Grfc.Library.Common.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +20,9 @@ namespace Dns.Resolver.Services
 		private readonly RedisService _redis;
 
 		public Bootstrapper(
-			ILogger<Bootstrapper> logger, 
+			ILogger<Bootstrapper> logger,
 			ResolveService resolve,
-			DnsReadOnlyDbContext dnsReadOnly, 
+			DnsReadOnlyDbContext dnsReadOnly,
 			RedisService redisService)
 		{
 			_logger = logger;
@@ -59,13 +57,14 @@ namespace Dns.Resolver.Services
 
 		private async Task<List<string>> GetWhiteDomains() =>
 			await _dnsReadOnly.WhiteDomains.Select(x => x.Domain).ToListAsync();
+
 		private async Task<List<string>> GetBlackDomains()
 		{
 			var domains = await _redis.GetStringSetMembers(RedisKeys.BLACK_DOMAINS);
 
 			var dottedDomains = domains.Where(x => x.EndsWith(".")).ToHashSet();
 			var maskedDomains = domains.Where(x => x.StartsWith("*.")).ToHashSet();
-			
+
 			var normalizedDotted = dottedDomains.Select(x => x.Substring(0, x.Length - 1));
 			var normalizedMasked = maskedDomains.Select(x => x.Remove(0, 2));
 

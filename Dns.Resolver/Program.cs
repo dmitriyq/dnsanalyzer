@@ -16,9 +16,9 @@ namespace Dns.Resolver
 	public class Program
 	{
 		public static ManualResetEventSlim resetEventSlim = new ManualResetEventSlim();
+
 		public static void Main(string[] args)
 		{
-
 			EnvironmentExtensions.CheckVariables(
 				EnvVars.HYPERLOCAL_SERVER,
 				EnvVars.PG_CONNECTION_STRING_READ,

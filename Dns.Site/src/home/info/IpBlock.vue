@@ -101,12 +101,11 @@
 	}
 </script>
 <style>
-	.ip-panel > .v-expansion-panel__header{
+	.ip-panel > .v-expansion-panel__header {
 		padding-top: 0px;
-		padding-bottom:0px;
+		padding-bottom: 0px;
 		padding-left: 18px;
 	}
 </style>
 <style scoped>
-
 </style>

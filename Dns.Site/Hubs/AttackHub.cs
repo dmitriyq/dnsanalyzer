@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Site.Hubs
 {
-	public class AttackHub: Hub
+	public class AttackHub : Hub
 	{
 		private readonly ILogger<AttackHub> _logger;
 		private readonly DnsDbContext _dbContext;

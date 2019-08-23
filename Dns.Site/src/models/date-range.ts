@@ -2,7 +2,6 @@
 import addDays from 'date-fns/add_days';
 
 class DateRangeCommonDates {
-
 	public static dateFormat: string = 'YYYY-MM-DD';
 	public static today: Date = new Date();
 	public static todayStr = format(DateRangeCommonDates.today, DateRangeCommonDates.dateFormat);
@@ -36,11 +35,9 @@ export default class DateRangeOptions {
 		presets: OptionPresets.DefaultPresets,
 	};
 
-
 	public static Format(date: Date): string {
 		return format(date, DateRangeCommonDates.dateFormat);
 	}
-
 
 	public startDate: string;
 	public endDate: string;

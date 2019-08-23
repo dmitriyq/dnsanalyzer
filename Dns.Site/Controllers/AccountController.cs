@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dns.Site.AuthService;
@@ -7,7 +6,6 @@ using Dns.Site.Services;
 using Grfc.Library.Auth.Extensions;
 using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -36,14 +34,15 @@ namespace Dns.Site.Controllers
 		/// <returns></returns>
 		[HttpGet("[action]")]
 		[Produces("application/json")]
-		[ProducesResponseType(typeof(UserModel) ,200)]
+		[ProducesResponseType(typeof(UserModel), 200)]
 		[ProducesResponseType(401)]
 		public async Task<JsonResult> GetUserInfo()
 		{
 			await _userService.LoginAsync(User);
 			var user = await _userService.GetCurrentUserAsync();
 
-			return new JsonResult(new {
+			return new JsonResult(new
+			{
 				user.CanChangePass,
 				user.Id,
 				user.Login,
@@ -83,7 +82,6 @@ namespace Dns.Site.Controllers
 			var notifies = await _notifyService.UserNotificationsAsync(userCred.login);
 
 			return new JsonResult(notifies.Select(x => x.Value).ToArray());
-
 		}
 
 		/// <summary>
@@ -97,7 +95,6 @@ namespace Dns.Site.Controllers
 		[ProducesResponseType(401)]
 		public async Task<JsonResult> UserNotifications([FromBody]string[] notifies)
 		{
-
 			var userCred = User.CurrentCredentials();
 			await _notifyService.AuthorizeAsync(userCred.login, userCred.pass);
 			await _notifyService.UpdateNotificationsAsync(userCred.login, notifies);

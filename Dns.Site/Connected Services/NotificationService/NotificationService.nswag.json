@@ -1,359 +1,359 @@
 ﻿{
-  "openapi": "3.0.1",
-  "info": {
-    "title": "Notification API",
-    "description": "Service sending notifications",
-    "version": "v1"
-  },
-  "paths": {
-    "/api/Notification": {
-      "get": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "NotificationAll",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotifyModel"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification",
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotifyModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Notification/{user}": {
-      "get": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification2",
-        "parameters": [
-          {
-            "name": "user",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": ""
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotifyModel"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Notification/{user}/{site}": {
-      "get": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification3",
-        "parameters": [
-          {
-            "name": "user",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": ""
-            }
-          },
-          {
-            "name": "site",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "default": "",
-              "enum": [
-                "None",
-                "Auth",
-                "Asr",
-                "Dns",
-                "Tg"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NotifyModel"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Notification/{id}": {
-      "put": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification4",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json-patch+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotifyModel"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotifyModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Notification"
-        ],
-        "operationId": "Notification5",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NotifyModel"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "NotifyModel": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "notifyType",
-          "siteType",
-          "userName",
-          "value"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userName": {
-            "type": "string"
-          },
-          "siteType": {
-            "type": "string",
-            "enum": [
-              "None",
-              "Auth",
-              "Asr",
-              "Dns",
-              "Tg"
-            ]
-          },
-          "notifyType": {
-            "type": "string",
-            "enum": [
-              "None",
-              "Email",
-              "Sms",
-              "SynoChat",
-              "Telegram"
-            ]
-          },
-          "value": {
-            "type": "string"
-          }
-        }
-      },
-      "ProblemDetails": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "type": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "detail": {
-            "type": "string"
-          },
-          "instance": {
-            "type": "string"
-          },
-          "extensions": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object"
-            },
-            "readOnly": true
-          }
-        }
-      }
-    }
-  }
+	"openapi": "3.0.1",
+	"info": {
+		"title": "Notification API",
+		"description": "Service sending notifications",
+		"version": "v1"
+	},
+	"paths": {
+		"/api/Notification": {
+			"get": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "NotificationAll",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/NotifyModel"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "Notification",
+				"requestBody": {
+					"content": {
+						"application/json-patch+json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"text/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"application/*+json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotifyModel"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemDetails"
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "Conflict",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemDetails"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/Notification/{user}": {
+			"get": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "Notification2",
+				"parameters": [
+					{
+						"name": "user",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"default": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/NotifyModel"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/Notification/{user}/{site}": {
+			"get": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "Notification3",
+				"parameters": [
+					{
+						"name": "user",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"default": ""
+						}
+					},
+					{
+						"name": "site",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"default": "",
+							"enum": [
+								"None",
+								"Auth",
+								"Asr",
+								"Dns",
+								"Tg"
+							]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/NotifyModel"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/Notification/{id}": {
+			"put": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "Notification4",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json-patch+json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"text/json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						},
+						"application/*+json": {
+							"schema": {
+								"$ref": "#/components/schemas/NotifyModel"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotifyModel"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemDetails"
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"tags": [
+					"Notification"
+				],
+				"operationId": "Notification5",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/NotifyModel"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ProblemDetails"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"NotifyModel": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"notifyType",
+					"siteType",
+					"userName",
+					"value"
+				],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"userName": {
+						"type": "string"
+					},
+					"siteType": {
+						"type": "string",
+						"enum": [
+							"None",
+							"Auth",
+							"Asr",
+							"Dns",
+							"Tg"
+						]
+					},
+					"notifyType": {
+						"type": "string",
+						"enum": [
+							"None",
+							"Email",
+							"Sms",
+							"SynoChat",
+							"Telegram"
+						]
+					},
+					"value": {
+						"type": "string"
+					}
+				}
+			},
+			"ProblemDetails": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"type": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"status": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"detail": {
+						"type": "string"
+					},
+					"instance": {
+						"type": "string"
+					},
+					"extensions": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "object"
+						},
+						"readOnly": true
+					}
+				}
+			}
+		}
+	}
 }

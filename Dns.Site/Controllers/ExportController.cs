@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -96,7 +94,6 @@ namespace Dns.Site.Controllers
 				file = await _cache.GetAsync(name);
 				if (file != null)
 					return File(file, ExcelService.EXCEL_MIMETYPE, $"Suspect_Domains.xlsx");
-
 			}
 			else if (name.StartsWith("DNS_"))
 			{

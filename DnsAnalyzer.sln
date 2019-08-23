@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.dockerignore = .dockerignore
 		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
+		default.ruleset = default.ruleset
 		docker-compose.yml = docker-compose.yml
 		init-db.sql = init-db.sql
 		README.md = README.md
@@ -40,7 +41,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Analyzer", "Dns.Analyze
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Library", "Dns.Library\Dns.Library.csproj", "{765558E9-FF14-4D7C-9F06-92D20B1E47A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.DAL.DataMigration", "Dns.DAL.DataMigration\Dns.DAL.DataMigration.csproj", "{68893D34-C9A7-4A58-B017-5B947BFF88AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.DAL.DataMigration", "Dns.DAL.DataMigration\Dns.DAL.DataMigration.csproj", "{68893D34-C9A7-4A58-B017-5B947BFF88AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

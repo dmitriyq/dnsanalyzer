@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Text;
 using ClosedXML.Excel;
 using Dns.DAL.Models;
 
@@ -11,7 +10,6 @@ namespace Dns.Library.Services
 	public class ExcelService
 	{
 		public const string EXCEL_MIMETYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
 
 		public byte[] ExportSuspectDomains(IEnumerable<SuspectDomainsView> records)
 		{
@@ -63,6 +61,7 @@ namespace Dns.Library.Services
 				return ms.ToArray();
 			}
 		}
+
 		public byte[] ExportWhiteList(IEnumerable<WhiteDomains> records)
 		{
 			var wb = new XLWorkbook();

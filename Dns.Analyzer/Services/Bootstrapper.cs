@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Dns.Library;
 using Dns.Library.Services;
@@ -66,7 +63,6 @@ namespace Dns.Analyzer.Services
 					var groupMessage = await _notifyService.BuildGroupMessage(string.Empty, groupToNotify.ToArray());
 					await _redis.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, groupMessage.ProtoSerialize());
 				}
-
 
 				_logger.LogInformation("Completed Analyzer Job");
 			});

@@ -7,7 +7,6 @@ RUN dotnet build "Dns.Resolver/Dns.Resolver.csproj" -c Release --no-restore -o /
 RUN dotnet publish "Dns.Resolver/Dns.Resolver.csproj" -c Release --no-restore -o /app
 WORKDIR /app
 
-
 FROM mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview5-buster-slim AS base
 WORKDIR /app
 COPY --from=build /app .

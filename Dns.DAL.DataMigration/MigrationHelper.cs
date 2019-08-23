@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL.DataMigration
@@ -14,6 +12,7 @@ namespace Dns.DAL.DataMigration
 			context.Database.ExecuteSqlRaw(query);
 			Console.WriteLine($"Tables {string.Join(", ", tableNames)} truncated");
 		}
+
 		public static void DisableTriggers(this DnsDbContext context, params string[] tableNames)
 		{
 			foreach (var table in tableNames)
@@ -22,6 +21,7 @@ namespace Dns.DAL.DataMigration
 				Console.WriteLine($"Triggers disabled for table {table}");
 			}
 		}
+
 		public static void EnableTriggers(this DnsDbContext context, params string[] tableNames)
 		{
 			foreach (var table in tableNames)
@@ -30,12 +30,14 @@ namespace Dns.DAL.DataMigration
 				Console.WriteLine($"Triggers enabled for table {table}");
 			}
 		}
+
 		public static void SetCurrentSquenceId(this DnsDbContext context, string tableName, int value)
 		{
 			var query = $@"SELECT setval('""{tableName}_Id_seq""', {value})";
 			context.Database.ExecuteSqlRaw(query);
 			Console.WriteLine($"Setted sequnce value {value} to table {tableName}");
 		}
+
 		public static void MigrateTable<T, O>(
 			this DnsDbContext context,
 			string tableName,

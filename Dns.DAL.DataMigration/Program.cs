@@ -4,26 +4,26 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL.DataMigration
 {
-	class Program
+	internal static class Program
 	{
 		public const string SQL_CONNECTION = "data source=opdns.cmim.ru;Initial Catalog=DnsAttack;User id=domainCheckerUser;Password=domainCheckerUser;MultipleActiveResultSets=True;App=EntityFramework";
 		public const string PG_CONNECTION = "Server=k8s.cmim.ru;Port=5432;Database=dnsdb;User Id=dnsuser;Password=dnsuser;";
 
-		const string AttackGroups = nameof(AttackGroups);
-		const string AttackHistories = nameof(AttackHistories);
-		const string DnsAttacks = nameof(DnsAttacks);
-		const string DomainExcludedNames = nameof(DomainExcludedNames);
-		const string DomainInfo = nameof(DomainInfo);
-		const string DomainNs = nameof(DomainNs);
-		const string GroupHistories = nameof(GroupHistories);
-		const string IpInfo = nameof(IpInfo);
-		const string NameServers = nameof(NameServers);
-		const string Notes = nameof(Notes);
-		const string StatisticHistories = nameof(StatisticHistories);
-		const string SuspectDomains = nameof(SuspectDomains);
-		const string WhiteDomains = nameof(WhiteDomains);
+		private const string AttackGroups = nameof(AttackGroups);
+		private const string AttackHistories = nameof(AttackHistories);
+		private const string DnsAttacks = nameof(DnsAttacks);
+		private const string DomainExcludedNames = nameof(DomainExcludedNames);
+		private const string DomainInfo = nameof(DomainInfo);
+		private const string DomainNs = nameof(DomainNs);
+		private const string GroupHistories = nameof(GroupHistories);
+		private const string IpInfo = nameof(IpInfo);
+		private const string NameServers = nameof(NameServers);
+		private const string Notes = nameof(Notes);
+		private const string StatisticHistories = nameof(StatisticHistories);
+		private const string SuspectDomains = nameof(SuspectDomains);
+		private const string WhiteDomains = nameof(WhiteDomains);
 
-		static string[] TABLES = new string[]
+		private static string[] TABLES = new string[]
 		{
 			AttackGroups,
 			AttackHistories,
@@ -40,13 +40,13 @@ namespace Dns.DAL.DataMigration
 			WhiteDomains
 		};
 
-		static void Main(string[] args)
+		private static void Main(string[] args)
 		{
 			Console.WriteLine("Starting migartion...\r\n");
 			Migrate();
 			Console.ReadLine();
-
 		}
+
 		private static void Migrate()
 		{
 			var sqlOpt = new DbContextOptionsBuilder<MSSQL.MsSqlContext>();

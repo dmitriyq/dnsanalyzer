@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Dns.Library;
@@ -14,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Services
 {
-	public class ResolveService: IDisposable
+	public class ResolveService : IDisposable
 	{
 		private IdnMapping _idnMapping = new IdnMapping();
 		private readonly ILogger<ResolveService> _logger;

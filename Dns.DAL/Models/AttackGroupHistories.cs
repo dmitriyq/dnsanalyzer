@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 using Dns.DAL.Enums;
 
 namespace Dns.DAL.Models
@@ -15,6 +13,7 @@ namespace Dns.DAL.Models
 
 		[NotMapped]
 		public AttackGroupStatusEnum PrevStatusEnum => (AttackGroupStatusEnum)PrevStatus;
+
 		[NotMapped]
 		public AttackGroupStatusEnum CurrentEnum => (AttackGroupStatusEnum)CurrentStatus;
 

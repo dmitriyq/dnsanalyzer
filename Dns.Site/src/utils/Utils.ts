@@ -3,7 +3,6 @@ import Vue from 'vue';
 import ISelectModel from '@/models/select-model';
 
 export default class Utils {
-
 	public static getStatusIcon(status: number): string {
 		switch (status) {
 			case 1: return 'watch_later'; break; // Ожидание проверки

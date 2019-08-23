@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.Library;
 using Dns.Library.Services;
@@ -12,12 +9,10 @@ using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 namespace Dns.Site
@@ -43,7 +38,6 @@ namespace Dns.Site
 			services.AddDbContext<DnsReadOnlyDbContext>(opt =>
 				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_READ)));
 
-
 			services.AddSwaggerGen(x =>
 			{
 				x.SwaggerDoc("v1", new OpenApiInfo
@@ -55,7 +49,6 @@ namespace Dns.Site
 				x.IncludeXmlComments("Dns.Site.xml");
 				x.DescribeAllEnumsAsStrings();
 			});
-
 
 			services.AddCors(options =>
 			{
@@ -135,7 +128,7 @@ namespace Dns.Site
 				app.UseAuthentication();
 				app.UseAuthorization();
 			}
-			
+
 			app.UseSwagger();
 			app.UseSwaggerUI(x =>
 			{
