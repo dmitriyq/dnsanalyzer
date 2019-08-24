@@ -17,7 +17,11 @@ namespace Dns.Resolver
 	{
 		public static ManualResetEventSlim resetEventSlim = new ManualResetEventSlim();
 
+#pragma warning disable RCS1163 // Unused parameter.
+#pragma warning disable IDE0060 // Удалите неиспользуемый параметр
 		public static void Main(string[] args)
+#pragma warning restore IDE0060 // Удалите неиспользуемый параметр
+#pragma warning restore RCS1163 // Unused parameter.
 		{
 			EnvironmentExtensions.CheckVariables(
 				EnvVars.HYPERLOCAL_SERVER,
@@ -28,7 +32,7 @@ namespace Dns.Resolver
 				EnvVars.RESOLVER_MAX_DEGREE_OF_PARALLELISM
 				);
 
-			ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+			ServicePointManager.ServerCertificateValidationCallback += (_, __, ___, ____) => true;
 			ServicePointManager.DefaultConnectionLimit = int.MaxValue;
 
 			var serviceCollection = new ServiceCollection();
@@ -44,8 +48,8 @@ namespace Dns.Resolver
 				{
 					while (true)
 					{
-						await bootstrapper.ResolveDomains();
-						await bootstrapper.NotifyCompletion();
+						await bootstrapper.ResolveDomains().ConfigureAwait(false);
+						await bootstrapper.NotifyCompletion().ConfigureAwait(false);
 					}
 				}
 				catch (Exception ex)

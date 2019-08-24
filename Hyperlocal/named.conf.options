@@ -18,6 +18,21 @@ options {
 	// If BIND logs error messages about the root key being expired,
 	// you will need to update your keys.  See https://www.isc.org/bind-keys
 	//========================================================================
+    forwarders {
+			192.228.79.201;
+			192.33.4.12;
+			192.5.5.241;
+			192.112.36.4;
+			193.0.14.129;
+			192.0.47.132;
+			192.0.32.132;
+			2001:500:84::b;
+			2001:500:2f::f;
+			2001:7fd::1;
+			2620:0:2830:202::132;
+			2620:0:2d0:202::132;
+    };
+    forward only;
 	rate-limit {
      	responses-per-second 0;
      	referrals-per-second 0;
@@ -29,10 +44,13 @@ options {
 	};
     recursive-clients 10000;
     resolver-query-timeout 15;
-	dnssec-validation auto;
+	dnssec-enable yes;
+	dnssec-validation yes;
     max-cache-ttl 300;
     max-ncache-ttl 300;
 	auth-nxdomain no;    # conform to RFC1035
 	listen-on port 53  { any; };
+	recursion yes;
+	allow-query {any; };
 };
 

@@ -31,9 +31,9 @@ namespace Dns.Resolver.Services
 		{
 			try
 			{
-				var shuffleDomain = domains.OrderBy(x => Guid.NewGuid());
-				var resolvedDomains = await ResolveDomains(shuffleDomain);
-				resolvedDomains = await ResolveRepeat(resolvedDomains, retryCount);
+				var shuffleDomain = domains.OrderBy(_ => Guid.NewGuid());
+				var resolvedDomains = await ResolveDomains(shuffleDomain).ConfigureAwait(false);
+				resolvedDomains = await ResolveRepeat(resolvedDomains, retryCount).ConfigureAwait(false);
 				_logger.LogInformation($"[ResolveDomains] Complete ({resolvedDomains.Count()} of {domains.Count()})");
 				return resolvedDomains.Where(x => x.IsResolved).AsEnumerable();
 			}
@@ -57,10 +57,10 @@ namespace Dns.Resolver.Services
 
 			foreach (var dom in domains)
 			{
-				await resolveBlock.SendAsync(dom);
+				await resolveBlock.SendAsync(dom).ConfigureAwait(false);
 			}
 			resolveBlock.Complete();
-			await insertBlock.Completion;
+			await insertBlock.Completion.ConfigureAwait(false);
 			return results;
 		}
 
@@ -74,9 +74,9 @@ namespace Dns.Resolver.Services
 			{
 				var unResolved = initList.Where(x => !x.IsResolved).Select(x => x.Name);
 				initList = initList.Where(x => x.IsResolved).ToList();
-				var resolveStep = await ResolveDomains(unResolved);
+				var resolveStep = await ResolveDomains(unResolved).ConfigureAwait(false);
 				initList.AddRange(resolveStep);
-				return await ResolveRepeat(initList, maxCount, ++tryCount);
+				return await ResolveRepeat(initList, maxCount, ++tryCount).ConfigureAwait(false);
 			}
 			_logger.LogInformation($"[ResolveDomains] ERRORS: {domains.Count(x => !x.IsResolved)} of {domains.Count()}. try: {tryCount}");
 			return initList;
@@ -84,13 +84,13 @@ namespace Dns.Resolver.Services
 
 		private async Task<ResolvedDomain> Resolve(string domain)
 		{
-			var servers = await System.Net.Dns.GetHostAddressesAsync(_dnsServer);
-			var dnsServerIp = servers.First();
+			var servers = await System.Net.Dns.GetHostAddressesAsync(_dnsServer).ConfigureAwait(false);
+			var dnsServerIp = servers[0];
 			var mdl = new ResolvedDomain() { Name = domain, IsResolved = false };
 			try
 			{
 				var client = new DnsClient(dnsServerIp);
-				var resp = await client.Lookup(_idnMapping.GetAscii(domain));
+				var resp = await client.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
 				mdl.IsResolved = true;
 				mdl.IPAddresses = resp.Select(x => x.ToString()).ToHashSet();
 				return mdl;

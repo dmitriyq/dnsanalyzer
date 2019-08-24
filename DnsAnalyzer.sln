@@ -28,8 +28,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hyperlocal", "Hyperlocal", 
 	ProjectSection(SolutionItems) = preProject
 		Hyperlocal\Dockerfile = Hyperlocal\Dockerfile
 		Hyperlocal\named.conf = Hyperlocal\named.conf
-		Hyperlocal\named.conf.default-zones = Hyperlocal\named.conf.default-zones
-		Hyperlocal\named.conf.local = Hyperlocal\named.conf.local
 		Hyperlocal\named.conf.options = Hyperlocal\named.conf.options
 		Hyperlocal\start.sh = Hyperlocal\start.sh
 		Hyperlocal\zones.rfc1918 = Hyperlocal\zones.rfc1918
@@ -42,6 +40,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Library", "Dns.Library\Dns.Library.csproj", "{765558E9-FF14-4D7C-9F06-92D20B1E47A4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.DAL.DataMigration", "Dns.DAL.DataMigration\Dns.DAL.DataMigration.csproj", "{68893D34-C9A7-4A58-B017-5B947BFF88AF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Publisher", "Dns.Resolver.Publisher\Dns.Resolver.Publisher.csproj", "{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Subscriber", "Dns.Resolver.Subscriber\Dns.Resolver.Subscriber.csproj", "{C4FC462D-2913-439A-8066-B5499E0E826E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +127,30 @@ Global
 		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x64.Build.0 = Release|Any CPU
 		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x86.ActiveCfg = Release|Any CPU
 		{68893D34-C9A7-4A58-B017-5B947BFF88AF}.Release|x86.Build.0 = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|x64.Build.0 = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Debug|x86.Build.0 = Debug|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|x64.ActiveCfg = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|x64.Build.0 = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|x86.ActiveCfg = Release|Any CPU
+		{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}.Release|x86.Build.0 = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|x64.Build.0 = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Debug|x86.Build.0 = Debug|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x64.ActiveCfg = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x64.Build.0 = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x86.ActiveCfg = Release|Any CPU
+		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
