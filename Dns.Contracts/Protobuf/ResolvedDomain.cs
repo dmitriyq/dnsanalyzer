@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using ProtoBuf;
 
-namespace Dns.Library.Models
+namespace Dns.Contracts.Protobuf
 {
 	[ProtoContract]
 	public class ResolvedDomain

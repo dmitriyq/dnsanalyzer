@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
 		default.ruleset = default.ruleset
+		docker-compose.dev.yml = docker-compose.dev.yml
 		docker-compose.yml = docker-compose.yml
 		init-db.sql = init-db.sql
 		README.md = README.md
@@ -41,9 +42,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Library", "Dns.Library\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.DAL.DataMigration", "Dns.DAL.DataMigration\Dns.DAL.DataMigration.csproj", "{68893D34-C9A7-4A58-B017-5B947BFF88AF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Publisher", "Dns.Resolver.Publisher\Dns.Resolver.Publisher.csproj", "{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Producer", "Dns.Resolver.Producer\Dns.Resolver.Producer.csproj", "{61E1A1EF-73D9-4D3F-9C0A-D7CC41DBDECC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Subscriber", "Dns.Resolver.Subscriber\Dns.Resolver.Subscriber.csproj", "{C4FC462D-2913-439A-8066-B5499E0E826E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Consumer", "Dns.Resolver.Consumer\Dns.Resolver.Consumer.csproj", "{C4FC462D-2913-439A-8066-B5499E0E826E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dev", "Dev", "{B08AE252-153B-488A-87F4-DA7F45590D6B}"
+	ProjectSection(SolutionItems) = preProject
+		build-images.txt = build-images.txt
+		Dev\postgresql.conf = Dev\postgresql.conf
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Aggregator", "Dns.Resolver.Aggregator\Dns.Resolver.Aggregator.csproj", "{F7137874-1772-4C4D-8799-158700B013E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dns.Contracts", "Dns.Contracts\Dns.Contracts.csproj", "{D172C423-04A6-403E-BC4C-D28F54530D42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -151,6 +162,30 @@ Global
 		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x64.Build.0 = Release|Any CPU
 		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x86.ActiveCfg = Release|Any CPU
 		{C4FC462D-2913-439A-8066-B5499E0E826E}.Release|x86.Build.0 = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|x64.ActiveCfg = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|x64.Build.0 = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7137874-1772-4C4D-8799-158700B013E3}.Release|x86.Build.0 = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|x64.Build.0 = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Debug|x86.Build.0 = Debug|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|x64.ActiveCfg = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|x64.Build.0 = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|x86.ActiveCfg = Release|Any CPU
+		{D172C423-04A6-403E-BC4C-D28F54530D42}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -158,6 +193,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7F95F74F-C7FE-40ED-BE54-E4C7B99F6A5D} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
 		{C6ABEBA2-004E-45F5-9A63-F6D639D45AC6} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
+		{B08AE252-153B-488A-87F4-DA7F45590D6B} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {178EE4E8-D9CD-4994-906C-1BB75896648F}

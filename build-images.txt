@@ -1,0 +1,8 @@
+docker build -t hyperlocal:dev -f Hyperlocal/Dockerfile .
+
+docker build -t resolver-producer:dev -f Dns.Resolver.Producer/Dockerfile .
+docker build -t resolver-consumer:dev -f Dns.Resolver.Consumer/Dockerfile .
+docker build -t resolver-aggregator:dev -f Dns.Resolver.Aggregator/Dockerfile .
+
+#help to connect to redis
+docker run -it --network dns_default --rm redis redis-cli -h dns_redis

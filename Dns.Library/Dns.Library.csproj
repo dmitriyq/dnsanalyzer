@@ -10,11 +10,11 @@
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
     <PackageReference Include="ClosedXML" Version="0.94.2" />
-    <PackageReference Include="Grfc.Library.Common" Version="0.0.2.20" />
-    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.2.20" />
-    <PackageReference Include="Grfc.Library.Notification" Version="0.0.2.20" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.2.25" />
+    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.2.25" />
+    <PackageReference Include="Grfc.Library.Notification" Version="0.0.2.25" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.12" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview5.19227.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview8.19405.4" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="RabbitMQ.Client" Version="5.1.0" />
     <PackageReference Include="Roslynator.Analyzers" Version="2.1.0">
