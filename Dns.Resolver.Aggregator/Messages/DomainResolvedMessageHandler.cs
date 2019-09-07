@@ -20,10 +20,10 @@ namespace Dns.Resolver.Aggregator.Messages
 			_logger = logger;
 		}
 
-		public async Task<bool> Handle(DomainResolvedMessage message)
+		public Task<bool> Handle(DomainResolvedMessage message)
 		{
-			await _aggregatorService.AddDomainAsync(message).ConfigureAwait(false);
-			return true;
+			_aggregatorService.AddDomain(message);
+			return Task.FromResult(true);
 		}
 	}
 }

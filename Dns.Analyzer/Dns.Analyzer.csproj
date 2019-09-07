@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<LangVersion>8.0</LangVersion>
+		<Nullable>enable</Nullable>
 		<CodeAnalysisRuleSet>..\default.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
@@ -14,6 +16,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0-preview8.19405.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.0-preview8.19405.4" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0-preview8.19405.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0-preview8.19405.4" />
     <PackageReference Include="Roslynator.Analyzers" Version="2.1.0">
@@ -23,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Dns.Contracts\Dns.Contracts.csproj" />
     <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
     <ProjectReference Include="..\Dns.Library\Dns.Library.csproj" />
   </ItemGroup>

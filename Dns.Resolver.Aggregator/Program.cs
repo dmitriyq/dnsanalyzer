@@ -15,14 +15,16 @@ using StackExchange.Redis;
 
 namespace Dns.Resolver.Aggregator
 {
-	public class Program
+	public sealed class Program
 	{
+#pragma warning disable CA1707 // Идентификаторы не должны содержать символы подчеркивания
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
 
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
 		public const string REDIS_BLACK_DOMAIN_RESOLVED = nameof(REDIS_BLACK_DOMAIN_RESOLVED);
 		public const string REDIS_WHITE_DOMAIN_RESOLVED = nameof(REDIS_WHITE_DOMAIN_RESOLVED);
+#pragma warning restore CA1707 // Идентификаторы не должны содержать символы подчеркивания
 
 		public static int Main(string[] args)
 		{
@@ -57,7 +59,7 @@ namespace Dns.Resolver.Aggregator
 					_logger.LogCritical(ex, ex.Message);
 				else Console.WriteLine(ex);
 				host?.Dispose();
-				return 1;
+				throw;
 			}
 		}
 

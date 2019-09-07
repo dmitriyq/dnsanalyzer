@@ -9,6 +9,7 @@ using Dns.Contracts.Events;
 using Dns.Contracts.Messages;
 using Dns.Contracts.Protobuf;
 using Dns.Resolver.Aggregator.Messages;
+using Dns.Resolver.Aggregator.Models;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
 using Microsoft.Extensions.Logging;
@@ -18,8 +19,7 @@ namespace Dns.Resolver.Aggregator.Services
 {
 	public class DomainAggregatorService : IDomainAggregatorService
 	{
-		// NEED FIX
-		private readonly ConcurrentDictionary<Guid, List<DomainResolvedMessage>> _aggregateValues;
+		private readonly DomainQueueCollection _domainCollection;
 		private readonly ILogger<DomainAggregatorService> _logger;
 		private readonly IDatabase _redisDb;
 		private readonly IEventBus _eventBus;
@@ -30,30 +30,39 @@ namespace Dns.Resolver.Aggregator.Services
 		public DomainAggregatorService(ILogger<DomainAggregatorService> logger, ConnectionMultiplexer redis,
 			IEventBus eventBus, string redisBlackDomainKey, string redisWhiteDomainKey)
 		{
-			_aggregateValues = new ConcurrentDictionary<Guid, List<DomainResolvedMessage>>();
+			if (redis == null) throw new ArgumentNullException(nameof(redis));
+
 			_logger = logger;
 			_redisDb = redis.GetDatabase();
 			_eventBus = eventBus;
 			_redisBlackDomainsKey = redisBlackDomainKey;
 			_redisWhiteDomainsKey = redisWhiteDomainKey;
+			_domainCollection = new DomainQueueCollection();
+			_domainCollection.NewIdAdded += DomainCollection_NewIdAdded;
 		}
 
-		public async Task AddDomainAsync(DomainResolvedMessage domain)
+		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
-			_logger.LogInformation($"Adding domain {domain.Name} - {domain.TraceId}");
-			_aggregateValues.AddOrUpdate(domain.TraceId,
-				new List<DomainResolvedMessage>() { domain },
-				(_, val) => val.Append(domain).ToList());
+			if (e.Count > 2)
+			{
+				try
+				{
+					await StoreDomainsAsync().ConfigureAwait(false);
+					NotifyCompletion();
+				}
+				catch (Exception ex)
+				{
+					_logger.LogCritical(ex, ex.Message);
+					throw;
+				}
+			}
+		}
 
-			if (_aggregateValues.Keys.Count > 2)
-			{
-				await StoreDomainsAsync().ConfigureAwait(false);
-				NotifyCompletion();
-			}
-			else
-			{
-				await Task.CompletedTask;
-			}
+		public void AddDomain(DomainResolvedMessage domain)
+		{
+			if (domain == null) throw new ArgumentNullException(nameof(domain));
+
+			_domainCollection.Add(domain);
 		}
 
 		public void NotifyCompletion()
@@ -63,17 +72,15 @@ namespace Dns.Resolver.Aggregator.Services
 
 		public async Task StoreDomainsAsync()
 		{
-			var oldest = _aggregateValues.Keys.First();
-			if(_aggregateValues.TryRemove(oldest, out List<DomainResolvedMessage>? domains))
-			{
-				var whiteDomains = domains.Where(x => x.DomainType == 2)
-					.Select(x => new ResolvedDomain(x.Name, x.IPAddresses.ToHashSet()));
-				var blackDomains = domains.Where(x => x.DomainType == 1)
-					.Select(x => new ResolvedDomain(x.Name, x.IPAddresses.ToHashSet()));
+			var domains = _domainCollection.DequeueDomains();
 
-				await StoreToRedisDomains(_redisWhiteDomainsKey, whiteDomains).ConfigureAwait(false);
-				await StoreToRedisDomains(_redisBlackDomainsKey, blackDomains).ConfigureAwait(false);
-			}
+			var whiteDomains = domains.Where(x => x.DomainType == 2)
+				.Select(x => new ResolvedDomain(x.Name, x.IPAddresses.ToHashSet()));
+			var blackDomains = domains.Where(x => x.DomainType == 1)
+				.Select(x => new ResolvedDomain(x.Name, x.IPAddresses.ToHashSet()));
+
+			await StoreToRedisDomains(_redisWhiteDomainsKey, whiteDomains).ConfigureAwait(false);
+			await StoreToRedisDomains(_redisBlackDomainsKey, blackDomains).ConfigureAwait(false);
 		}
 
 		private async Task StoreToRedisDomains(string key, IEnumerable<ResolvedDomain> domains)

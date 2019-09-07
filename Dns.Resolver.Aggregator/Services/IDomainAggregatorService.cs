@@ -9,10 +9,10 @@ namespace Dns.Resolver.Aggregator.Services
 {
 	public interface IDomainAggregatorService
 	{
-		Task AddDomainAsync(DomainResolvedMessage domain);
 
 		Task StoreDomainsAsync();
 
 		void NotifyCompletion();
+		void AddDomain(DomainResolvedMessage domain);
 	}
 }

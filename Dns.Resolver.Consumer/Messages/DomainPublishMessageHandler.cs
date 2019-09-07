@@ -27,8 +27,20 @@ namespace Dns.Resolver.Consumer.Messages
 			try
 			{
 				var ips = await _domainLookup.GetIpAddressesAsync(message.Domain).ConfigureAwait(false);
-				var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
-				_messageQueue.Enqueue(resolvedMessage, _resolvedQueue);
+				if (ips.Count == 0)
+				{
+					return true;
+				}
+				try
+				{
+					var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
+					_messageQueue.Enqueue(resolvedMessage, _resolvedQueue);
+				}
+				catch 
+				{
+					return false;
+				}
+				
 			}
 			catch {	}
 
