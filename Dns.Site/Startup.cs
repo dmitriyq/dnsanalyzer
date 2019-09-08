@@ -1,7 +1,6 @@
 using System;
+using Autofac;
 using Dns.DAL;
-using Dns.Library;
-using Dns.Library.Services;
 using Dns.Site.Hubs;
 using Dns.Site.Services;
 using Grfc.Library.Auth.Helpers;
@@ -13,7 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 
 namespace Dns.Site
 {
@@ -34,10 +35,15 @@ namespace Dns.Site
 		public void ConfigureServices(IServiceCollection services)
 		{
 			services.AddDbContext<DnsDbContext>(opt =>
-				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
+				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
 			services.AddDbContext<DnsReadOnlyDbContext>(opt =>
-				opt.UseNpgsql(EnvironmentExtensions.GetVariable(EnvVars.PG_CONNECTION_STRING_READ)));
+				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_READ)));
 
+			services.AddSingleton<ConnectionMultiplexer>(__ =>
+			{
+				var redisConnection = EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION);
+				return ConnectionMultiplexer.Connect(redisConnection);
+			});
 			services.AddSwaggerGen(x =>
 			{
 				x.SwaggerDoc("v1", new OpenApiInfo
@@ -64,7 +70,7 @@ namespace Dns.Site
 
 			services.AddStackExchangeRedisCache(opts =>
 			{
-				opts.Configuration = EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION);
+				opts.Configuration = EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION);
 				opts.InstanceName = "Dns_Redis_Cache";
 			});
 
@@ -72,7 +78,7 @@ namespace Dns.Site
 				.AddNewtonsoftJson();
 
 			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
-				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(EnvVars.REDIS_CONNECTION), opt =>
+				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
 					opt.Configuration.ChannelPrefix = "Dns_SignalR_");
 
 			if (HostEnvironment.IsProduction())
@@ -80,31 +86,32 @@ namespace Dns.Site
 				services.ConfigureSharedCookieAuthentication();
 
 				services.AddAuthorization(opts =>
-				{
-					opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer)));
-				});
+					opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer))));
 			}
 
 			//ADD SERVICES
-			services.AddScoped<AttackService>();
-			services.AddScoped<NotifyService>();
-			services.AddScoped<ExcelService>();
-
-			services.AddHttpClient<IUserService, AuthService.Client>((provider, client) =>
+			services.AddTransient<AttackService>();
+			services.AddTransient<INotifyService, NotifyService>(sp =>
 			{
-				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.AUTH_SERVER_URL));
+				var logger = sp.GetRequiredService<ILogger<NotifyService>>();
+				var dbContext = sp.GetRequiredService<DnsDbContext>();
+				var emailFrom = EnvironmentExtensions.GetVariable(Program.NOTIFICATION_EMAIL_FROM);
+				return new NotifyService(logger, dbContext, emailFrom);
 			});
-
-			services.AddHttpClient<INotifyApiService, NotificationService.Client>((provider, client) =>
+			services.AddTransient<IExcelService, ExcelService>();
+			services.AddSingleton<IRedisService, RedisService>(sp =>
 			{
-				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.NOTIFY_SERVICE_URL));
+				var redis = sp.GetRequiredService<ConnectionMultiplexer>();
+				var redisChannel = EnvironmentExtensions.GetVariable(Program.NOTIFY_SEND_CHANNEL);
+				return new RedisService(redis, redisChannel);
 			});
-			services.AddHttpClient<IVigruzkiService, VigruzkiService.Client>((provider, client) =>
-			{
-				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(EnvVars.VIGRUZKI_SERVICE_URL));
-			});
+			services.AddHttpClient<IUserService, AuthService.Client>((_, client) =>
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.AUTH_SERVER_URL)));
 
-			services.AddSingleton<RedisService>();
+			services.AddHttpClient<INotifyApiService, NotificationService.Client>((_, client) =>
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.NOTIFY_SERVICE_URL)));
+			services.AddHttpClient<IVigruzkiService, VigruzkiService.Client>((_, client) =>
+				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.VIGRUZKI_SERVICE_URL)));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -130,10 +137,7 @@ namespace Dns.Site
 			}
 
 			app.UseSwagger();
-			app.UseSwaggerUI(x =>
-			{
-				x.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API");
-			});
+			app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API"));
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapDefaultControllerRoute();

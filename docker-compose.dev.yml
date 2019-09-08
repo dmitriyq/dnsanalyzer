@@ -5,12 +5,16 @@ x-shared-variables: &shared-variables
   PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-postgres};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis}'
   ASPNETCORE_ENVIRONMENT: 'Development'
+  NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
 
 x-redis-variables: &redis-variables
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis}'
   REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
+  REDIS_VIGRUZKI_IPS: 'Vigruzki_Ips'
+  REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
   REDIS_BLACK_DOMAIN_RESOLVED: 'DNS_Resolved_Black'
   REDIS_WHITE_DOMAIN_RESOLVED: 'DNS_Resolved_White'
+  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
 
 x-rabbitmq-variables: &rabbitmq-variables
   RABBITMQ_CONNECTION: 'rabbitmq'
@@ -84,6 +88,20 @@ services:
 
   resolver-aggregator:
     image: resolver-aggregator:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+
+  analyzer:
+    image: analyzer:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+      ANALYZER_SUSPECT_IP_COUNT: 10
+  site:
+    image: dns-site:dev
     environment:
       <<: *shared-variables
       <<: *rabbitmq-variables

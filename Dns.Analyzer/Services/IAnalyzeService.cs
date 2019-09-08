@@ -12,5 +12,6 @@ namespace Dns.Analyzer.Services
 		IEnumerable<AttackModel> FindIntersection(IEnumerable<ResolvedDomain> blackDomains, IEnumerable<ResolvedDomain> whiteDomains);
 		Task<IEnumerable<AttackModel>> ExcludeDomainsAsync(IEnumerable<AttackModel> attacks);
 		Task<IEnumerable<int>> UpdateAttacksAsync(IEnumerable<AttackModel> attacks, ISet<string> vigruzkiIps, ISet<string> vigruzkiSubnets);
+		Task<IEnumerable<int>> UpdateAttackGroupsAsync();
 	}
 }

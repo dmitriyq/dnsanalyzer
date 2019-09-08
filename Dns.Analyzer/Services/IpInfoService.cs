@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.DAL.Models;
@@ -8,62 +9,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Whois.NET;
 
-namespace Dns.Library.Services
+namespace Dns.Analyzer.Services
 {
-	public class IpInfoService
+	public class IpInfoService : IIpInfoService
 	{
 		private readonly ILogger<IpInfoService> _logger;
 		private readonly DnsDbContext _dbContext;
-		private readonly DnsReadOnlyDbContext _readOnlyDbContext;
 
-		public IpInfoService(ILogger<IpInfoService> logger, DnsDbContext dbContext, DnsReadOnlyDbContext readOnlyDbContext)
+		public IpInfoService(ILogger<IpInfoService> logger, DnsDbContext dbContext)
 		{
 			_logger = logger;
 			_dbContext = dbContext;
-			_readOnlyDbContext = readOnlyDbContext;
 		}
 
-		public async Task UpdateIpInfo(bool onlyUnresolved)
+		public IpInfo? GetInfo(string ip)
 		{
-			_logger.LogInformation("Starting update ip information");
-
-			HashSet<string> ips = onlyUnresolved ?
-				await UnResolvedIps() :
-				_readOnlyDbContext.DnsAttacks.Select(x => x.Ip).Distinct().ToHashSet();
-
-			foreach (var ip in ips)
-			{
-				try
-				{
-					var info = GetInfo(ip);
-					if (info != null)
-					{
-						var prevInfo = await _dbContext.IpInfo.FirstOrDefaultAsync(x => x.Ip == info.Ip);
-						if (prevInfo == null)
-						{
-							prevInfo = new IpInfo { Ip = info.Ip };
-							_dbContext.IpInfo.Add(prevInfo);
-						}
-						prevInfo.Company = info.Company;
-						prevInfo.Country = info.Country;
-						if (info.Subnet != null && info.Subnet.Length < 19)
-							prevInfo.Subnet = info.Subnet;
-					}
-				}
-				catch (Exception ex)
-				{
-					_logger.LogWarning(ex, ip);
-				}
-			}
-			await _dbContext.SaveChangesAsync();
-			_logger.LogInformation("Completed update ip information");
-		}
-
-		public IpInfo GetInfo(string ip)
-		{
-			//if (IsPrivate(ip))
-			//	return null;
-			WhoisResponse response = null;
+			WhoisResponse? response = null;
 			try
 			{
 				var query = WhoisClient.Query(ip);
@@ -75,7 +36,7 @@ namespace Dns.Library.Services
 				_logger.LogError(ex, $"Parsing failed for ip {ip}");
 				try
 				{
-					if (response != null && response.OrganizationName != null)
+					if (response?.OrganizationName != null)
 					{
 						var org = response.OrganizationName;
 						var orgPassed = org;
@@ -99,24 +60,45 @@ namespace Dns.Library.Services
 			return null;
 		}
 
+		public async Task UpdateIpInfoAsync(bool onlyUnresolved)
+		{
+			_logger.LogInformation("Starting update ip information");
+
+			HashSet<string> ips = onlyUnresolved ?
+				await UnResolvedIps().ConfigureAwait(false) :
+				_dbContext.DnsAttacks.Select(x => x.Ip).Distinct().ToHashSet();
+
+			foreach (var ip in ips)
+			{
+				try
+				{
+					var info = GetInfo(ip);
+					if (info != null)
+					{
+						var prevInfo = await _dbContext.IpInfo.FirstOrDefaultAsync(x => x.Ip == info.Ip).ConfigureAwait(false);
+						if (prevInfo == null)
+						{
+							prevInfo = new IpInfo { Ip = info.Ip };
+							_dbContext.IpInfo.Add(prevInfo);
+						}
+						prevInfo.Company = info.Company;
+						prevInfo.Country = info.Country;
+						if (info.Subnet?.Length < 19)
+							prevInfo.Subnet = info.Subnet;
+					}
+				}
+				catch (Exception ex)
+				{
+					_logger.LogWarning(ex, ip);
+				}
+			}
+			await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+			_logger.LogInformation("Completed update ip information");
+		}
+
 		private string TrimAll(string text)
 		{
 			return text.Trim('\t', '\n', '\r', ' ');
-		}
-
-		private bool IsPrivate(string ipAddress)
-		{
-			int[] ipParts = ipAddress.Split(new String[] { "." }, StringSplitOptions.RemoveEmptyEntries)
-									 .Select(s => int.Parse(s)).ToArray();
-			// in private ip range
-			if (ipParts[0] == 10 ||
-				(ipParts[0] == 192 && ipParts[1] == 168) ||
-				(ipParts[0] == 172 && (ipParts[1] >= 16 && ipParts[1] <= 31)))
-			{
-				return true;
-			}
-			// IP Address is probably public.
-			return false;
 		}
 
 		private IpInfo ParseResponse(WhoisResponse response, string ip)
@@ -148,18 +130,18 @@ namespace Dns.Library.Services
 
 		private async Task<HashSet<string>> UnResolvedIps()
 		{
-			var attackedIps = await _readOnlyDbContext.DnsAttacks
+			var attackedIps = await _dbContext.DnsAttacks
 				.Select(x => x.Ip)
 				.Distinct()
-				.ToListAsync();
-			var suspectIps = await _readOnlyDbContext.SuspectDomains
+				.ToListAsync().ConfigureAwait(false);
+			var suspectIps = await _dbContext.SuspectDomains
 				.Select(x => x.Ip)
 				.Distinct()
-				.ToListAsync();
+				.ToListAsync().ConfigureAwait(false);
 			attackedIps.AddRange(suspectIps);
 			attackedIps = attackedIps.Distinct().ToList();
 
-			var resolvedIps = await _readOnlyDbContext.IpInfo.Select(x => x.Ip).ToListAsync();
+			var resolvedIps = await _dbContext.IpInfo.Select(x => x.Ip).ToListAsync().ConfigureAwait(false);
 			return attackedIps.Where(x => !resolvedIps.Contains(x)).ToHashSet();
 		}
 	}

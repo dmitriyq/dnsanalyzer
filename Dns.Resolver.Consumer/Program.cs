@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Dns.Contracts.Messages;
 using Dns.Resolver.Consumer.Messages;
 using Dns.Resolver.Consumer.Services;
@@ -60,7 +58,6 @@ namespace Dns.Resolver.Consumer
 
 		public static IHost CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-			.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 			.ConfigureServices((_, services) =>
 			{
 				services.AddOptions();
@@ -91,9 +88,6 @@ namespace Dns.Resolver.Consumer
 					var resolvedQueue = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
 					return new DomainPublishMessageHandler(domainLookup, messageQueue, resolvedQueue);
 				});
-
-				var container = new ContainerBuilder();
-				container.Populate(services);
 			})
 			.Build();
 	}

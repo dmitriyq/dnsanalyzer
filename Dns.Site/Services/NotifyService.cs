@@ -14,11 +14,11 @@ using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace Dns.Library.Services
+namespace Dns.Site.Services
 {
-	public class NotifyService
+	public class NotifyService : INotifyService
 	{
-		private static readonly string TemplatePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Templates");
+		private static readonly string TemplatePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "Templates");
 		private static readonly string EmailPath = Path.Combine(TemplatePath, "Email");
 
 		private const string EMAIL_ATTACK_TEMPLATE = "dns_attack_ip.html";
@@ -36,23 +36,26 @@ namespace Dns.Library.Services
 		private const string EMAIL_SUBJECT = "[Система выявления DNS атак]";
 
 		private readonly ILogger<NotifyService> _logger;
-		private readonly DnsReadOnlyDbContext _dbContext;
+		private readonly DnsDbContext _dbContext;
+		private readonly string _emailFrom;
 
-		public NotifyService(ILogger<NotifyService> logger, DnsReadOnlyDbContext dbContext)
+		public NotifyService(ILogger<NotifyService> logger, DnsDbContext dbContext, string emailFrom)
 		{
 			_logger = logger;
 			_dbContext = dbContext;
+			_emailFrom = emailFrom;
 		}
 
 		public async Task<NotificationBase> BuildAttackMessage(string user, params int[] attackIds)
 		{
+			_logger.LogInformation("Consctructing attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
 			var attacksToNotify = await _dbContext
 				.DnsAttacks
 				.Where(x => attackIds.Contains(x.Id))
 				.Include(x => x.Histories)
-				.ToListAsync();
+				.ToListAsync().ConfigureAwait(false);
 
 			notify.Email = BuildAttackEmailMessage(attacksToNotify);
 			return notify;
@@ -60,14 +63,15 @@ namespace Dns.Library.Services
 
 		public async Task<NotificationBase> BuildGroupMessage(string user, params int[] attackIds)
 		{
+			_logger.LogInformation("Consctructing group attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
-			var attacksToNotify = await _dbContext
+			List<AttackGroups> attacksToNotify = await _dbContext
 				.AttackGroups
 				.Where(x => attackIds.Contains(x.Id))
 				.Include(x => x.GroupHistories)
 				.Include(x => x.Attacks)
-				.ToListAsync();
+				.ToListAsync().ConfigureAwait(false);
 
 			notify.Email = BuildGroupEmailMessage(attacksToNotify);
 			return notify;
@@ -102,7 +106,7 @@ namespace Dns.Library.Services
 			return new NotificationEmail
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
-				From = EnvironmentExtensions.GetVariable(EnvVars.NOTIFICATION_EMAIL_FROM),
+				From = EnvironmentExtensions.GetVariable(_emailFrom),
 				Subject = "[Система выявления DNS атак]"
 			};
 		}
@@ -119,9 +123,9 @@ namespace Dns.Library.Services
 
 			foreach (var attack in attacks)
 			{
-				var blackDomain = attack.Attacks.FirstOrDefault().BlackDomain;
-				var whiteDomain = attack.Attacks.FirstOrDefault().WhiteDomain;
-				var lastChange = attack.GroupHistories.OrderByDescending(x => x.Id).FirstOrDefault();
+				var blackDomain = attack.Attacks.First().BlackDomain;
+				var whiteDomain = attack.Attacks.First().WhiteDomain;
+				var lastChange = attack.GroupHistories.OrderByDescending(x => x.Id).First();
 				var newStatus = lastChange.CurrentEnum.GetDisplayName();
 				var statusText = newStatus;
 				if (lastChange.PrevStatusEnum != AttackGroupStatusEnum.None)
@@ -137,7 +141,7 @@ namespace Dns.Library.Services
 			return new NotificationEmail
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
-				From = EnvironmentExtensions.GetVariable(EnvVars.NOTIFICATION_EMAIL_FROM),
+				From = EnvironmentExtensions.GetVariable(_emailFrom),
 				Subject = EMAIL_SUBJECT
 			};
 		}

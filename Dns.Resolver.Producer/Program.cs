@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Dns.DAL;
 using Dns.Resolver.Producer.Services;
 using Grfc.Library.Common.Extensions;
@@ -70,7 +68,6 @@ namespace Dns.Resolver.Producer
 
 		public static IHost CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-			.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 			.ConfigureServices((_, services) =>
 			{
 				services.AddOptions();
@@ -101,8 +98,6 @@ namespace Dns.Resolver.Producer
 				services.AddTransient<IDomainService, DomainService>();
 				services.AddHostedService<PublishWorker>();
 
-				var container = new ContainerBuilder();
-				container.Populate(services);
 			})
 			.Build();
 

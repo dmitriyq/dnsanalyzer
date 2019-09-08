@@ -22,19 +22,19 @@ namespace Dns.Resolver.Aggregator.Services
 		private readonly DomainQueueCollection _domainCollection;
 		private readonly ILogger<DomainAggregatorService> _logger;
 		private readonly IDatabase _redisDb;
-		private readonly IEventBus _eventBus;
+		private readonly IMessageQueue _messageQueue;
 
 		private readonly string _redisBlackDomainsKey;
 		private readonly string _redisWhiteDomainsKey;
 
 		public DomainAggregatorService(ILogger<DomainAggregatorService> logger, ConnectionMultiplexer redis,
-			IEventBus eventBus, string redisBlackDomainKey, string redisWhiteDomainKey)
+			IMessageQueue messageQueue, string redisBlackDomainKey, string redisWhiteDomainKey)
 		{
 			if (redis == null) throw new ArgumentNullException(nameof(redis));
 
 			_logger = logger;
 			_redisDb = redis.GetDatabase();
-			_eventBus = eventBus;
+			_messageQueue = messageQueue;
 			_redisBlackDomainsKey = redisBlackDomainKey;
 			_redisWhiteDomainsKey = redisWhiteDomainKey;
 			_domainCollection = new DomainQueueCollection();
@@ -43,6 +43,7 @@ namespace Dns.Resolver.Aggregator.Services
 
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
+			_logger.LogInformation($"New Id Added, currenct count in queue: {e.Count}");
 			if (e.Count > 2)
 			{
 				try
@@ -67,7 +68,8 @@ namespace Dns.Resolver.Aggregator.Services
 
 		public void NotifyCompletion()
 		{
-			_eventBus.Publish(new AnalyzeStartingEvent());
+			_messageQueue.Publish(new AnalyzeStartingEvent());
+			_logger.LogInformation("AnalyzeStartingEvent has published");
 		}
 
 		public async Task StoreDomainsAsync()

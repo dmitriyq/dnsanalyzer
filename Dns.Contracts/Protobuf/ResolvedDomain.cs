@@ -14,6 +14,12 @@ namespace Dns.Contracts.Protobuf
 		[ProtoMember(2)]
 		public HashSet<string> IPAddresses { get; set; }
 
+		protected ResolvedDomain()
+		{
+			Name = string.Empty;
+			IPAddresses = new HashSet<string>();
+		}
+
 		public ResolvedDomain(string name, HashSet<string> ips)
 		{
 			Name = name;

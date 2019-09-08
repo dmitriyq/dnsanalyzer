@@ -19,6 +19,7 @@ namespace Dns.Analyzer.Services
 	{
 		private readonly ILogger<AnalyzeService> _logger;
 		private readonly DnsDbContext _dbContext;
+
 		public AnalyzeService(ILogger<AnalyzeService> logger, DnsDbContext dbContext)
 		{
 			_logger = logger;
@@ -55,7 +56,7 @@ namespace Dns.Analyzer.Services
 			var newAttacks = new List<Attacks>();
 			var ignoreAttacks = new List<Attacks>();
 
-			var storedAttacks = await _dbContext.DnsAttacks.Include(x => x.AttackGroup).ToListAsync();
+			var storedAttacks = await _dbContext.DnsAttacks.Include(x => x.AttackGroup).ToListAsync().ConfigureAwait(false);
 
 			foreach (var attack in attacks)
 			{
@@ -132,9 +133,96 @@ namespace Dns.Analyzer.Services
 						newAttacks.Add(storedAttack);
 				}
 			}
-			//try-catch
-			await _dbContext.SaveChangesAsync();
+			try
+			{
+				await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+			}
+			catch (DbUpdateConcurrencyException e)
+			{
+				_logger.LogWarning(e, e.Message);
+				await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+			}
+			catch (Exception e)
+			{
+				_logger.LogCritical(e, e.Message);
+				throw;
+			}
+
 			//check not updated attacks  
+			var treshholdCompleted = DateTimeOffset.UtcNow.AddDays(-1);
+			var treshholdIncorrectValues = DateTimeOffset.UtcNow.AddMinutes(-5);
+			var newIds = newAttacks.Select(x => x.Id).ToList();
+			var ignoreIds = ignoreAttacks.Select(x => x.Id).ToList();
+			var allIds = storedAttacks.Select(x => x.Id).ToList();
+
+			var notUpdatedIds = allIds.Except(newIds).Except(ignoreIds).ToList();
+			var notUpdatedAttacks = storedAttacks.Where(x => notUpdatedIds.Contains(x.Id)).ToList();
+
+			foreach (var attack in notUpdatedAttacks)
+			{
+				if (attack.AttackGroup.StatusEnum != AttackGroupStatusEnum.Complete)
+				{
+					var status = attack.StatusEnum;
+					var history = _dbContext.AttackHistories.Where(x => x.AttackId == attack.Id).OrderBy(x => x.Id).LastOrDefault();
+					if (status == AttackStatusEnum.Intersection)
+					{
+						if (history.Date < treshholdIncorrectValues)
+						{
+							_dbContext.DnsAttacks.Remove(attack);
+						}
+						else
+						{
+							attack.Status = (int)AttackStatusEnum.Closing;
+							AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
+							newAttacks.Add(attack);
+						}
+					}
+					else if (status == AttackStatusEnum.Closing)
+					{
+						if (history.Date < treshholdCompleted)
+						{
+							attack.Status = (int)AttackStatusEnum.Completed;
+							AddNewAttackHistory(attack, AttackStatusEnum.Closing);
+							newAttacks.Add(attack);
+						}
+					}
+				}
+			}
+
+			await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+			_logger.LogInformation("Update DNS Attacks complete");
+			return newAttacks.Select(x => x.Id).AsEnumerable();
+		}
+
+		public async Task<IEnumerable<int>> UpdateAttackGroupsAsync()
+		{
+			var completedAttack = new List<AttackGroups>();
+			var attackGroups = await _dbContext.AttackGroups
+				.Where(x => x.Status != (int)AttackGroupStatusEnum.Complete)
+				.Include(x => x.Attacks)
+				.ToListAsync().ConfigureAwait(false);
+			foreach (var group in attackGroups)
+			{
+				if (group.Attacks.Count == 0)
+				{
+					_dbContext.AttackGroups.Remove(group);
+				}
+				else
+				{
+					var isAllCompleted = group.Attacks.All(x => x.StatusEnum == AttackStatusEnum.Completed);
+					if (isAllCompleted)
+					{
+						var prevStatus = group.StatusEnum;
+						group.Status = (int)AttackGroupStatusEnum.Complete;
+						group.DateClose = DateTimeOffset.UtcNow;
+						AddNewAttackGroupHistory(group, prevStatus);
+						completedAttack.Add(group);
+					}
+				}
+			}
+			await _dbContext.SaveChangesAsync().ConfigureAwait(false);
+			_logger.LogInformation("Update DNS AttacksGroups complete");
+			return completedAttack.Select(x => x.Id).AsEnumerable();
 		}
 
 		private AttackGroups CreateNewAttackGroup(AttackModel model)

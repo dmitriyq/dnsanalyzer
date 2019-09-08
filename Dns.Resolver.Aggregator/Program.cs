@@ -1,6 +1,4 @@
 ﻿using System;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Dns.Contracts.Messages;
 using Dns.Resolver.Aggregator.Messages;
 using Dns.Resolver.Aggregator.Services;
@@ -65,13 +63,12 @@ namespace Dns.Resolver.Aggregator
 
 		public static IHost CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-			.UseServiceProviderFactory(new AutofacServiceProviderFactory())
 			.ConfigureServices((_, services) =>
 			{
 				services.AddOptions();
 				services.AddLogging(l => l.AddConsole());
 
-				services.AddSingleton<ConnectionMultiplexer>(sp =>
+				services.AddSingleton<ConnectionMultiplexer>(__ =>
 				{
 					var redisConnection = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
 					return ConnectionMultiplexer.Connect(redisConnection);
@@ -91,32 +88,19 @@ namespace Dns.Resolver.Aggregator
 					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
 						queueName: EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE));
 				});
-				services.AddSingleton<IEventBus, EventBusRabbitMQ>(sp =>
-				{
-					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-					var iLifetimeScope = sp.GetRequiredService<ILifetimeScope>();
-					var logger = sp.GetRequiredService<ILogger<EventBusRabbitMQ>>();
-					var eventBusSubcriptionsManager = sp.GetRequiredService<IEventBusSubscriptionsManager>();
-					return new EventBusRabbitMQ(rabbitMQPersistentConnection, logger, iLifetimeScope, eventBusSubcriptionsManager);
-				});
-				services.AddSingleton<IEventBusSubscriptionsManager, InMemoryEventBusSubscriptionsManager>();
-				
 				services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
 				{
 					var logger = sp.GetRequiredService<ILogger<DomainAggregatorService>>();
 					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-					var eventBus = sp.GetRequiredService<IEventBus>();
+					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 
 					var blackDomainKey = EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED);
 					var whiteDomainKey = EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED);
 
-					return new DomainAggregatorService(logger, redis, eventBus, blackDomainKey, whiteDomainKey);
+					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey);
 				});
 
 				services.AddTransient<DomainResolvedMessageHandler>();
-
-				var container = new ContainerBuilder();
-				container.Populate(services);
 			})
 			.Build();
 	}

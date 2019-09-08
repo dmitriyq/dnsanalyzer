@@ -38,8 +38,8 @@ namespace Dns.Site.Controllers
 		[ProducesResponseType(401)]
 		public async Task<JsonResult> GetUserInfo()
 		{
-			await _userService.LoginAsync(User);
-			var user = await _userService.GetCurrentUserAsync();
+			await _userService.LoginAsync(User).ConfigureAwait(false);
+			var user = await _userService.GetCurrentUserAsync().ConfigureAwait(false);
 
 			return new JsonResult(new
 			{
@@ -77,9 +77,9 @@ namespace Dns.Site.Controllers
 		[ProducesResponseType(401)]
 		public async Task<JsonResult> UserNotifications()
 		{
-			var userCred = User.CurrentCredentials();
-			await _notifyService.AuthorizeAsync(userCred.login, userCred.pass);
-			var notifies = await _notifyService.UserNotificationsAsync(userCred.login);
+			var (login, pass) = User.CurrentCredentials();
+			await _notifyService.AuthorizeAsync(login, pass).ConfigureAwait(false);
+			var notifies = await _notifyService.UserNotificationsAsync(login).ConfigureAwait(false);
 
 			return new JsonResult(notifies.Select(x => x.Value).ToArray());
 		}
@@ -95,9 +95,9 @@ namespace Dns.Site.Controllers
 		[ProducesResponseType(401)]
 		public async Task<JsonResult> UserNotifications([FromBody]string[] notifies)
 		{
-			var userCred = User.CurrentCredentials();
-			await _notifyService.AuthorizeAsync(userCred.login, userCred.pass);
-			await _notifyService.UpdateNotificationsAsync(userCred.login, notifies);
+			var (login, pass) = User.CurrentCredentials();
+			await _notifyService.AuthorizeAsync(login, pass).ConfigureAwait(false);
+			await _notifyService.UpdateNotificationsAsync(login, notifies).ConfigureAwait(false);
 
 			return new JsonResult(new { ok = true });
 		}
