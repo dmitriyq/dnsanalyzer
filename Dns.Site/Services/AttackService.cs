@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
@@ -13,6 +12,7 @@ namespace Dns.Site.Services
 	public class AttackService
 	{
 		private DnsDbContext _dnsDb;
+
 		public AttackService(DnsDbContext dnsDbContext)
 		{
 			_dnsDb = dnsDbContext;

@@ -1,5 +1,5 @@
 ﻿<template>
-    <v-container fluid style="padding:0;">
+	<v-container fluid style="padding:0;">
 		<v-layout row wrap>
 			<v-flex>
 				<v-progress-circular :size="70"
@@ -115,5 +115,4 @@
 </script>
 
 <style scoped>
-
 </style>

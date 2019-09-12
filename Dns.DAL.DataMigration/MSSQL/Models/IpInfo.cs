@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Dns.DAL.DataMigration.MSSQL.Models
+﻿namespace Dns.DAL.DataMigration.MSSQL.Models
 {
 	public class IpInfo
 	{

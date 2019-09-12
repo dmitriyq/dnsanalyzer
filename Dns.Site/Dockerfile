@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-preview5-bionic AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0-bionic AS build
 WORKDIR /build
 
 COPY . .
@@ -14,7 +14,7 @@ RUN dotnet build "Dns.Site/Dns.Site.csproj" -c Release --no-restore -o /app
 RUN dotnet publish "Dns.Site/Dns.Site.csproj" -c Release --no-restore -o /app
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.0.0-preview5-bionic AS base
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.0-bionic AS base
 # install System.Drawing native dependencies
 RUN apt-get update \
     && apt-get install -y --allow-unauthenticated \

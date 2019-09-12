@@ -1,6 +1,6 @@
 ﻿export default interface ISelectModel<T> {
-    text: string;
-    value: T;
+	text: string;
+	value: T;
 }
 
 interface IPagination {
@@ -10,4 +10,3 @@ interface IPagination {
 }
 
 export { IPagination };
-

@@ -49,3 +49,4 @@ public/
 .deploy*/
 src/_drafts
 package-lock.json
+*.hot-update.js*

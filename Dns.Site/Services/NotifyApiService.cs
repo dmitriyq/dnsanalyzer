@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Dns.Library;
 using Dns.Site.AuthService;
 using Dns.Site.Services;
 using Grfc.Library.Common.Extensions;
@@ -17,7 +16,7 @@ namespace Dns.Site.NotificationService
 	{
 		public Task AuthorizeAsync(string login, string pass)
 		{
-			var authServer = EnvironmentExtensions.GetVariable(EnvVars.AUTH_SERVER_URL);
+			var authServer = EnvironmentExtensions.GetVariable(Program.AUTH_SERVER_URL);
 			var loginUrl = authServer.TrimEnd('/') + "/api/Auth/Login";
 			var loginModel = new LoginModel
 			{
@@ -32,14 +31,14 @@ namespace Dns.Site.NotificationService
 		{
 			var trimmedNotifies = notifies.Select(x => x.Trim()).ToList();
 
-			var userNotifies = await UserNotificationsAsync(login);
+			var userNotifies = await UserNotificationsAsync(login).ConfigureAwait(false);
 
 			var toDelete = userNotifies.Where(x => !trimmedNotifies.Contains(x.Value));
 			var toAdd = trimmedNotifies.Where(x => !userNotifies.Any(z => z.Value == x));
 
 			foreach (var delNotify in toDelete)
 			{
-				await Notification5Async(delNotify.Id);
+				await Notification5Async(delNotify.Id).ConfigureAwait(false);
 			}
 			foreach (var addNotify in toAdd)
 			{
@@ -58,13 +57,13 @@ namespace Dns.Site.NotificationService
 					model.NotifyType = NotifyModelNotifyType.Email;
 				else continue;
 
-				await NotificationAsync(model);
+				await NotificationAsync(model).ConfigureAwait(false);
 			}
 		}
 
 		public async Task<IEnumerable<NotifyModel>> UserNotificationsAsync(string login)
 		{
-			var notify = await Notification2Async(login);
+			var notify = await Notification2Async(login).ConfigureAwait(false);
 			return notify.AsEnumerable();
 		}
 	}

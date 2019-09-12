@@ -10,6 +10,7 @@ import Stats from './stats/Stats.vue';
 import Suspect from './suspect/Suspect.vue';
 import Export from './export/Export.vue';
 import WhiteList from './whiteList/WhiteList.vue';
+import HealthCheck from './healthCheck/HealthCheck.vue';
 
 Vue.use(Router);
 
@@ -55,18 +56,22 @@ const routes = [
 		path: '/whitelist',
 		component: WhiteList,
 	},
-    {
-        path: '/auth',
-        name: 'auth',
+	{
+		path: '/health',
+		component: HealthCheck,
+	},
+	{
+		path: '/auth',
+		name: 'auth',
 		beforeEnter(to: Route) {
 			location.href = to.query.url as string;
-        },
-    },
+		},
+	},
 
-    {
-        path: '*',
-        redirect: '/',
-    },
+	{
+		path: '*',
+		redirect: '/',
+	},
 ];
 
 const router = new Router({
@@ -76,23 +81,23 @@ const router = new Router({
 });
 
 router.beforeEach(async (to, from, next) => {
-    if (to.path.startsWith('/auth')) {
-        return next();
-    } else {
-        const authResponse = await fetch('/api/account/CheckAuth',
-            {
-                method: 'get',
-                headers: new Headers({
-                    'Vue-location': encodeURI(window.location.href),
-                }),
-            })
-            .then((res) => res);
-        if (authResponse.redirected) {
-            return next({ path: '/auth', query: { url: authResponse.url } });
-        } else {
-            return next();
-        }
-    }
+	if (to.path.startsWith('/auth')) {
+		return next();
+	} else {
+		const authResponse = await fetch('/api/account/CheckAuth',
+			{
+				method: 'get',
+				headers: new Headers({
+					'Vue-location': encodeURI(window.location.href),
+				}),
+			})
+			.then((res) => res);
+		if (authResponse.redirected) {
+			return next({ path: '/auth', query: { url: authResponse.url } });
+		} else {
+			return next();
+		}
+	}
 });
 
 Vue.use(Router);

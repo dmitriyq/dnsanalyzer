@@ -7,6 +7,19 @@ x-shared-variables: &shared-variables
   ASPNETCORE_ENVIRONMENT: 'Production'
   NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
 
+x-redis-variables: &redis-variables
+  REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
+  REDIS_VIGRUZKI_IPS: 'Vigruzki_Ips'
+  REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
+  REDIS_BLACK_DOMAIN_RESOLVED: 'DNS_Resolved_Black'
+  REDIS_WHITE_DOMAIN_RESOLVED: 'DNS_Resolved_White'
+  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
+
+x-rabbitmq-variables: &rabbitmq-variables
+  RABBITMQ_CONNECTION: 'rmq'
+  RABBITMQ_DNS_DOMAINS_QUEUE: 'queue.dns.resolver.domains'
+  RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE: 'queue.dns.resolver.resolved'
+
 services:
   hyperlocal:
     image: ${HYPERLOCAL_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/hyperlocal}
@@ -16,31 +29,60 @@ services:
     networks:
       - default
     deploy:
-      replicas: 4
-
-  resolver:
-    image: ${RESOLVER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver}
-    networks:
-      - postgre_pg-net
-      - redis-net
-      - default
-    environment: 
-      <<: *shared-variables
-      HYPERLOCAL_SERVER: 'hyperlocal'
-      RESOLVER_MAX_DEGREE_OF_PARALLELISM: 500
-      RESOLVER_BUFFER_BLOCK_SIZE: 250
-    deploy:
       replicas: 1
 
   analyzer:
     image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+      ANALYZER_SUSPECT_IP_COUNT: 10
     networks:
+      - default
       - postgre_pg-net
       - redis-net
+      - rabbitmq-net
+    deploy:
+      replicas: 1
+
+  resolver-aggregator:
+    image: ${RESOLVER_AGGREGATOR_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-aggregator}
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+    networks:
       - default
+      - redis-net
+      - rabbitmq-net
+    deploy:
+      replicas: 1
+
+  resolver-consumer:
+    image: ${RESOLVER_CONSUMER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-consumer}
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      HYPERLOCAL_SERVER: 'hyperlocal'
+    networks:
+      - default
+      - rabbitmq-net
+    deploy:
+      replicas: 10
+
+  resolver-producer:
+    image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}
     environment: 
       <<: *shared-variables
-      ANALYZER_SUSPECT_IP_COUNT: 10
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+      RESOLVER_PUBLISHER_DELAY_SEC: '60'
+    networks:
+      - default
+      - postgre_pg-net
+      - redis-net
+      - rabbitmq-net
     deploy:
       replicas: 1
 
@@ -55,8 +97,11 @@ services:
       - notification_default
       - vigruzki_default
       - traefik-net
+      - rabbitmq-net
     environment: 
       <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
       AUTH_SERVER_URL: '${AUTH_SERVER_URL}'
       AUTH_COOKIE_BASE_DOMAIN: '${AUTH_COOKIE_BASE_DOMAIN}'
       NOTIFY_SERVICE_URL: 'http://notification_api:80/'
@@ -64,7 +109,7 @@ services:
     deploy:
       replicas: 1
       labels:
-        traefik.frontend.rule: "Host:dns-test.cmim.ru"
+        traefik.frontend.rule: "Host:dns.cmim.ru"
         traefik.enable: "true"
         traefik.port: "80"
         traefik.docker.network: "traefik-net"
@@ -79,4 +124,6 @@ networks:
   vigruzki_default:
     external: true
   traefik-net:
+    external: true
+  rabbitmq-net:
     external: true

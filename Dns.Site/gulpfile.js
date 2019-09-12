@@ -26,5 +26,4 @@
     Object.keys(SCRIPTS).forEach(name => {
         gulp.task(name, done => runScript(SCRIPTS[name], done));
     });
-
 })();

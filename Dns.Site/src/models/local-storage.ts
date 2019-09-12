@@ -1,7 +1,6 @@
 ﻿import Utils from '@/utils/Utils';
 
 export default class DnsLocalStorage {
-
 	public static getSavedDateRange(): ({ from: Date, to: Date }) {
 		const rangeJson = localStorage.getItem('DNS_DateRange');
 		if (!!rangeJson) {

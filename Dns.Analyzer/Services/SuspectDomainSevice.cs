@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Dns.Contracts.Protobuf;
 using Dns.DAL;
 using Dns.DAL.Models;
-using Dns.Library.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Dns.Analyzer.Services
@@ -14,17 +12,20 @@ namespace Dns.Analyzer.Services
 	{
 		private readonly ILogger<SuspectDomainSevice> _logger;
 		private readonly DnsDbContext _dbContext;
+		private readonly int _ipCount;
 
-		public SuspectDomainSevice(ILogger<SuspectDomainSevice> logger, DnsDbContext dbContext)
+		public SuspectDomainSevice(ILogger<SuspectDomainSevice> logger, DnsDbContext dbContext, int suspectIpCountTreshhold)
 		{
 			_logger = logger;
 			_dbContext = dbContext;
+			_ipCount = suspectIpCountTreshhold;
 		}
 
 		public async Task UpdateSuspectDomains(IEnumerable<ResolvedDomain> domains)
 		{
+			var suspectDomains = domains.Where(x => x.IPAddresses.Count > _ipCount).AsEnumerable();
 			_dbContext.RemoveRange(_dbContext.SuspectDomains);
-			var newSuspects = domains.SelectMany(x => x.IPAddresses, (domain, ipaddress) => new SuspectDomains
+			var newSuspects = suspectDomains.SelectMany(x => x.IPAddresses, (domain, ipaddress) => new SuspectDomains
 			{
 				Domain = domain.Name,
 				Ip = ipaddress
@@ -34,7 +35,7 @@ namespace Dns.Analyzer.Services
 				newSuspects[i].Id = i;
 			}
 			_dbContext.SuspectDomains.AddRange(newSuspects);
-			await _dbContext.SaveChangesAsync();
+			await _dbContext.SaveChangesAsync().ConfigureAwait(false);
 			_logger.LogInformation($"Suspect domains ({newSuspects.Count}) updated");
 		}
 	}

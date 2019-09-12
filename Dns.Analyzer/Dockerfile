@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.0.100-preview5-buster AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0-alpine AS build
 WORKDIR /build
 
 COPY . .
@@ -7,8 +7,7 @@ RUN dotnet build "Dns.Analyzer/Dns.Analyzer.csproj" -c Release --no-restore -o /
 RUN dotnet publish "Dns.Analyzer/Dns.Analyzer.csproj" -c Release --no-restore -o /app
 WORKDIR /app
 
-
-FROM mcr.microsoft.com/dotnet/core/runtime:3.0.0-preview5-buster-slim AS base
+FROM mcr.microsoft.com/dotnet/core/runtime:3.0-alpine AS base
 WORKDIR /app
 COPY --from=build /app .
 ENTRYPOINT ["dotnet", "Dns.Analyzer.dll"]

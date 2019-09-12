@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Site.Hubs
 {
-	public class AttackHub: Hub
+	public class AttackHub : Hub
 	{
 		private readonly ILogger<AttackHub> _logger;
 		private readonly DnsDbContext _dbContext;
@@ -31,7 +31,7 @@ namespace Dns.Site.Hubs
 			{
 				attacks = await _dbContext.AttackGroups
 					.Include(x => x.Attacks)
-					.ToListAsync();
+					.ToListAsync().ConfigureAwait(false);
 			}
 			else
 			{
@@ -41,14 +41,14 @@ namespace Dns.Site.Hubs
 				await _dbContext.AttackGroups
 					.Include(x => x.Attacks)
 					.Where(x => x.DateBegin >= fromD && x.DateBegin <= toD)
-					.ToListAsync();
+					.ToListAsync().ConfigureAwait(false);
 			}
 			var attackModels = attacks
 				.OrderBy(x => x.Status)
 				.ThenByDescending(x => x.DateBegin)
 				.Select(x => _attackService.CastToViewModel(x))
 				.ToList();
-			await Clients.Caller.SendAsync("attacks", attackModels);
+			await Clients.Caller.SendAsync("attacks", attackModels).ConfigureAwait(false);
 		}
 	}
 }

@@ -156,12 +156,13 @@
 		box-sizing: border-box;
 		border: solid #2196f3 1px;
 	}
+
 	.rowHover:hover {
-		background: #90caf9!important;
+		background: #90caf9 !important;
 	}
 </style>
 <style>
-	.tile > div{
-		height:auto !important;
+	.tile > div {
+		height: auto !important;
 	}
 </style>

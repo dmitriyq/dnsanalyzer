@@ -12,8 +12,10 @@ variables:
   DOCKER_DRIVER: overlay2
 
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
-  RESOLVER_IMAGE: $CI_REGISTRY_IMAGE/resolver:latest
   ANALYZER_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
+  RESOLVER_AGGREGATOR_IMAGE: $CI_REGISTRY_IMAGE/resolver-aggregator:latest
+  RESOLVER_CONSUMER_IMAGE: $CI_REGISTRY_IMAGE/resolver-consumer:latest
+  RESOLVER_PRODUCER_IMAGE: $CI_REGISTRY_IMAGE/resolver-producer:latest 
   SITE_IMAGE: $CI_REGISTRY_IMAGE/site:latest
 
 before_script:
@@ -32,31 +34,55 @@ build-hyperlocal:
     changes:
       - Hyperlocal/*
 
-build-resolver:
+build-analyzer:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_IMAGE -f Dns.Resolver/Dockerfile .
+    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
     - docker push $RESOLVER_IMAGE
   only:
     refs:
       - master
     changes:
-      - Dns.Resolver/**/*
-      - Dns.Library/**/*
+      - Dns.Analyzer/**/*
+      - Dns.Contracts/**/*
       - Dns.DAL/**/*
 
-build-analyzer:
+build-resolver-aggregator:
   stage: build
   script:
-    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
-    - docker push $ANALYZER_IMAGE
+    - docker build --pull -t $RESOLVER_AGGREGATOR_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker push $RESOLVER_AGGREGATOR_IMAGE
   only:
     refs:
       - master
     changes:
-      - Dns.Analyzer/**/*
-      - Dns.Library/**/*
+      - Dns.Contracts/**/*
+      - Dns.Resolver.Aggregator/**/*
+
+build-resolver-consumer:
+  stage: build
+  script:
+    - docker build --pull -t $RESOLVER_CONSUMER_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker push $RESOLVER_CONSUMER_IMAGE
+  only:
+    refs:
+      - master
+    changes:
+      - Dns.Contracts/**/*
+      - Dns.Resolver.Consumer/**/*
+
+build-resolver-producer:
+  stage: build
+  script:
+    - docker build --pull -t $RESOLVER_PRODUCER_IMAGE -f Dns.Resolver.Producer/Dockerfile .
+    - docker push $RESOLVER_PRODUCER_IMAGE
+  only:
+    refs:
+      - master
+    changes:
+      - Dns.Contracts/**/*
       - Dns.DAL/**/*
+      - Dns.Resolver.Producer/**/*
 
 build-site:
   stage: build
@@ -68,7 +94,7 @@ build-site:
       - master
     changes:
       - Dns.Site/**/*
-      - Dns.Library/**/*
+      - Dns.Contracts/**/*
       - Dns.DAL/**/*
 
 prepare-storage:
@@ -111,12 +137,14 @@ deploy:
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
-        export RESOLVER_IMAGE=$RESOLVER_RELEASE_IMAGE &&
-        export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
+        export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_AGGREGATOR_IMAGE &&
+        export RESOLVER_CONSUMER_IMAGE=$RESOLVER_CONSUMER_IMAGE &&
+        export RESOLVER_PRODUCER_IMAGE=$RESOLVER_PRODUCER_IMAGE &&
+        export SITE_IMAGE=$SITE_IMAGE &&
+        export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
-        export SITE_IMAGE=$SITE_IMAGE &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
   only:

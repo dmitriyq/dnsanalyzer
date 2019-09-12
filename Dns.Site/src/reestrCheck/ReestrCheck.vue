@@ -131,5 +131,4 @@ export default class ReestrCheck extends Vue {
 </script>
 
 <style scoped>
-
 </style>

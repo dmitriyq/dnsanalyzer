@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dns.Site.Services;
 using Dns.Site.VigruzkiService;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -28,17 +26,23 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> IsBlocked([FromQuery]string search)
 		{
-			var contains = await _vigruzkiService.SearchContainsAsync(search);
-			return new JsonResult(contains.Any());
+			var contains = await _vigruzkiService.SearchContainsAsync(search).ConfigureAwait(false);
+			return new JsonResult(contains.Count > 0);
 		}
 
 		[HttpPost("[action]")]
 		public async Task<IActionResult> Query([FromBody]QueryModel model)
 		{
-			IEnumerable<VigruzkiRecordModel> result = null;
+			IEnumerable<VigruzkiRecordModel> result;
 			if (!model.IsContainsSearch)
-				result = await _vigruzkiService.SearchEqualAsync(model.Search);
-			else result = await _vigruzkiService.SearchContainsAsync(model.Search);
+			{
+				result = await _vigruzkiService.SearchEqualAsync(model.Search).ConfigureAwait(false);
+			}
+			else
+			{
+				result = await _vigruzkiService.SearchContainsAsync(model.Search).ConfigureAwait(false);
+			}
+
 			return new JsonResult(result);
 		}
 

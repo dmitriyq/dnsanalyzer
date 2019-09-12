@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Dns.Site.Models
 {
@@ -9,6 +6,7 @@ namespace Dns.Site.Models
 	{
 		public string Domain { get; set; }
 		public List<IpInfo> Ips { get; set; } = new List<IpInfo>();
+
 		public class IpInfo
 		{
 			public string Ip { get; set; }

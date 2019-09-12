@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Dns.Resolver.Aggregator": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

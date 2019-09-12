@@ -232,11 +232,11 @@
 		padding: 0 1rem;
 	}
 
-	.date-range >>> .date-picker-table table {
+	.date-range > > > .date-picker-table table {
 		border-collapse: collapse;
 	}
 
-	.date-range >>> .date-picker-table__event.date-range__date-in-range {
+	.date-range > > > .date-picker-table__event.date-range__date-in-range {
 		z-index: 0;
 		/* override existing settings */
 		width: 100%;
@@ -247,7 +247,7 @@
 		border-radius: 0;
 	}
 
-		.date-range >>> .date-picker-table__event.date-range__date-in-range.date-range__range-start {
+		.date-range > > > .date-picker-table__event.date-range__date-in-range.date-range__range-start {
 			border-top-left-radius: 50%;
 			border-bottom-left-radius: 50%;
 			/* Cover only date button */
@@ -255,34 +255,36 @@
 			width: 31px;
 		}
 
-		.date-range >>> .date-picker-table__event.date-range__date-in-range.date-range__range-end {
+		.date-range > > > .date-picker-table__event.date-range__date-in-range.date-range__range-end {
 			border-top-right-radius: 50%;
 			border-bottom-right-radius: 50%;
 		}
 
-	.date-range >>> .date-picker-table .btn {
+	.date-range > > > .date-picker-table .btn {
 		/* fixed zIndex is needed because .date-picker-table__event div is created after the .btn button */
 		z-index: 1;
 	}
-	.m-width-300{
-		min-width:300px;
+
+	.m-width-300 {
+		min-width: 300px;
 	}
 </style>
 <style>
 	.calendar-day-style {
 		border-radius: 50%;
-		height:32px;
-		width:32px;
-		display:block;
-		position:relative;
+		height: 32px;
+		width: 32px;
+		display: block;
+		position: relative;
 	}
+
 	.calendar-day-style-icon {
-		position:absolute !important;
-		opacity:100 !important;
+		position: absolute !important;
+		opacity: 100 !important;
 		border-radius: 50%;
-		height:6px;
-		width:6px;
-		margin-top:-3px;
-		left:0;
+		height: 6px;
+		width: 6px;
+		margin-top: -3px;
+		left: 0;
 	}
 </style>

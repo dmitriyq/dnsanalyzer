@@ -1,0 +1,116 @@
+version: '3.7'
+
+x-shared-variables: &shared-variables
+  PG_CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-postgres};Port=5432;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-postgres};Port=5433;Database=dnsdb;User Id=dnsuser;Password=dnsuser;'
+  REDIS_CONNECTION: '${REDIS_CONNECTION:-redis}'
+  ASPNETCORE_ENVIRONMENT: 'Development'
+  NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
+
+x-redis-variables: &redis-variables
+  REDIS_CONNECTION: '${REDIS_CONNECTION:-redis}'
+  REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
+  REDIS_VIGRUZKI_IPS: 'Vigruzki_Ips'
+  REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
+  REDIS_BLACK_DOMAIN_RESOLVED: 'DNS_Resolved_Black'
+  REDIS_WHITE_DOMAIN_RESOLVED: 'DNS_Resolved_White'
+  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
+
+x-rabbitmq-variables: &rabbitmq-variables
+  RABBITMQ_CONNECTION: 'rabbitmq'
+  RABBITMQ_DNS_DOMAINS_QUEUE: 'queue.dns.resolver.domains'
+  RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE: 'queue.dns.resolver.resolved'
+
+services:
+  postgres:
+    image: crunchydata/crunchy-postgres:centos7-10.9-2.4.1
+    environment:
+    - PGHOST=/tmp
+    - MAX_CONNECTIONS=10
+    - MAX_WAL_SENDERS=5
+    - PG_MODE=primary
+    - PG_PRIMARY_USER=primaryuser
+    - PG_PRIMARY_PASSWORD=password
+    - PG_DATABASE=maindb
+    - PG_USER=admin
+    - PG_PASSWORD=P@ssw0rd
+    - PG_ROOT_PASSWORD=P@ssw0rd
+    - PG_PRIMARY_PORT=5432
+    volumes:
+    - pg-primary-vol:/pgdata
+    - ${PWD:-//C//Borovov/Gitlab/DnsAnalyzer}/Dev/postgresql.conf:/pgconf/postgresql.conf
+    ports:
+    - "5432:5432"
+
+  redis:
+    image: redis:dev
+    ports:
+    - "6379:6379"
+
+  hyperlocal:
+    image: hyperlocal:dev
+    ports:
+      - "53:53"
+      - "53:53/udp"
+    deploy:
+      replicas: 1
+
+  rabbitmq:
+    image: rabbitmq:dev
+    environment:
+      - RABBITMQ_USE_LONGNAME=true
+      - RABBITMQ_MNESIA_DIR=/var/lib/rabbitmq/mnesia
+      - RABBITMQ_PLUGINS_EXPAND_DIR=/var/lib/rabbitmq/mnesia/plugins-expand
+      - SERVICE_NAME={{.Service.Name}}
+      - SLOT={{.Task.Slot}}
+      - MASTER_SLOT=1
+    ports:
+      - "5672:5672"   # amqp
+      - "15672:15672" # web ui
+
+  resolver-producer:
+    image: resolver-producer:dev
+    environment: 
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+      RESOLVER_PUBLISHER_DELAY_SEC: '30'
+      
+
+  resolver-consumer:
+    image: resolver-consumer:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      HYPERLOCAL_SERVER: 'hyperlocal'
+    deploy:
+      replicas: 10
+
+  resolver-aggregator:
+    image: resolver-aggregator:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+
+  analyzer:
+    image: analyzer:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+      ANALYZER_SUSPECT_IP_COUNT: 10
+  site:
+    image: dns-site:dev
+    environment:
+      <<: *shared-variables
+      <<: *rabbitmq-variables
+      <<: *redis-variables
+
+volumes:
+  pg-primary-vol:
+networks:
+  default:
+    external: false
+    driver: overlay
+    attachable: true

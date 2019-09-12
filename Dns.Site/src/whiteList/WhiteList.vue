@@ -15,7 +15,7 @@
 						<template v-slot:activator="{ on }">
 							<v-btn class="hidden-xs-only" color="red" :disabled="selectedDomains.length <= 1"
 								   dark v-on="on" @click="dialogType = 'DeleteBatch'">Удалить выбранные</v-btn>
-							<v-btn class="hidden-xs-only" color="green" 
+							<v-btn class="hidden-xs-only" color="green"
 								   v-text="selectedDomains.length > 0 ? 'Отменить выделение' : 'Выбрать все'"
 								   dark @click="selectAll"></v-btn>
 							<v-btn color="blue" dark v-on="on" @click="dialogType = 'Add'">Добавить домен</v-btn>
@@ -43,7 +43,6 @@
 														disabled
 														:rows="selectedDomains.length"
 														label="Доменные имена">
-
 											</v-textarea>
 										</v-flex>
 										<v-flex xs12 v-else>
@@ -67,7 +66,7 @@
 									<v-btn color="blue darken-1" class="m-0" flat @click.native="showUpload">Указать файл</v-btn>
 								</label>
 								<v-btn v-else :color="(dialogType === 'Delete' || dialogType === 'DeleteBatch') ? 'error' : 'primary'"
-									   flat @click="save" 
+									   flat @click="save"
 									   v-text="(dialogType === 'Delete' || dialogType === 'DeleteBatch') ? 'Удалить' : 'Сохранить'"></v-btn>
 							</v-card-actions>
 						</v-card>

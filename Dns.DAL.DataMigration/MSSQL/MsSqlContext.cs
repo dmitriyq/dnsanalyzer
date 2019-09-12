@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Dns.DAL.DataMigration.MSSQL.Models;
+﻿using Dns.DAL.DataMigration.MSSQL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL.DataMigration.MSSQL
 {
-	public class MsSqlContext: DbContext
+	public class MsSqlContext : DbContext
 	{
 		public MsSqlContext()
 		{
@@ -41,6 +38,7 @@ namespace Dns.DAL.DataMigration.MSSQL
 			.Query<SuspectDomainsView>()
 			.ToView("vSuspectDomains");
 		}
+
 #pragma warning enable 618
 	}
 }

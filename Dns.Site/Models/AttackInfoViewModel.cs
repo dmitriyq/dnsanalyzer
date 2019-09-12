@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Dns.Site.Models
 {
@@ -28,6 +26,7 @@ namespace Dns.Site.Models
 			public string Text { get; set; }
 			public int AttackId { get; set; }
 		}
+
 		public class IpViewModel
 		{
 			public string Ip { get; set; }
@@ -35,6 +34,7 @@ namespace Dns.Site.Models
 			public string Company { get; set; }
 			public string Country { get; set; }
 		}
+
 		public class DomainViewModel
 		{
 			public string Domain { get; set; }
@@ -56,6 +56,7 @@ namespace Dns.Site.Models
 			public IpViewModel IpInfo { get; set; }
 			public List<History> Histories { get; set; } = new List<History>();
 		}
+
 		public class History
 		{
 			public int Id { get; set; }

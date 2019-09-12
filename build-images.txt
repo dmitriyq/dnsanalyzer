@@ -1,0 +1,12 @@
+docker build -t hyperlocal:dev -f Hyperlocal/Dockerfile .
+docker build -t resolver-producer:dev -f Dns.Resolver.Producer/Dockerfile .
+docker build -t resolver-consumer:dev -f Dns.Resolver.Consumer/Dockerfile .
+docker build -t resolver-aggregator:dev -f Dns.Resolver.Aggregator/Dockerfile .
+docker build -t analyzer:dev -f Dns.Analyzer/Dockerfile .
+docker build -t dns-site:dev -f Dns.Site/Dockerfile .
+
+#init script
+docker run --rm --network dns_default --env PGPASSWORD=P@ssw0rd -v C:\Borovov\Gitlab\DnsAnalyzer/init-db.sql:/etc/db/init-db.sql postgres psql -h postgres -U postgres maindb -f /etc/db/init-db.sql
+
+#help to connect to redis
+docker run -it --network dns_default --rm redis redis-cli -h dns_redis

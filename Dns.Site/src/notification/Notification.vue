@@ -1,52 +1,52 @@
 ﻿<template>
-    <v-container fluid>
-        <v-form v-model="formValid" ref="notifyForm">
-            <v-layout row wrap justify-start fill-height>
-                <v-flex xs12>
-                    <p class="display-1 text-xs-center">Настройки уведомлений</p>
-                </v-flex>
-                <v-flex xs12 sm3>
-                    <v-layout xs6 row wrap justify-start v-for="item in notifies"
-                              :key="item.id">
-                        <v-flex xs10>
-                            <v-text-field v-model="item.value"
-                                          placeholder="E-mail или телефон"
-                                          :rules="noifyRules"
-                                          solo>
-                            </v-text-field>
-                        </v-flex>
-                        <v-flex xs2>
-                            <v-btn flat outline color="error" icon left @click="delRow(item.id)">
-                                <v-icon>delete</v-icon>
-                            </v-btn>
-                        </v-flex>
-                    </v-layout>
-                </v-flex>
-                <v-flex sm9></v-flex>
-                <v-flex xs12 sm3>
-                    <v-layout xs6 row wrap align-center justify-space-between>
-                        <v-flex xs6>
-                            <v-btn flat outline color="primary" icon @click="addRow">
-                                <v-icon>add</v-icon>
-                            </v-btn>
-                        </v-flex>
-                        <v-flex xs6>
-                            <v-btn flat outline color="primary" @click="saveNotify">
-                                Сохранить
-                            </v-btn>
-                        </v-flex>
-                    </v-layout>
-                </v-flex>
-            </v-layout>
-        </v-form>
-        <v-snackbar v-model="snackbar"
-                    top
-                    multi-line
-                    color="success"
-                    :timeout="2000">
-            <p class="title text-xs-center">Настройки уведомлений сохранены.</p>
-        </v-snackbar>
-    </v-container>
+	<v-container fluid>
+		<v-form v-model="formValid" ref="notifyForm">
+			<v-layout row wrap justify-start fill-height>
+				<v-flex xs12>
+					<p class="display-1 text-xs-center">Настройки уведомлений</p>
+				</v-flex>
+				<v-flex xs12 sm3>
+					<v-layout xs6 row wrap justify-start v-for="item in notifies"
+							  :key="item.id">
+						<v-flex xs10>
+							<v-text-field v-model="item.value"
+										  placeholder="E-mail или телефон"
+										  :rules="noifyRules"
+										  solo>
+							</v-text-field>
+						</v-flex>
+						<v-flex xs2>
+							<v-btn flat outline color="error" icon left @click="delRow(item.id)">
+								<v-icon>delete</v-icon>
+							</v-btn>
+						</v-flex>
+					</v-layout>
+				</v-flex>
+				<v-flex sm9></v-flex>
+				<v-flex xs12 sm3>
+					<v-layout xs6 row wrap align-center justify-space-between>
+						<v-flex xs6>
+							<v-btn flat outline color="primary" icon @click="addRow">
+								<v-icon>add</v-icon>
+							</v-btn>
+						</v-flex>
+						<v-flex xs6>
+							<v-btn flat outline color="primary" @click="saveNotify">
+								Сохранить
+							</v-btn>
+						</v-flex>
+					</v-layout>
+				</v-flex>
+			</v-layout>
+		</v-form>
+		<v-snackbar v-model="snackbar"
+					top
+					multi-line
+					color="success"
+					:timeout="2000">
+			<p class="title text-xs-center">Настройки уведомлений сохранены.</p>
+		</v-snackbar>
+	</v-container>
 </template>
 
 <script lang="ts">

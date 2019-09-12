@@ -4,16 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
 using Dns.DAL.Enums;
-using Dns.Library.Services;
 using Dns.Site.Hubs;
 using Dns.Site.Models;
 using Dns.Site.Services;
 using Grfc.Library.Common.Extensions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -27,22 +26,22 @@ namespace Dns.Site.Controllers
 		private readonly IHubContext<AttackHub> _hubContext;
 		private readonly DnsDbContext _dnsDb;
 		private readonly AttackService _attackService;
-		private readonly NotifyService _notifyService;
-		private readonly RedisService _redisService;
+		private readonly INotifyService _notifyService;
+		private readonly IRedisService _redisService;
 
 		public AttackController(ILogger<AttackController> logger,
 			IHubContext<AttackHub> hubContext,
 			DnsDbContext dnsDb,
 			AttackService attackService,
-			NotifyService notifyService,
-			RedisService redisService)
+			INotifyService notifyService,
+			IRedisService redis)
 		{
 			_logger = logger;
 			_hubContext = hubContext;
 			_dnsDb = dnsDb;
 			_attackService = attackService;
 			_notifyService = notifyService;
-			_redisService = redisService;
+			_redisService = redis;
 		}
 
 		[HttpGet("[action]")]
@@ -66,19 +65,19 @@ namespace Dns.Site.Controllers
 			try
 			{
 				var attack = await _dnsDb.AttackGroups
-					.FirstOrDefaultAsync(x => x.Id == data.Id);
+					.FirstOrDefaultAsync(x => x.Id == data.Id).ConfigureAwait(false);
 				if (attack != null)
 				{
 					var prevStatus = attack.StatusEnum;
 					attack.Status = data.Status;
-					await _attackService.AddHistory(attack, prevStatus);
+					await _attackService.AddHistory(attack, prevStatus).ConfigureAwait(false);
 					if (!data.Comment.IsBlank())
-						await _attackService.AddNote(attack, data.Comment);
-					await _dnsDb.SaveChangesAsync();
-					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack));
+						await _attackService.AddNote(attack, data.Comment).ConfigureAwait(false);
+					await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
+					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 
-					var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attack.Id);
-					await _redisService.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, attackMessage.ProtoSerialize());
+					var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attack.Id).ConfigureAwait(false);
+					await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
 
 					return new JsonResult("Ok");
 				}
@@ -96,14 +95,14 @@ namespace Dns.Site.Controllers
 			try
 			{
 				var attack = await _dnsDb.AttackGroups
-					.FirstOrDefaultAsync(x => x.Id == data.Id);
+					.FirstOrDefaultAsync(x => x.Id == data.Id).ConfigureAwait(false);
 				if (attack != null)
 				{
 					if (!data.Comment.IsBlank())
 					{
-						await _attackService.AddNote(attack, data.Comment);
-						await _dnsDb.SaveChangesAsync();
-						await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack));
+						await _attackService.AddNote(attack, data.Comment).ConfigureAwait(false);
+						await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
+						await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 						return new JsonResult("Ok");
 					}
 				}
@@ -128,15 +127,15 @@ namespace Dns.Site.Controllers
 				{
 					var prevStatus = attack.StatusEnum;
 					attack.Status = data.Status;
-					await _attackService.AddHistory(attack, prevStatus);
+					await _attackService.AddHistory(attack, prevStatus).ConfigureAwait(false);
 					if (!data.Comment.IsBlank())
-						await _attackService.AddNote(attack, data.Comment);
-					await _dnsDb.SaveChangesAsync();
-					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack));
+						await _attackService.AddNote(attack, data.Comment).ConfigureAwait(false);
+					await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
+					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 				}
 
-				var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attacks.Select(x => x.Id).ToArray());
-				await _redisService.Publish(RedisKeys.NOTIFY_SEND_CHANNEL, attackMessage.ProtoSerialize());
+				var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attacks.Select(x => x.Id).ToArray()).ConfigureAwait(false);
+				await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
 
 				return new JsonResult("Ok");
 			}
@@ -150,25 +149,25 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> Stats()
 		{
-			var dateBegin = DateTimeOffset.UtcNow.TimeOfDay < TimeSpan.FromMinutes(5 * 60 + 30) ?
-				DateTimeOffset.UtcNow.AddDays(-1).Date.AddMinutes(5 * 60 + 30) :
-				DateTimeOffset.UtcNow.Date.AddMinutes(5 * 60 + 30);
+			var dateBegin = DateTimeOffset.UtcNow.TimeOfDay < TimeSpan.FromMinutes((5 * 60) + 30) ?
+				DateTimeOffset.UtcNow.AddDays(-1).Date.AddMinutes((5 * 60) + 30) :
+				DateTimeOffset.UtcNow.Date.AddMinutes((5 * 60) + 30);
 
 			var groups = _dnsDb.AttackGroups;
 			var groupDailyNew = await groups
-				.CountAsync(x => x.GroupHistories.Any(z => z.Date > dateBegin && z.PrevStatus == (int)AttackGroupStatusEnum.None));
-			var groupTotal = await groups.CountAsync();
-			var groupThreatCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Threat);
-			var groupDymanicCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Dynamic);
-			var groupAttackCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Attack);
-			var groupCompletedCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Complete);
+				.CountAsync(x => x.GroupHistories.Any(z => z.Date > dateBegin && z.PrevStatus == (int)AttackGroupStatusEnum.None)).ConfigureAwait(false);
+			var groupTotal = await groups.CountAsync().ConfigureAwait(false);
+			var groupThreatCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Threat).ConfigureAwait(false);
+			var groupDymanicCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Dynamic).ConfigureAwait(false);
+			var groupAttackCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Attack).ConfigureAwait(false);
+			var groupCompletedCount = await groups.CountAsync(x => x.Status == (int)AttackGroupStatusEnum.Complete).ConfigureAwait(false);
 
 			var attacks = _dnsDb.DnsAttacks;
 			var attackDailyNew = await attacks
-				.CountAsync(x => x.Histories.Any(z => z.Date > dateBegin && z.PrevStatus == (int)AttackStatusEnum.None));
-			var attackTotal = await attacks.CountAsync();
-			var attackIntersectionCount = await attacks.CountAsync(x => x.Status == (int)AttackStatusEnum.Intersection || x.Status == (int)AttackStatusEnum.Closing);
-			var attackCompletedCount = await attacks.CountAsync(x => x.Status == (int)AttackStatusEnum.Completed);
+				.CountAsync(x => x.Histories.Any(z => z.Date > dateBegin && z.PrevStatus == (int)AttackStatusEnum.None)).ConfigureAwait(false);
+			var attackTotal = await attacks.CountAsync().ConfigureAwait(false);
+			var attackIntersectionCount = await attacks.CountAsync(x => x.Status == (int)AttackStatusEnum.Intersection || x.Status == (int)AttackStatusEnum.Closing).ConfigureAwait(false);
+			var attackCompletedCount = await attacks.CountAsync(x => x.Status == (int)AttackStatusEnum.Completed).ConfigureAwait(false);
 
 			return new JsonResult(new
 			{
@@ -195,7 +194,7 @@ namespace Dns.Site.Controllers
 			var startMonth = new DateTimeOffset(new DateTime(year, month, 1), TimeSpan.Zero).Date;
 			var endMonth = startMonth.AddMonths(1).AddMilliseconds(-1);
 			startMonth = startMonth.AddDays(-1);
-			var stats = await _dnsDb.StatisticHistories.Where(x => x.Date >= startMonth && x.Date <= endMonth).ToListAsync();
+			var stats = await _dnsDb.StatisticHistories.Where(x => x.Date >= startMonth && x.Date <= endMonth).ToListAsync().ConfigureAwait(false);
 			stats.ForEach(x => x.Date = x.Date.AddDays(-1));
 			return new JsonResult(stats);
 		}
@@ -204,7 +203,7 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> Statuses()
 		{
-			await Task.CompletedTask;
+			await Task.CompletedTask.ConfigureAwait(false);
 			var statuses = EnumExtensions.GetEnumsWithDisplayValues<AttackStatusEnum>()
 				.Select(x => new { text = x.Value, value = x.Key });
 			return new JsonResult(statuses.ToArray());
@@ -214,7 +213,7 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> GroupStatuses()
 		{
-			await Task.CompletedTask;
+			await Task.CompletedTask.ConfigureAwait(false);
 			var statuses = EnumExtensions.GetEnumsWithDisplayValues<AttackGroupStatusEnum>()
 				.Select(x => new { text = x.Value, value = x.Key });
 			return new JsonResult(statuses.ToArray());
@@ -223,7 +222,7 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> Suspects()
 		{
-			await Task.CompletedTask;
+			await Task.CompletedTask.ConfigureAwait(false);
 			var model = _dnsDb.vSuspectDomains
 				.AsEnumerable()
 				.GroupBy(x => x.Domain)

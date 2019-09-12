@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Dns.DAL.DataMigration.MSSQL.Models;
+﻿using Dns.DAL.DataMigration.MSSQL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL.DataMigration.MSSQL
@@ -45,12 +42,14 @@ namespace Dns.DAL.DataMigration.MSSQL
 					.HasConstraintName("FK_dbo.Attacks_dbo.AttackGroups_AttackGroupId");
 			});
 
-			modelBuilder.Entity<AttackGroups>(entity => {
+			modelBuilder.Entity<AttackGroups>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_Id");
 			});
 
-			modelBuilder.Entity<AttackHistories>(entity => {
+			modelBuilder.Entity<AttackHistories>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_Id");
 
@@ -60,7 +59,8 @@ namespace Dns.DAL.DataMigration.MSSQL
 					.HasConstraintName("FK_dbo.AttackHistories_dbo.Attacks_AttackId");
 			});
 
-			modelBuilder.Entity<AttackGroupHistories>(entity => {
+			modelBuilder.Entity<AttackGroupHistories>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_Id");
 
@@ -70,7 +70,8 @@ namespace Dns.DAL.DataMigration.MSSQL
 					.HasConstraintName("FK_dbo.AttackGroupHistories_dbo.AttackGroups_AttackGroupId");
 			});
 
-			modelBuilder.Entity<AttackNotes>(entity => {
+			modelBuilder.Entity<AttackNotes>(entity =>
+			{
 				entity.HasIndex(e => e.Id)
 					.HasName("IX_Id");
 

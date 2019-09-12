@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dns.DAL;
-using Dns.Library.Services;
-using Microsoft.AspNetCore.Authorization;
+using Dns.Site.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -19,12 +17,12 @@ namespace Dns.Site.Controllers
 	public class ExportController : AuthorizedController
 	{
 		private readonly ILogger<ExportController> _logger;
-		private readonly ExcelService _excelService;
+		private readonly IExcelService _excelService;
 		private readonly DnsDbContext _dnsDb;
 		private readonly IDistributedCache _cache;
 
 		public ExportController(ILogger<ExportController> logger,
-			DnsDbContext dnsDb, ExcelService excelService, IDistributedCache cache)
+			DnsDbContext dnsDb, IExcelService excelService, IDistributedCache cache)
 		{
 			_logger = logger;
 			_dnsDb = dnsDb;
@@ -35,13 +33,13 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> ExportSuspect()
 		{
-			var file = await _cache.GetAsync("SuspectDomains");
+			var file = await _cache.GetAsync("SuspectDomains").ConfigureAwait(false);
 			if (file == null)
 			{
-				var records = await _dnsDb.vSuspectDomains.ToListAsync();
+				var records = await _dnsDb.vSuspectDomains.ToListAsync().ConfigureAwait(false);
 				file = _excelService.ExportSuspectDomains(records);
 				var expire = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) };
-				await _cache.SetAsync("SuspectDomains", file, expire);
+				await _cache.SetAsync("SuspectDomains", file, expire).ConfigureAwait(false);
 			}
 			return new JsonResult(new { success = true, msg = "SuspectDomains" });
 		}
@@ -49,13 +47,13 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> ExportWhitelist()
 		{
-			var file = await _cache.GetAsync("WhiteList");
+			var file = await _cache.GetAsync("WhiteList").ConfigureAwait(false);
 			if (file == null)
 			{
-				var records = await _dnsDb.WhiteDomains.ToListAsync();
+				var records = await _dnsDb.WhiteDomains.ToListAsync().ConfigureAwait(false);
 				file = _excelService.ExportWhiteList(records);
 				var expire = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) };
-				await _cache.SetAsync("WhiteList", file, expire);
+				await _cache.SetAsync("WhiteList", file, expire).ConfigureAwait(false);
 			}
 			return new JsonResult(new { success = true, msg = "WhiteList" });
 		}
@@ -73,15 +71,15 @@ namespace Dns.Site.Controllers
 			var to = data.To.LocalDateTime.Date.AddDays(1).AddMilliseconds(-1);
 			var key = $"DNS_{Guid.NewGuid()}";
 
-			var file = await _cache.GetAsync(key);
+			var file = await _cache.GetAsync(key).ConfigureAwait(false);
 			if (file == null)
 			{
 				var records = await _dnsDb.AttackGroups
 					.Include(x => x.Attacks)
-					.Where(x => x.DateBegin >= from.Date && (!x.DateClose.HasValue || x.DateClose <= to)).ToListAsync();
+					.Where(x => x.DateBegin >= from.Date && (!x.DateClose.HasValue || x.DateClose <= to)).ToListAsync().ConfigureAwait(false);
 				file = _excelService.ExportDnsAttack(records, from, to);
 				var expire = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) };
-				await _cache.SetAsync(key, file, expire);
+				await _cache.SetAsync(key, file, expire).ConfigureAwait(false);
 			}
 			return new JsonResult(new { success = true, msg = key });
 		}
@@ -89,26 +87,25 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> GetFile([FromQuery] string name)
 		{
-			await Task.CompletedTask;
-			byte[] file = null;
+			await Task.CompletedTask.ConfigureAwait(false);
+			byte[] file;
 			if (name == "SuspectDomains")
 			{
-				file = await _cache.GetAsync(name);
+				file = await _cache.GetAsync(name).ConfigureAwait(false);
 				if (file != null)
-					return File(file, ExcelService.EXCEL_MIMETYPE, $"Suspect_Domains.xlsx");
-
+					return File(file, IExcelService.EXCEL_MIMETYPE, $"Suspect_Domains.xlsx");
 			}
 			else if (name.StartsWith("DNS_"))
 			{
-				file = await _cache.GetAsync(name);
+				file = await _cache.GetAsync(name).ConfigureAwait(false);
 				if (file != null)
-					return File(file, ExcelService.EXCEL_MIMETYPE, $"DNS.xlsx");
+					return File(file, IExcelService.EXCEL_MIMETYPE, $"DNS.xlsx");
 			}
 			else if (name == "WhiteList")
 			{
-				file = await _cache.GetAsync(name);
+				file = await _cache.GetAsync(name).ConfigureAwait(false);
 				if (file != null)
-					return File(file, ExcelService.EXCEL_MIMETYPE, $"Белый список.xlsx");
+					return File(file, IExcelService.EXCEL_MIMETYPE, $"Белый список.xlsx");
 			}
 			return null;
 		}
@@ -117,7 +114,7 @@ namespace Dns.Site.Controllers
 		[HttpGet("[action]")]
 		public async Task<IActionResult> GetFirstDate()
 		{
-			var firstAttack = await _dnsDb.AttackHistories.MinAsync(x => x.Date);
+			var firstAttack = await _dnsDb.AttackHistories.MinAsync(x => x.Date).ConfigureAwait(false);
 			return new JsonResult(firstAttack);
 		}
 	}

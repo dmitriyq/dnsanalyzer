@@ -8,11 +8,9 @@ using ClosedXML.Excel;
 using Dns.DAL;
 using Dns.DAL.Models;
 using Dns.Site.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Text.Encodings.Web;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -35,14 +33,14 @@ namespace Dns.Site.Controllers
 		public async Task<IActionResult> GetWhiteList()
 		{
 			var entities = _dnsDb.WhiteDomains;
-			var domains = await CastToModel(entities).ToListAsync();
+			var domains = await CastToModel(entities).ToListAsync().ConfigureAwait(false);
 			return new JsonResult(domains);
 		}
 
 		[HttpGet("{id}")]
 		public async Task<IActionResult> GetWhiteDomain(int id)
 		{
-			var domain = await _dnsDb.WhiteDomains.FindAsync(id);
+			var domain = await _dnsDb.WhiteDomains.FindAsync(id).ConfigureAwait(false);
 			if (domain == null)
 				return NotFound(ErrorMessage.NotFound);
 			var model = CastToModel(domain);
@@ -55,10 +53,10 @@ namespace Dns.Site.Controllers
 			if (data == null && string.IsNullOrWhiteSpace(data.Domain))
 				return BadRequest(ErrorMessage.InvalidId);
 			data.Domain = data.Domain.Trim();
-			if (await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == data.Domain))
+			if (await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == data.Domain).ConfigureAwait(false))
 				return BadRequest(ErrorMessage.AlreadyInList);
 			var entity = _dnsDb.WhiteDomains.Add(new WhiteDomains { Domain = data.Domain, DateAdded = DateTime.Now });
-			await _dnsDb.SaveChangesAsync();
+			await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 			var model = CastToModel(entity.Entity);
 			return CreatedAtAction(nameof(GetWhiteDomain), new { id = model.Id }, model);
 		}
@@ -69,11 +67,11 @@ namespace Dns.Site.Controllers
 			List<WhiteDomains> newDomains = new List<WhiteDomains>();
 			foreach (var item in domains)
 			{
-				if (!(await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == item)))
+				if (!(await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == item).ConfigureAwait(false)))
 					newDomains.Add(new WhiteDomains { Domain = item, DateAdded = DateTime.Now });
 			}
 			_dnsDb.WhiteDomains.AddRange(newDomains);
-			await _dnsDb.SaveChangesAsync();
+			await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 			var models = newDomains.Select(x => CastToModel(x)).ToList();
 			return new JsonResult(models);
 		}
@@ -84,24 +82,24 @@ namespace Dns.Site.Controllers
 			if (id != item.Id)
 				return BadRequest(ErrorMessage.InvalidId);
 
-			var entity = await _dnsDb.WhiteDomains.FindAsync(id);
+			var entity = await _dnsDb.WhiteDomains.FindAsync(id).ConfigureAwait(false);
 			if (entity == null)
 				return NotFound(ErrorMessage.NotFound);
-			if (await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == item.Domain))
+			if (await _dnsDb.WhiteDomains.AnyAsync(x => x.Domain == item.Domain).ConfigureAwait(false))
 				return BadRequest(ErrorMessage.AlreadyInList);
 			entity.Domain = item.Domain;
-			await _dnsDb.SaveChangesAsync();
+			await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 			return NoContent();
 		}
 
 		[HttpDelete("{id}")]
 		public async Task<IActionResult> DeleteDomain(int id)
 		{
-			var entity = await _dnsDb.WhiteDomains.FindAsync(id);
+			var entity = await _dnsDb.WhiteDomains.FindAsync(id).ConfigureAwait(false);
 			if (entity == null)
 				return NotFound(ErrorMessage.NotFound);
 			_dnsDb.WhiteDomains.Remove(entity);
-			await _dnsDb.SaveChangesAsync();
+			await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 			return NoContent();
 		}
 
@@ -111,12 +109,12 @@ namespace Dns.Site.Controllers
 			List<WhiteDomains> deleteDomains = new List<WhiteDomains>();
 			foreach (var item in ids)
 			{
-				var domain = await _dnsDb.WhiteDomains.FindAsync(item);
+				var domain = await _dnsDb.WhiteDomains.FindAsync(item).ConfigureAwait(false);
 				if (domain != null)
 					deleteDomains.Add(domain);
 			}
 			_dnsDb.WhiteDomains.RemoveRange(deleteDomains);
-			await _dnsDb.SaveChangesAsync();
+			await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 			return NoContent();
 		}
 
@@ -131,14 +129,11 @@ namespace Dns.Site.Controllers
 				file.CopyTo(ms);
 				if (file.FileName.EndsWith(".xlsx"))
 				{
-					using (var xlReader = new XLWorkbook(ms, XLEventTracking.Disabled))
-					{
-						var cells = xlReader.Worksheets.First().CellsUsed().Select(x => x.GetString() ?? "")
-							.Where(x => !string.IsNullOrWhiteSpace(x))
-							.Where(x => Uri.CheckHostName(x) == UriHostNameType.Dns)
-							.Select(x => x.Trim());
-						domains = new HashSet<string>(cells);
-					}
+					using var xlReader = new XLWorkbook(ms, XLEventTracking.Disabled);
+					var cells = xlReader.Worksheets.First().CellsUsed().Select(x => x.GetString() ?? "")
+						.Where(x => !string.IsNullOrWhiteSpace(x) && Uri.CheckHostName(x) == UriHostNameType.Dns)
+						.Select(x => x.Trim());
+					domains = new HashSet<string>(cells);
 				}
 				else if (file.FileName.EndsWith(".csv") || file.FileName.EndsWith(".txt"))
 				{
@@ -152,26 +147,35 @@ namespace Dns.Site.Controllers
 			{
 				try
 				{
-					var entries = await System.Net.Dns.GetHostEntryAsync(mapping.GetAscii(domain));
+					var entries = await System.Net.Dns.GetHostEntryAsync(mapping.GetAscii(domain)).ConfigureAwait(false);
 					if (entries != null && (!string.IsNullOrWhiteSpace(entries.HostName)))
 						validDomains.Add(domain);
 				}
 				catch { }
 			}
 			var invalidDomains = domains.Except(validDomains).ToList();
-			await Task.FromResult(0);
+			await Task.FromResult(0).ConfigureAwait(false);
 			return new JsonResult(new { success = validDomains, error = invalidDomains });
 		}
 
 		private WhiteDomainViewModel CastToModel(WhiteDomains item)
 			=> new WhiteDomainViewModel { DateAdded = item.DateAdded, Domain = item.Domain, Id = item.Id };
+
 		private IQueryable<WhiteDomainViewModel> CastToModel(IQueryable<WhiteDomains> items)
 			=> items.Select(x => CastToModel(x));
+
 		public class ErrorMessage
 		{
 			public string Msg { get; set; }
-			public ErrorMessage() { }
-			public ErrorMessage(string msg) { this.Msg = msg; }
+
+			public ErrorMessage()
+			{
+			}
+
+			public ErrorMessage(string msg)
+			{
+				this.Msg = msg;
+			}
 
 			public static ErrorMessage InvalidId => new ErrorMessage("Не корректный домен");
 			public static ErrorMessage NotFound => new ErrorMessage("Указанный домен не найден");
