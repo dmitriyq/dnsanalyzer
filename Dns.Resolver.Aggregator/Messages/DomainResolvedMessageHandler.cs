@@ -12,10 +12,12 @@ namespace Dns.Resolver.Aggregator.Messages
 	public class DomainResolvedMessageHandler : IMessageQueueHandler<DomainResolvedMessage>
 	{
 		private readonly IDomainAggregatorService _aggregatorService;
+		private readonly ILogger<DomainResolvedMessageHandler> _logger;
 
-		public DomainResolvedMessageHandler(IDomainAggregatorService aggregatorService)
+		public DomainResolvedMessageHandler(IDomainAggregatorService aggregatorService, ILogger<DomainResolvedMessageHandler> logger)
 		{
 			_aggregatorService = aggregatorService;
+			_logger = logger;
 		}
 
 		public Task<bool> Handle(DomainResolvedMessage message)
