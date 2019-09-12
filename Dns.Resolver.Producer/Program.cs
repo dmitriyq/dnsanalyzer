@@ -30,6 +30,9 @@ namespace Dns.Resolver.Producer
 		public const string RABBITMQ_DNS_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_DOMAINS_QUEUE);
 		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
+		public const string RABBITMQ_PRODUCER_LIMIT = nameof(RABBITMQ_PRODUCER_LIMIT);
+		public const string RABBITMQ_PRODUCER_LIMIT_TIMEOUT = nameof(RABBITMQ_PRODUCER_LIMIT_TIMEOUT);
+
 		public static int Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
@@ -46,7 +49,10 @@ namespace Dns.Resolver.Producer
 					REDIS_BLACK_DOMAINS,
 
 					RABBITMQ_CONNECTION,
-					RABBITMQ_DNS_DOMAINS_QUEUE
+					RABBITMQ_DNS_DOMAINS_QUEUE,
+
+					RABBITMQ_PRODUCER_LIMIT,
+					RABBITMQ_PRODUCER_LIMIT_TIMEOUT
 					);
 
 				host = CreateHostBuilder(args);
@@ -105,7 +111,11 @@ namespace Dns.Resolver.Producer
 					var ihostLifeTime = sp.GetRequiredService<IHostApplicationLifetime>();
 					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
 					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
-					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName, healthQueue);
+
+					var limit = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT));
+					var timeout = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT_TIMEOUT));
+
+					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName, healthQueue, limit, timeout);
 				});
 
 			})
