@@ -63,10 +63,12 @@ namespace Dns.Resolver.Producer.Services
 			foreach (var blackDomain in blackDomains)
 			{
 				_messageQueue.Enqueue(new DomainPublishMessage(blackDomain, 1, traceId), _queueName);
+				await Task.Delay(5);
 			}
 			foreach (var whiteDomain in whiteDomains)
 			{
 				_messageQueue.Enqueue(new DomainPublishMessage(whiteDomain, 2, traceId), _queueName);
+				await Task.Delay(5);
 			}
 		}
 	}

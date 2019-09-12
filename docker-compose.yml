@@ -31,7 +31,7 @@ services:
     networks:
       - default
     deploy:
-      replicas: 1
+      replicas: 5
 
   analyzer:
     image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
@@ -71,7 +71,7 @@ services:
       - default
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 10
+      replicas: 30
 
   resolver-producer:
     image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}
