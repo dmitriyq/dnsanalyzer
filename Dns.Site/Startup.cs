@@ -1,5 +1,4 @@
 using System;
-using Autofac;
 using Dns.Contracts.Events;
 using Dns.DAL;
 using Dns.Site.EventHandlers;
