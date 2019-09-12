@@ -80,6 +80,8 @@ services:
       <<: *rabbitmq-variables
       <<: *redis-variables
       RESOLVER_PUBLISHER_DELAY_SEC: '60'
+      RABBITMQ_PRODUCER_LIMIT: '500'
+      RABBITMQ_PRODUCER_LIMIT_TIMEOUT: '50'
     networks:
       - default
       - postgre_pg-net

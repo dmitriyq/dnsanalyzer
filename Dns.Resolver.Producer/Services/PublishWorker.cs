@@ -21,8 +21,12 @@ namespace Dns.Resolver.Producer.Services
 		private readonly string _queueName;
 		private readonly string _healthQueue;
 
+		private readonly int _producerLimit;
+		private readonly int _producerLimitTimeout;
+
 		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService, 
-			IHostApplicationLifetime applicationLifetime, string queueName, string healthQueue)
+			IHostApplicationLifetime applicationLifetime, 
+			string queueName, string healthQueue, int producerLimit, int producerLimitTimeout)
 		{
 			_logger = logger;
 			_messageQueue = messageQueue;
@@ -31,6 +35,8 @@ namespace Dns.Resolver.Producer.Services
 			_timeOut = TimeSpan.FromSeconds(double.Parse(EnvironmentExtensions.GetVariable(Program.RESOLVER_PUBLISHER_DELAY_SEC)));
 			_queueName = queueName;
 			_healthQueue = healthQueue;
+			_producerLimit = producerLimit;
+			_producerLimitTimeout = producerLimitTimeout;
 			_applicationLifetime.ApplicationStopping.Register(async () => await StopAsync(new CancellationToken()).ConfigureAwait(false));
 		}
 
@@ -60,15 +66,27 @@ namespace Dns.Resolver.Producer.Services
 			var blackDomains = await _domainService.GetBlackDomainsAsync().ConfigureAwait(false);
 			var whiteDomains = await _domainService.GetWhiteDomainsAsync().ConfigureAwait(false);
 			var traceId = Guid.NewGuid();
+
+			int sendedCount = 0;
 			foreach (var blackDomain in blackDomains)
 			{
 				_messageQueue.Enqueue(new DomainPublishMessage(blackDomain, 1, traceId), _queueName);
-				await Task.Delay(5);
+				sendedCount++;
+				if (sendedCount > _producerLimit)
+				{
+					await Task.Delay(_producerLimitTimeout);
+					sendedCount = 0;
+				}
 			}
 			foreach (var whiteDomain in whiteDomains)
 			{
 				_messageQueue.Enqueue(new DomainPublishMessage(whiteDomain, 2, traceId), _queueName);
-				await Task.Delay(5);
+				sendedCount++;
+				if (sendedCount > _producerLimit)
+				{
+					await Task.Delay(_producerLimitTimeout);
+					sendedCount = 0;
+				}
 			}
 		}
 	}
