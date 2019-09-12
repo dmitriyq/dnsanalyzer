@@ -15,6 +15,8 @@ namespace Dns.Site
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
 		public const string NOTIFY_SEND_CHANNEL = nameof(NOTIFY_SEND_CHANNEL);
 
+		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
+
 		public static void Main(string[] args)
 		{
 			EnvironmentExtensions.CheckVariables(

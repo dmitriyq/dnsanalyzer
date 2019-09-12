@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Dns.Contracts\Dns.Contracts.csproj" />
     <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
   </ItemGroup>
 

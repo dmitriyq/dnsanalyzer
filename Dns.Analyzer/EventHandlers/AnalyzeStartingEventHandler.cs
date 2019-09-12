@@ -23,9 +23,11 @@ namespace Dns.Analyzer.EventHandlers
 		private readonly SuspectDomainSevice _suspectDomainSevice;
 		private readonly IDatabase _redisDb;
 		private readonly RedisKeys _redisKeys;
+		private readonly IMessageQueue _messageQueue;
 
 		public AnalyzeStartingEventHandler(ILogger<AnalyzeStartingEventHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
-			IIpInfoService ipInfoService, SuspectDomainSevice suspectDomainSevice, ConnectionMultiplexer redis, RedisKeys redisKeys)
+			IIpInfoService ipInfoService, SuspectDomainSevice suspectDomainSevice, ConnectionMultiplexer redis, RedisKeys redisKeys,
+			IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_analyzeService = analyzeService;
@@ -34,11 +36,13 @@ namespace Dns.Analyzer.EventHandlers
 			_suspectDomainSevice = suspectDomainSevice;
 			_ipInfoService = ipInfoService;
 			_notifyService = notifyService;
+			_messageQueue = messageQueue;
 		}
 
 		public async Task<bool> Handle(AnalyzeStartingEvent @event)
 		{
 			_logger.LogInformation("Starting analyze");
+			_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Analyzer", "Начат анализ DNS-атак"));
 			try
 			{
 				var redisVigruzkiIps = await _redisDb.SetMembersAsync(_redisKeys.VigruzkiIpKey).ConfigureAwait(false);
@@ -86,6 +90,7 @@ namespace Dns.Analyzer.EventHandlers
 			finally
 			{
 				_logger.LogInformation("Analyze complete");
+				_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Analyzer", "Анализ DNS-атак завершен"));
 			}
 		}
 	}

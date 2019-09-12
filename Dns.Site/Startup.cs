@@ -1,11 +1,15 @@
 using System;
 using Autofac;
+using Dns.Contracts.Events;
 using Dns.DAL;
+using Dns.Site.EventHandlers;
 using Dns.Site.Hubs;
 using Dns.Site.Services;
 using Grfc.Library.Auth.Helpers;
 using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
+using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.EventBus.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using RabbitMQ.Client;
 using StackExchange.Redis;
 
 namespace Dns.Site
@@ -74,6 +79,21 @@ namespace Dns.Site
 				opts.InstanceName = "Dns_Redis_Cache";
 			});
 
+			services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
+			{
+				var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
+				var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION) };
+				return new DefaultRabbitMQPersistentConnection(factory, logger);
+			});
+
+			services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
+			{
+				var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
+				var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
+				return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
+					queueName: string.Empty);
+			});
+
 			services.AddControllersWithViews()
 				.AddNewtonsoftJson();
 
@@ -112,6 +132,8 @@ namespace Dns.Site
 				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.NOTIFY_SERVICE_URL)));
 			services.AddHttpClient<IVigruzkiService, VigruzkiService.Client>((_, client) =>
 				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.VIGRUZKI_SERVICE_URL)));
+
+			services.AddTransient<DnsAnalyzerHealthCheckEventHandler>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -143,7 +165,12 @@ namespace Dns.Site
 				endpoints.MapDefaultControllerRoute();
 				endpoints.MapFallbackToController("Index", "Home");
 				endpoints.MapHub<AttackHub>("/attackHub");
+				endpoints.MapHub<HealthCheckHub>("/healthHub");
 			});
+
+			var messageQueue = app.ApplicationServices.GetRequiredService<IMessageQueue>();
+			var healthCheckEventHandler = app.ApplicationServices.GetRequiredService<DnsAnalyzerHealthCheckEventHandler>();
+			messageQueue.Subscribe<DnsAnalyzerHealthCheckEvent, DnsAnalyzerHealthCheckEventHandler>(healthCheckEventHandler);
 		}
 
 		private void MigrateDataBase(IServiceProvider provider)

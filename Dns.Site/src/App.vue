@@ -85,6 +85,7 @@
 			// { icon: 'playlist_add_check', title: 'Проверка домена', to: '/domainCheck' },
 			{ icon: 'search', title: 'Поиск в Реестре', to: '/reestrCheck' },
 			{ icon: 'bar_chart', title: 'Статистика', to: '/stat' },
+			{ icon: 'local_hospital', title: 'Статус системы', to: '/health'},
 			{ icon: 'save', title: 'Выгрузки', to: '/export' },
 			{ icon: 'email', title: 'Уведомления', to: '/notification' },
 		];

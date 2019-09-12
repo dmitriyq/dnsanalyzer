@@ -10,6 +10,7 @@ import Stats from './stats/Stats.vue';
 import Suspect from './suspect/Suspect.vue';
 import Export from './export/Export.vue';
 import WhiteList from './whiteList/WhiteList.vue';
+import HealthCheck from './healthCheck/HealthCheck.vue';
 
 Vue.use(Router);
 
@@ -54,6 +55,10 @@ const routes = [
 	{
 		path: '/whitelist',
 		component: WhiteList,
+	},
+	{
+		path: '/health',
+		component: HealthCheck,
 	},
 	{
 		path: '/auth',

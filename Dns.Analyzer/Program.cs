@@ -141,13 +141,14 @@ namespace Dns.Analyzer
 					var ipInfo = sp.GetRequiredService<IIpInfoService>();
 					var suspect = sp.GetRequiredService<SuspectDomainSevice>();
 					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
+					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 					var redisKeys = new RedisKeys(
 						blackDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED),
 						whiteDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED),
 						vigruzkiIpKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_IPS),
 						vigruzkiSubnetKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_SUBNETS),
 						notifyMessageKey: EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL));
-					return new AnalyzeStartingEventHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys);
+					return new AnalyzeStartingEventHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue);
 				});
 			})
 			.Build();

@@ -22,6 +22,8 @@ namespace Dns.Resolver.Aggregator.Messages
 
 		public Task<bool> Handle(DomainResolvedMessage message)
 		{
+			if (message == null) throw new ArgumentNullException(nameof(message));
+
 			_logger.LogInformation($"Handled message: {message.TraceId}");
 			_aggregatorService.AddDomain(message);
 			return Task.FromResult(true);

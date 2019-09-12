@@ -44,6 +44,7 @@ namespace Dns.Resolver.Aggregator.Services
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
 			_logger.LogInformation($"New Id Added, currenct count in queue: {e.Count}");
+			_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Resolver.Aggregator", "Завершен резолв доменов"));
 			if (e.Count > 2)
 			{
 				try
@@ -69,7 +70,7 @@ namespace Dns.Resolver.Aggregator.Services
 		public void NotifyCompletion()
 		{
 			_messageQueue.Publish(new AnalyzeStartingEvent());
-			_logger.LogInformation("AnalyzeStartingEvent has published");
+			_logger.LogInformation($"AnalyzeStartingEvent has published at {DateTimeOffset.Now}");
 		}
 
 		public async Task StoreDomainsAsync()

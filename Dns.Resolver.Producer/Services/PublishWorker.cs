@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Dns.Contracts.Events;
 using Dns.Contracts.Messages;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
@@ -43,7 +44,7 @@ namespace Dns.Resolver.Producer.Services
 				await PublishDomains().ConfigureAwait(false);
 
 				_logger.LogInformation($"PublishWorker background task executed successfully.");
-
+				_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Resolver.Producer", "Отправлены домены на резолв"));
 				await Task.Delay(_timeOut, stoppingToken).ConfigureAwait(false);
 			}
 			_logger.LogInformation("PublishWorker background task is stopping.");
