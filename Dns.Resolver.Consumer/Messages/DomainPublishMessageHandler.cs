@@ -44,7 +44,6 @@ namespace Dns.Resolver.Consumer.Messages
 				{
 					return false;
 				}
-				
 			}
 			catch (Exception ex)
 			{
