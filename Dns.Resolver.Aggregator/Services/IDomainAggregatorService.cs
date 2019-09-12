@@ -12,7 +12,7 @@ namespace Dns.Resolver.Aggregator.Services
 
 		Task StoreDomainsAsync();
 
-		void NotifyCompletion();
+		void NotifyCompletion(Guid traceId);
 		void AddDomain(DomainResolvedMessage domain);
 	}
 }

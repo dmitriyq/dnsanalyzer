@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Dns.Contracts.Events;
 using Dns.Contracts.Messages;
 using Dns.Contracts.Protobuf;
 using Dns.Resolver.Aggregator.Messages;
@@ -26,9 +25,12 @@ namespace Dns.Resolver.Aggregator.Services
 
 		private readonly string _redisBlackDomainsKey;
 		private readonly string _redisWhiteDomainsKey;
+		private readonly string _analyzeQueue;
+		private readonly string _healthQueue;
 
 		public DomainAggregatorService(ILogger<DomainAggregatorService> logger, ConnectionMultiplexer redis,
-			IMessageQueue messageQueue, string redisBlackDomainKey, string redisWhiteDomainKey)
+			IMessageQueue messageQueue, string redisBlackDomainKey, string redisWhiteDomainKey, 
+			string analyzeQueue, string healthQueue)
 		{
 			if (redis == null) throw new ArgumentNullException(nameof(redis));
 
@@ -37,6 +39,8 @@ namespace Dns.Resolver.Aggregator.Services
 			_messageQueue = messageQueue;
 			_redisBlackDomainsKey = redisBlackDomainKey;
 			_redisWhiteDomainsKey = redisWhiteDomainKey;
+			_analyzeQueue = analyzeQueue;
+			_healthQueue = healthQueue;
 			_domainCollection = new DomainQueueCollection();
 			_domainCollection.NewIdAdded += DomainCollection_NewIdAdded;
 		}
@@ -44,13 +48,13 @@ namespace Dns.Resolver.Aggregator.Services
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
 			_logger.LogInformation($"New Id Added, currenct count in queue: {e.Count}");
-			_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Resolver.Aggregator", "Завершен резолв доменов"));
+			_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Aggregator", "Завершен резолв доменов"), _healthQueue);
 			if (e.Count > 2)
 			{
 				try
 				{
 					await StoreDomainsAsync().ConfigureAwait(false);
-					NotifyCompletion();
+					NotifyCompletion(e.TraceId);
 				}
 				catch (Exception ex)
 				{
@@ -67,9 +71,9 @@ namespace Dns.Resolver.Aggregator.Services
 			_domainCollection.Add(domain);
 		}
 
-		public void NotifyCompletion()
+		public void NotifyCompletion(Guid traceId)
 		{
-			_messageQueue.Publish(new AnalyzeStartingEvent());
+			_messageQueue.Enqueue(new AnalyzeNeededMessage(traceId), _analyzeQueue);
 			_logger.LogInformation($"AnalyzeStartingEvent has published at {DateTimeOffset.Now}");
 		}
 

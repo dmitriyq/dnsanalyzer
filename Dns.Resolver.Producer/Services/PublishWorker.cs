@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Dns.Contracts.Events;
 using Dns.Contracts.Messages;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
@@ -20,9 +19,10 @@ namespace Dns.Resolver.Producer.Services
 		private readonly TimeSpan _timeOut;
 		private readonly IHostApplicationLifetime _applicationLifetime;
 		private readonly string _queueName;
+		private readonly string _healthQueue;
 
 		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService, 
-			IHostApplicationLifetime applicationLifetime, string queueName)
+			IHostApplicationLifetime applicationLifetime, string queueName, string healthQueue)
 		{
 			_logger = logger;
 			_messageQueue = messageQueue;
@@ -30,6 +30,7 @@ namespace Dns.Resolver.Producer.Services
 			_applicationLifetime = applicationLifetime;
 			_timeOut = TimeSpan.FromSeconds(double.Parse(EnvironmentExtensions.GetVariable(Program.RESOLVER_PUBLISHER_DELAY_SEC)));
 			_queueName = queueName;
+			_healthQueue = healthQueue;
 			_applicationLifetime.ApplicationStopping.Register(async () => await StopAsync(new CancellationToken()).ConfigureAwait(false));
 		}
 
@@ -46,7 +47,7 @@ namespace Dns.Resolver.Producer.Services
 				await PublishDomains().ConfigureAwait(false);
 
 				_logger.LogInformation($"PublishWorker background task executed successfully.");
-				_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Resolver.Producer", "Отправлены домены на резолв"));
+				_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Producer", "Отправлены домены на резолв"), _healthQueue);
 				await Task.Delay(_timeOut, stoppingToken).ConfigureAwait(false);
 			}
 			_logger.LogInformation("PublishWorker background task is stopping.");

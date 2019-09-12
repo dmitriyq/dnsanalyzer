@@ -21,7 +21,7 @@ namespace Dns.Resolver.Aggregator.Models
 			if (!_uniqueIds.Contains(domain.TraceId))
 			{
 				_uniqueIds.Enqueue(domain.TraceId);
-				NewIdAdded?.Invoke(this, new UniqueIdCountChangedArgs(_uniqueIds.Count));
+				NewIdAdded?.Invoke(this, new UniqueIdCountChangedArgs(_uniqueIds.Count, domain.TraceId));
 			}
 			lock (_domainsLock)
 			{
@@ -43,9 +43,11 @@ namespace Dns.Resolver.Aggregator.Models
 	public class UniqueIdCountChangedArgs
 	{
 		public int Count { get; }
-		public UniqueIdCountChangedArgs(int count)
+		public Guid TraceId { get; }
+		public UniqueIdCountChangedArgs(int count, Guid traceId)
 		{
 			Count = count;
+			TraceId = traceId;
 		}
 	}
 }

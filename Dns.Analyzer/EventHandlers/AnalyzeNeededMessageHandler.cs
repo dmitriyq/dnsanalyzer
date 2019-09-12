@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dns.Analyzer.Models;
 using Dns.Analyzer.Services;
-using Dns.Contracts.Events;
+using Dns.Contracts.Messages;
 using Dns.Contracts.Protobuf;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
@@ -14,9 +14,9 @@ using StackExchange.Redis;
 
 namespace Dns.Analyzer.EventHandlers
 {
-	public class AnalyzeStartingEventHandler : IIntegrationEventHandler<AnalyzeStartingEvent>
+	public class AnalyzeNeededMessageHandler : IMessageQueueHandler<AnalyzeNeededMessage>
 	{
-		private readonly ILogger<AnalyzeStartingEventHandler> _logger;
+		private readonly ILogger<AnalyzeNeededMessageHandler> _logger;
 		private readonly IAnalyzeService _analyzeService;
 		private readonly IIpInfoService _ipInfoService;
 		private readonly INotifyService _notifyService;
@@ -24,10 +24,11 @@ namespace Dns.Analyzer.EventHandlers
 		private readonly IDatabase _redisDb;
 		private readonly RedisKeys _redisKeys;
 		private readonly IMessageQueue _messageQueue;
+		private readonly string _healthQueue;
 
-		public AnalyzeStartingEventHandler(ILogger<AnalyzeStartingEventHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
+		public AnalyzeNeededMessageHandler(ILogger<AnalyzeNeededMessageHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
 			IIpInfoService ipInfoService, SuspectDomainSevice suspectDomainSevice, ConnectionMultiplexer redis, RedisKeys redisKeys,
-			IMessageQueue messageQueue)
+			IMessageQueue messageQueue, string healthQueue)
 		{
 			_logger = logger;
 			_analyzeService = analyzeService;
@@ -37,12 +38,13 @@ namespace Dns.Analyzer.EventHandlers
 			_ipInfoService = ipInfoService;
 			_notifyService = notifyService;
 			_messageQueue = messageQueue;
+			_healthQueue = healthQueue;
 		}
 
-		public async Task<bool> Handle(AnalyzeStartingEvent @event)
+		public async Task<bool> Handle(AnalyzeNeededMessage message)
 		{
 			_logger.LogInformation("Starting analyze");
-			_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Analyzer", "Начат анализ DNS-атак"));
+			_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Начат анализ DNS-атак"), _healthQueue);
 			try
 			{
 				var redisVigruzkiIps = await _redisDb.SetMembersAsync(_redisKeys.VigruzkiIpKey).ConfigureAwait(false);
@@ -90,7 +92,7 @@ namespace Dns.Analyzer.EventHandlers
 			finally
 			{
 				_logger.LogInformation("Analyze complete");
-				_messageQueue.Publish(new DnsAnalyzerHealthCheckEvent("Dns.Analyzer", "Анализ DNS-атак завершен"));
+				_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Анализ DNS-атак завершен"), _healthQueue);
 			}
 		}
 	}
