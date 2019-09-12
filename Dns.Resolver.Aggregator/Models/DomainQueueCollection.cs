@@ -18,9 +18,9 @@ namespace Dns.Resolver.Aggregator.Models
 		{
 			if (domain == null) throw new ArgumentNullException(nameof(domain));
 
-			if (!_uniqueIds.Contains(domain.Id))
+			if (!_uniqueIds.Contains(domain.TraceId))
 			{
-				_uniqueIds.Enqueue(domain.Id);
+				_uniqueIds.Enqueue(domain.TraceId);
 				NewIdAdded?.Invoke(this, new UniqueIdCountChangedArgs(_uniqueIds.Count));
 			}
 			lock (_domainsLock)
