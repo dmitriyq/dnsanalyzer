@@ -38,7 +38,7 @@ build-analyzer:
   stage: build
   script:
     - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
-    - docker push $RESOLVER_IMAGE
+    - docker push $ANALYZER_IMAGE
   only:
     refs:
       - master
