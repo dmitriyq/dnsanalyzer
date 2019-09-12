@@ -28,7 +28,7 @@ build-hyperlocal:
     - docker push $HYPERLOCAL_IMAGE
   only:
     refs:
-      - stable
+      - stable/*
     changes:
       - Hyperlocal/*
 
@@ -39,7 +39,7 @@ build-resolver:
     - docker push $RESOLVER_IMAGE
   only:
     refs:
-      - master
+      - stable/*
     changes:
       - Dns.Resolver/**/*
       - Dns.Library/**/*
@@ -52,7 +52,7 @@ build-analyzer:
     - docker push $ANALYZER_IMAGE
   only:
     refs:
-      - stable
+      - stable/*
     changes:
       - Dns.Analyzer/**/*
       - Dns.Library/**/*
@@ -65,7 +65,7 @@ build-site:
     - docker push $SITE_IMAGE
   only:
     refs:
-      - stable
+      - stable/*
     changes:
       - Dns.Site/**/*
       - Dns.Library/**/*
@@ -90,7 +90,7 @@ prepare-storage:
         && exit"
   only:
     refs:
-      - stable
+      - stable/*
     changes:
       - init-db.sql
 
@@ -120,4 +120,4 @@ deploy:
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
   only:
-    - stable
+    - stable/*
