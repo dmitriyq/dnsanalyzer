@@ -42,7 +42,7 @@ services:
       - default
       - postgre_pg-net
       - redis-net
-      - rabbitmq-net
+      - rabbitmq_rabbitmq-net
     deploy:
       replicas: 1
 
@@ -55,7 +55,7 @@ services:
     networks:
       - default
       - redis-net
-      - rabbitmq-net
+      - rabbitmq_rabbitmq-net
     deploy:
       replicas: 1
 
@@ -67,7 +67,7 @@ services:
       HYPERLOCAL_SERVER: 'hyperlocal'
     networks:
       - default
-      - rabbitmq-net
+      - rabbitmq_rabbitmq-net
     deploy:
       replicas: 10
 
@@ -82,7 +82,7 @@ services:
       - default
       - postgre_pg-net
       - redis-net
-      - rabbitmq-net
+      - rabbitmq_rabbitmq-net
     deploy:
       replicas: 1
 
@@ -97,7 +97,7 @@ services:
       - notification_default
       - vigruzki_default
       - traefik-net
-      - rabbitmq-net
+      - rabbitmq_rabbitmq-net
     environment: 
       <<: *shared-variables
       <<: *rabbitmq-variables
@@ -125,5 +125,5 @@ networks:
     external: true
   traefik-net:
     external: true
-  rabbitmq-net:
+  rabbitmq_rabbitmq-net:
     external: true
