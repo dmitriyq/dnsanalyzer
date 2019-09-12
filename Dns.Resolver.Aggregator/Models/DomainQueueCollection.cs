@@ -28,13 +28,14 @@ namespace Dns.Resolver.Aggregator.Models
 				_domains.Add(domain);
 			}
 		}
+
 		public IEnumerable<DomainResolvedMessage> DequeueDomains()
 		{
 			var id = _uniqueIds.Dequeue();
-			var domains = _domains.Where(x => x.Id == id).ToArray();
+			var domains = _domains.Where(x => x.TraceId == id).ToArray();
 			lock (_domainsLock)
 			{
-				_domains.RemoveAll(x => x.Id == id);
+				_domains.RemoveAll(x => x.TraceId == id);
 			}
 			return domains;
 		}
@@ -44,6 +45,7 @@ namespace Dns.Resolver.Aggregator.Models
 	{
 		public int Count { get; }
 		public Guid TraceId { get; }
+
 		public UniqueIdCountChangedArgs(int count, Guid traceId)
 		{
 			Count = count;
