@@ -16,6 +16,7 @@ namespace Dns.Site
 		public const string NOTIFY_SEND_CHANNEL = nameof(NOTIFY_SEND_CHANNEL);
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
+		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public static void Main(string[] args)
 		{

@@ -1,5 +1,5 @@
 using System;
-using Dns.Contracts.Events;
+using Dns.Contracts.Messages;
 using Dns.DAL;
 using Dns.Site.EventHandlers;
 using Dns.Site.Hubs;
@@ -132,7 +132,7 @@ namespace Dns.Site
 			services.AddHttpClient<IVigruzkiService, VigruzkiService.Client>((_, client) =>
 				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.VIGRUZKI_SERVICE_URL)));
 
-			services.AddTransient<DnsAnalyzerHealthCheckEventHandler>();
+			services.AddTransient<DnsAnalyzerHealthCheckMessageHandler>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -168,8 +168,9 @@ namespace Dns.Site
 			});
 
 			var messageQueue = app.ApplicationServices.GetRequiredService<IMessageQueue>();
-			var healthCheckEventHandler = app.ApplicationServices.GetRequiredService<DnsAnalyzerHealthCheckEventHandler>();
-			messageQueue.Subscribe<DnsAnalyzerHealthCheckEvent, DnsAnalyzerHealthCheckEventHandler>(healthCheckEventHandler);
+			var healthCheckEventHandler = app.ApplicationServices.GetRequiredService<DnsAnalyzerHealthCheckMessageHandler>();
+			var healthQueue = EnvironmentExtensions.GetVariable(Program.RABBITMQ_HEALTH_QUEUE);
+			messageQueue.HandleMessage<DnsAnalyzerHealthCheckMessage, DnsAnalyzerHealthCheckMessageHandler>(healthCheckEventHandler, healthQueue);
 		}
 
 		private void MigrateDataBase(IServiceProvider provider)

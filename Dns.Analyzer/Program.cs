@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Dns.Analyzer.EventHandlers;
 using Dns.Analyzer.Models;
 using Dns.Analyzer.Services;
-using Dns.Contracts.Events;
+using Dns.Contracts.Messages;
 using Dns.DAL;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
@@ -30,6 +30,8 @@ namespace Dns.Analyzer
 		public const string REDIS_VIGRUZKI_SUBNETS = nameof(REDIS_VIGRUZKI_SUBNETS);
 		public const string NOTIFY_SEND_CHANNEL = nameof(NOTIFY_SEND_CHANNEL);
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
+		public const string RABBITMQ_ANALYZE_QUEUE = nameof(RABBITMQ_ANALYZE_QUEUE);
+		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
 		public const string ANALYZER_SUSPECT_IP_COUNT = nameof(ANALYZER_SUSPECT_IP_COUNT);
@@ -59,8 +61,9 @@ namespace Dns.Analyzer
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
 				ApplyMigrations(host.Services);
 				var messageQueue = host.Services.GetRequiredService<IMessageQueue>();
-				var handler = host.Services.GetRequiredService<AnalyzeStartingEventHandler>();
-				messageQueue.Subscribe<AnalyzeStartingEvent, AnalyzeStartingEventHandler>(handler);
+				var handler = host.Services.GetRequiredService<AnalyzeNeededMessageHandler>();
+				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
+				messageQueue.HandleMessage<AnalyzeNeededMessage, AnalyzeNeededMessageHandler>(handler, queueName);
 
 				host.Start();
 				host.WaitForShutdown();
@@ -133,9 +136,9 @@ namespace Dns.Analyzer
 					return new NotifyService(logger, dbContext, emailFrom);
 				});
 
-				services.AddTransient<AnalyzeStartingEventHandler>(sp =>
+				services.AddTransient<AnalyzeNeededMessageHandler>(sp =>
 				{
-					var logger = sp.GetRequiredService<ILogger<AnalyzeStartingEventHandler>>();
+					var logger = sp.GetRequiredService<ILogger<AnalyzeNeededMessageHandler>>();
 					var analyze = sp.GetRequiredService<IAnalyzeService>();
 					var notify = sp.GetRequiredService<INotifyService>();
 					var ipInfo = sp.GetRequiredService<IIpInfoService>();
@@ -148,7 +151,8 @@ namespace Dns.Analyzer
 						vigruzkiIpKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_IPS),
 						vigruzkiSubnetKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_SUBNETS),
 						notifyMessageKey: EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL));
-					return new AnalyzeStartingEventHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue);
+					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
+					return new AnalyzeNeededMessageHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue, healthQueue);
 				});
 			})
 			.Build();
