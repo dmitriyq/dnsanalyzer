@@ -27,7 +27,6 @@ namespace Dns.Resolver.Consumer.Services
 			try
 			{
 				var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
-				_logger.LogInformation($"Resolve success for {domain} - {string.Join(", ", resp)}");
 				return resp.Select(x => x.ToString()).ToHashSet();
 			}
 			catch (Exception ex)
@@ -36,7 +35,6 @@ namespace Dns.Resolver.Consumer.Services
 				try
 				{
 					var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
-					_logger.LogInformation($"Resolve success for {domain} - {string.Join(", ", resp)}");
 					return resp.Select(x => x.ToString()).ToHashSet();
 				}
 				catch (Exception ex1)

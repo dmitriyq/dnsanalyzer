@@ -12,14 +12,17 @@ namespace Dns.Resolver.Consumer.Messages
 	public class DomainPublishMessageHandler : IMessageQueueHandler<DomainPublishMessage>
 	{
 		private readonly IDomainLookupService _domainLookup;
+		private readonly ILogger<DomainPublishMessageHandler> _logger;
 		private readonly IMessageQueue _messageQueue;
 		private readonly string _resolvedQueue;
 
-		public DomainPublishMessageHandler(IDomainLookupService domainLookup, IMessageQueue messageQueue, string resolvedQueue)
+		public DomainPublishMessageHandler(IDomainLookupService domainLookup, ILogger<DomainPublishMessageHandler> logger,
+			IMessageQueue messageQueue, string resolvedQueue)
 		{
 			_domainLookup = domainLookup;
 			_messageQueue = messageQueue;
 			_resolvedQueue = resolvedQueue;
+			_logger = logger;
 		}
 
 		public async Task<bool> Handle(DomainPublishMessage message)
@@ -35,14 +38,18 @@ namespace Dns.Resolver.Consumer.Messages
 				{
 					var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
 					_messageQueue.Enqueue(resolvedMessage, _resolvedQueue);
+					_logger.LogInformation($"EnqueueMessage to {_resolvedQueue} for ID {message.TraceId} {message.Domain}");
 				}
-				catch 
+				catch
 				{
 					return false;
 				}
 				
 			}
-			catch {	}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, ex.Message);
+			}
 
 			return true;
 		}
