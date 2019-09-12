@@ -18,6 +18,8 @@ namespace Dns.Resolver.Aggregator
 #pragma warning disable CA1707 // Идентификаторы не должны содержать символы подчеркивания
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
+		public const string RABBITMQ_ANALYZE_QUEUE = nameof(RABBITMQ_ANALYZE_QUEUE);
+		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
 		public const string REDIS_BLACK_DOMAIN_RESOLVED = nameof(REDIS_BLACK_DOMAIN_RESOLVED);
@@ -93,11 +95,13 @@ namespace Dns.Resolver.Aggregator
 					var logger = sp.GetRequiredService<ILogger<DomainAggregatorService>>();
 					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
+					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
+					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
 
 					var blackDomainKey = EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED);
 					var whiteDomainKey = EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED);
 
-					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey);
+					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey, queueName, healthQueue);
 				});
 
 				services.AddTransient<DomainResolvedMessageHandler>();

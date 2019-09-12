@@ -28,6 +28,7 @@ namespace Dns.Resolver.Producer
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_DOMAINS_QUEUE);
+		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public static int Main(string[] args)
 		{
@@ -103,7 +104,8 @@ namespace Dns.Resolver.Producer
 					var domainSvc = sp.GetRequiredService<IDomainService>();
 					var ihostLifeTime = sp.GetRequiredService<IHostApplicationLifetime>();
 					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
-					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName);
+					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
+					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName, healthQueue);
 				});
 
 			})
