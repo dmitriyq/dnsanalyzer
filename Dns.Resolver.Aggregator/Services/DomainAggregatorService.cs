@@ -47,7 +47,7 @@ namespace Dns.Resolver.Aggregator.Services
 
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
-			_logger.LogInformation($"New Id Added, currenct count in queue: {e.Count}");
+			_logger.LogInformation($"New Id {e.TraceId} Added, currenct count in queue: {e.Count}");
 			_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Aggregator", "Завершен резолв доменов"), _healthQueue);
 			if (e.Count > 2)
 			{

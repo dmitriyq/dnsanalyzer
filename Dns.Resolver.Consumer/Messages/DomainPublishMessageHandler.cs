@@ -38,7 +38,6 @@ namespace Dns.Resolver.Consumer.Messages
 				{
 					var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
 					_messageQueue.Enqueue(resolvedMessage, _resolvedQueue);
-					_logger.LogInformation($"EnqueueMessage to {_resolvedQueue} for ID {message.TraceId} {message.Domain}");
 				}
 				catch
 				{
