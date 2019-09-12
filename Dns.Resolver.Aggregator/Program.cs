@@ -29,19 +29,20 @@ namespace Dns.Resolver.Aggregator
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
-			IHost? host = null;
 
 			try
 			{
 				EnvironmentExtensions.CheckVariables(
 					RABBITMQ_CONNECTION,
 					RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE,
+					RABBITMQ_ANALYZE_QUEUE,
+					RABBITMQ_HEALTH_QUEUE,
 					REDIS_CONNECTION,
 					REDIS_BLACK_DOMAIN_RESOLVED,
 					REDIS_WHITE_DOMAIN_RESOLVED
 				);
 
-				host = CreateHostBuilder(args);
+				var host = CreateHostBuilder(args);
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
 
 				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
@@ -85,8 +86,7 @@ namespace Dns.Resolver.Aggregator
 				{
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: string.Empty);
+					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
 				});
 				services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
 				{

@@ -89,8 +89,7 @@ namespace Dns.Site
 			{
 				var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 				var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-				return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-					queueName: string.Empty);
+				return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
 			});
 
 			services.AddControllersWithViews()

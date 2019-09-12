@@ -23,7 +23,7 @@ namespace Dns.Resolver.Producer.Services
 		private readonly int _producerLimit;
 		private readonly int _producerLimitTimeout;
 
-		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService, 
+		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService,
 			string queueName, string healthQueue, int producerLimit, int producerLimitTimeout)
 		{
 			_logger = logger;
