@@ -19,15 +19,17 @@ namespace Dns.Resolver.Producer.Services
 		private readonly IDomainService _domainService;
 		private readonly TimeSpan _timeOut;
 		private readonly IHostApplicationLifetime _applicationLifetime;
+		private readonly string _queueName;
 
-		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService, IHostApplicationLifetime applicationLifetime)
+		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService, 
+			IHostApplicationLifetime applicationLifetime, string queueName)
 		{
 			_logger = logger;
 			_messageQueue = messageQueue;
 			_domainService = domainService;
 			_applicationLifetime = applicationLifetime;
 			_timeOut = TimeSpan.FromSeconds(double.Parse(EnvironmentExtensions.GetVariable(Program.RESOLVER_PUBLISHER_DELAY_SEC)));
-
+			_queueName = queueName;
 			_applicationLifetime.ApplicationStopping.Register(async () => await StopAsync(new CancellationToken()).ConfigureAwait(false));
 		}
 
@@ -59,11 +61,11 @@ namespace Dns.Resolver.Producer.Services
 			var traceId = Guid.NewGuid();
 			foreach (var blackDomain in blackDomains)
 			{
-				_messageQueue.Enqueue(new DomainPublishMessage(blackDomain, 1, traceId));
+				_messageQueue.Enqueue(new DomainPublishMessage(blackDomain, 1, traceId), _queueName);
 			}
 			foreach (var whiteDomain in whiteDomains)
 			{
-				_messageQueue.Enqueue(new DomainPublishMessage(whiteDomain, 2, traceId));
+				_messageQueue.Enqueue(new DomainPublishMessage(whiteDomain, 2, traceId), _queueName);
 			}
 		}
 	}

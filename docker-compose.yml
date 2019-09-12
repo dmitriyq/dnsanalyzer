@@ -64,7 +64,7 @@ services:
     environment:
       <<: *shared-variables
       <<: *rabbitmq-variables
-      HYPERLOCAL_SERVER: 'hyperlocal'
+      HYPERLOCAL_SERVER: '172.16.20.16'
     networks:
       - default
       - rabbitmq_rabbitmq-net
