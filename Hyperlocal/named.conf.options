@@ -35,20 +35,6 @@ options {
 			8.8.8.8;
 			8.8.4.4;
 			1.1.1.1;
-			2001:503:ba3e::2:30;
-			2001:500:200::b;
-			2001:500:2::c;
-			2001:500:2d::d;
-			2001:500:a8::e;
-			2001:500:2f::f;
-			2001:500:12::d0d;
-			2001:500:1::53;
-			2001:7fe::53;
-			2001:503:c27::2:30;
-			2001:7fd::1;
-			2001:500:9f::42;
-			2001:dc3::35;
-			VeriSign, Inc.
     };
     forward only;
 	rate-limit {
@@ -60,6 +46,7 @@ options {
      	all-per-second 0;
      	window 1;
 	};
+	filter-aaaa-on-v4 yes;
     recursive-clients 10000;
     resolver-query-timeout 15;
 	dnssec-enable yes;
@@ -69,9 +56,9 @@ options {
 	auth-nxdomain no;    # conform to RFC1035
 	listen-on port 53  { any; };
 	recursion yes;
-	allow-query {any; };
-	allow-query-on {any; };
-	allow-recursion {any; };
-	allow-recursion-on {any; };
+	allow-query { any; };
+	allow-query-on { any; };
+	allow-recursion { any; };
+	allow-recursion-on { any; };
 };
 
