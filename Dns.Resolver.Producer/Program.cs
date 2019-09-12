@@ -92,11 +92,19 @@ namespace Dns.Resolver.Producer
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
 					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE));
+						queueName: string.Empty);
 				});
 
 				services.AddTransient<IDomainService, DomainService>();
-				services.AddHostedService<PublishWorker>();
+				services.AddHostedService<PublishWorker>(sp => 
+				{
+					var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
+					var messageQueue = sp.GetRequiredService<IMessageQueue>();
+					var domainSvc = sp.GetRequiredService<IDomainService>();
+					var ihostLifeTime = sp.GetRequiredService<IHostApplicationLifetime>();
+					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
+					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName);
+				});
 
 			})
 			.Build();

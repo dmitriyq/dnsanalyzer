@@ -44,7 +44,7 @@ namespace Dns.Resolver.Aggregator
 
 				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
 				var handler = host.Services.GetRequiredService<DomainResolvedMessageHandler>();
-				_messageQueue.HandleMessage<DomainResolvedMessage, DomainResolvedMessageHandler>(handler);
+				_messageQueue.HandleMessage<DomainResolvedMessage, DomainResolvedMessageHandler>(handler, EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE));
 
 				host.Start();
 				host.WaitForShutdown();
@@ -86,7 +86,7 @@ namespace Dns.Resolver.Aggregator
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
 					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE));
+						queueName: string.Empty);
 				});
 				services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
 				{
