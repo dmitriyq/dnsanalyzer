@@ -33,7 +33,17 @@ namespace Dns.Resolver.Consumer.Services
 			catch (Exception ex)
 			{
 				_logger.LogWarning(ex, ex.Message);
-				throw;
+				try
+				{
+					var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
+					_logger.LogInformation($"Resolve success for {domain} - {string.Join(", ", resp)}");
+					return resp.Select(x => x.ToString()).ToHashSet();
+				}
+				catch (Exception ex1)
+				{
+					_logger.LogWarning(ex1, ex1.Message);
+					throw;
+				}
 			}
 		}
 	}
