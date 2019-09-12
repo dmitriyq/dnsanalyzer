@@ -36,7 +36,7 @@ namespace Dns.Analyzer
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
 		public const string ANALYZER_SUSPECT_IP_COUNT = nameof(ANALYZER_SUSPECT_IP_COUNT);
 
-		public static int Main(string[] args)
+		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
 			IHost? host = null;
@@ -68,15 +68,13 @@ namespace Dns.Analyzer
 				host.Start();
 				host.WaitForShutdown();
 				host.Dispose();
-				return 0;
 			}
 			catch (Exception ex)
 			{
 				if (_logger != null)
 					_logger.LogCritical(ex, ex.Message);
 				else Console.WriteLine(ex);
-				host?.Dispose();
-				return 1;
+				throw;
 			}
 		}
 
