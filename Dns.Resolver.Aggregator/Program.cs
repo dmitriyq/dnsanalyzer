@@ -26,7 +26,7 @@ namespace Dns.Resolver.Aggregator
 		public const string REDIS_WHITE_DOMAIN_RESOLVED = nameof(REDIS_WHITE_DOMAIN_RESOLVED);
 #pragma warning restore CA1707 // Идентификаторы не должны содержать символы подчеркивания
 
-		public static int Main(string[] args)
+		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
 			IHost? host = null;
@@ -51,14 +51,12 @@ namespace Dns.Resolver.Aggregator
 				host.Start();
 				host.WaitForShutdown();
 				host.Dispose();
-				return 0;
 			}
 			catch (Exception ex)
 			{
 				if (_logger != null)
 					_logger.LogCritical(ex, ex.Message);
 				else Console.WriteLine(ex);
-				host?.Dispose();
 				throw;
 			}
 		}

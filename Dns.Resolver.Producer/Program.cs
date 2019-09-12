@@ -33,7 +33,7 @@ namespace Dns.Resolver.Producer
 		public const string RABBITMQ_PRODUCER_LIMIT = nameof(RABBITMQ_PRODUCER_LIMIT);
 		public const string RABBITMQ_PRODUCER_LIMIT_TIMEOUT = nameof(RABBITMQ_PRODUCER_LIMIT_TIMEOUT);
 
-		public static int Main(string[] args)
+		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
 			IHost? host = null;
@@ -57,19 +57,19 @@ namespace Dns.Resolver.Producer
 
 				host = CreateHostBuilder(args);
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
+				var worker = host.Services.GetRequiredService<PublishWorker>();
 				ApplyMigrations(host.Services);
+				_ = worker.RunJob();
 				host.Start();
 				host.WaitForShutdown();
 				host.Dispose();
-				return 0;
 			}
 			catch (Exception ex)
 			{
 				if (_logger != null)
 					_logger.LogCritical(ex, ex.Message);
 				else Console.WriteLine(ex);
-				host?.Dispose();
-				return 1;
+				throw;
 			}
 		}
 
@@ -103,19 +103,18 @@ namespace Dns.Resolver.Producer
 				});
 
 				services.AddTransient<IDomainService, DomainService>();
-				services.AddHostedService<PublishWorker>(sp => 
+				services.AddTransient<PublishWorker>(sp => 
 				{
 					var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 					var domainSvc = sp.GetRequiredService<IDomainService>();
-					var ihostLifeTime = sp.GetRequiredService<IHostApplicationLifetime>();
 					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
 					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
 
 					var limit = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT));
 					var timeout = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT_TIMEOUT));
 
-					return new PublishWorker(logger, messageQueue, domainSvc, ihostLifeTime, queueName, healthQueue, limit, timeout);
+					return new PublishWorker(logger, messageQueue, domainSvc, queueName, healthQueue, limit, timeout);
 				});
 
 			})

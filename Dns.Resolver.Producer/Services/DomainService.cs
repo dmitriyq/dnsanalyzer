@@ -13,11 +13,11 @@ namespace Dns.Resolver.Producer.Services
 {
 	public class DomainService : IDomainService
 	{
-		private readonly DnsReadOnlyDbContext _dnsDb;
+		private readonly DnsDbContext _dnsDb;
 		private readonly IDatabase _redisDb;
 		private readonly ILogger<DomainService> _logger;
 
-		public DomainService(DnsReadOnlyDbContext dnsDb, ConnectionMultiplexer redis, ILogger<DomainService> logger)
+		public DomainService(DnsDbContext dnsDb, ConnectionMultiplexer redis, ILogger<DomainService> logger)
 		{
 			_dnsDb = dnsDb;
 			_redisDb = redis.GetDatabase();

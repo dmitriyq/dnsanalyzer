@@ -164,20 +164,20 @@ namespace Dns.Analyzer.Services
 				{
 					var status = attack.StatusEnum;
 					var history = _dbContext.AttackHistories.Where(x => x.AttackId == attack.Id).OrderBy(x => x.Id).LastOrDefault();
-					if (status == AttackStatusEnum.Intersection)
-					{
-						if (history.Date < treshholdIncorrectValues)
-						{
-							_dbContext.DnsAttacks.Remove(attack);
-						}
-						else
-						{
-							attack.Status = (int)AttackStatusEnum.Closing;
-							AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
-							newAttacks.Add(attack);
-						}
-					}
-					else if (status == AttackStatusEnum.Closing)
+					//if (status == AttackStatusEnum.Intersection)
+					//{
+					//	if (history.Date < treshholdIncorrectValues)
+					//	{
+					//		_dbContext.DnsAttacks.Remove(attack);
+					//	}
+					//	else
+					//	{
+					//		attack.Status = (int)AttackStatusEnum.Closing;
+					//		AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
+					//		newAttacks.Add(attack);
+					//	}
+					//}
+					/*else*/ if (status == AttackStatusEnum.Closing)
 					{
 						if (history.Date < treshholdCompleted)
 						{
