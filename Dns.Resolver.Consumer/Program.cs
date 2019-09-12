@@ -24,7 +24,6 @@ namespace Dns.Resolver.Consumer
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
-			IHost? host = null;
 			try
 			{
 				EnvironmentExtensions.CheckVariables(
@@ -34,7 +33,7 @@ namespace Dns.Resolver.Consumer
 					RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE
 					);
 
-				host = CreateHostBuilder(args);
+				var host = CreateHostBuilder(args);
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
 
 				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
@@ -73,8 +72,7 @@ namespace Dns.Resolver.Consumer
 				{
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: string.Empty);
+					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
 				});
 				services.AddTransient<IDomainLookupService, DomainLookupService>(sp => {
 					var dnsServer = EnvironmentExtensions.GetVariable(HYPERLOCAL_SERVER);
@@ -85,7 +83,8 @@ namespace Dns.Resolver.Consumer
 					var domainLookup = sp.GetRequiredService<IDomainLookupService>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 					var resolvedQueue = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
-					return new DomainPublishMessageHandler(domainLookup, messageQueue, resolvedQueue);
+					var logger = sp.GetRequiredService<ILogger<DomainPublishMessageHandler>>();
+					return new DomainPublishMessageHandler(domainLookup, logger, messageQueue, resolvedQueue);
 				});
 			})
 			.Build();

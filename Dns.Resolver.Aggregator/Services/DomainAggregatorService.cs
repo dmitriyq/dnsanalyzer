@@ -29,7 +29,7 @@ namespace Dns.Resolver.Aggregator.Services
 		private readonly string _healthQueue;
 
 		public DomainAggregatorService(ILogger<DomainAggregatorService> logger, ConnectionMultiplexer redis,
-			IMessageQueue messageQueue, string redisBlackDomainKey, string redisWhiteDomainKey, 
+			IMessageQueue messageQueue, string redisBlackDomainKey, string redisWhiteDomainKey,
 			string analyzeQueue, string healthQueue)
 		{
 			if (redis == null) throw new ArgumentNullException(nameof(redis));

@@ -39,7 +39,6 @@ namespace Dns.Analyzer
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
-			IHost? host = null;
 
 			EnvironmentExtensions.CheckVariables(
 				PG_CONNECTION_STRING_READ,
@@ -57,7 +56,7 @@ namespace Dns.Analyzer
 
 			try
 			{
-				host = CreateHostBuilder(args);
+				var host = CreateHostBuilder(args);
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
 				ApplyMigrations(host.Services);
 				var messageQueue = host.Services.GetRequiredService<IMessageQueue>();
@@ -113,8 +112,7 @@ namespace Dns.Analyzer
 				{
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: string.Empty);
+					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
 				});
 
 				services.AddTransient<SuspectDomainSevice>(sp =>

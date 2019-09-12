@@ -36,7 +36,6 @@ namespace Dns.Resolver.Producer
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
-			IHost? host = null;
 			try
 			{
 				EnvironmentExtensions.CheckVariables(
@@ -50,12 +49,13 @@ namespace Dns.Resolver.Producer
 
 					RABBITMQ_CONNECTION,
 					RABBITMQ_DNS_DOMAINS_QUEUE,
+					RABBITMQ_HEALTH_QUEUE,
 
 					RABBITMQ_PRODUCER_LIMIT,
 					RABBITMQ_PRODUCER_LIMIT_TIMEOUT
 					);
 
-				host = CreateHostBuilder(args);
+				var host = CreateHostBuilder(args);
 				_logger = host.Services.GetRequiredService<ILogger<Program>>();
 				var worker = host.Services.GetRequiredService<PublishWorker>();
 				ApplyMigrations(host.Services);
@@ -98,12 +98,11 @@ namespace Dns.Resolver.Producer
 				{
 					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
 					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger,
-						queueName: string.Empty);
+					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
 				});
 
 				services.AddTransient<IDomainService, DomainService>();
-				services.AddTransient<PublishWorker>(sp => 
+				services.AddTransient<PublishWorker>(sp =>
 				{
 					var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
@@ -116,7 +115,6 @@ namespace Dns.Resolver.Producer
 
 					return new PublishWorker(logger, messageQueue, domainSvc, queueName, healthQueue, limit, timeout);
 				});
-
 			})
 			.Build();
 
