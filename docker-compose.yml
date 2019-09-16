@@ -25,9 +25,9 @@ x-rabbitmq-variables: &rabbitmq-variables
 services:
   hyperlocal:
     image: ${HYPERLOCAL_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/hyperlocal}
-    ports:
-      - "53:53"
-      - "53:53/udp"
+    expose:
+      - "53"
+      - "53/udp"
     networks:
       - default
     deploy:
@@ -66,7 +66,7 @@ services:
     environment:
       <<: *shared-variables
       <<: *rabbitmq-variables
-      HYPERLOCAL_SERVER: '172.16.20.16'
+      HYPERLOCAL_SERVER: 'hyperlocal'
     networks:
       - default
       - rabbitmq_rabbitmq-net
@@ -92,8 +92,8 @@ services:
 
   site:
     image: ${SITE_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/site}
-    ports:
-      - 9004:80
+    expose:
+      - "80"
     networks:
       - postgre_pg-net
       - redis-net
