@@ -150,7 +150,7 @@ namespace Dns.Analyzer.Services
 
 			//check not updated attacks  
 			var treshholdCompleted = DateTimeOffset.UtcNow.AddDays(-1);
-			var treshholdIncorrectValues = DateTimeOffset.UtcNow.AddMinutes(-5);
+			var treshholdIncorrectValues = DateTimeOffset.UtcNow.AddMinutes(-10);
 			var newIds = newAttacks.Select(x => x.Id).ToList();
 			var ignoreIds = ignoreAttacks.Select(x => x.Id).ToList();
 			var allIds = storedAttacks.Select(x => x.Id).ToList();
@@ -164,21 +164,26 @@ namespace Dns.Analyzer.Services
 				{
 					var status = attack.StatusEnum;
 					var history = _dbContext.AttackHistories.Where(x => x.AttackId == attack.Id).OrderBy(x => x.Id).LastOrDefault();
-					//if (status == AttackStatusEnum.Intersection)
-					//{
-					//	if (history.Date < treshholdIncorrectValues)
-					//	{
-					//		_dbContext.DnsAttacks.Remove(attack);
-					//	}
-					//	else
-					//	{
-					//		attack.Status = (int)AttackStatusEnum.Closing;
-					//		AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
-					//		newAttacks.Add(attack);
-					//	}
-					//}
-					/*else*/ if (status == AttackStatusEnum.Closing)
+					if (status == AttackStatusEnum.Intersection)
 					{
+						attack.Status = (int)AttackStatusEnum.Closing;
+						AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
+						newAttacks.Add(attack);
+					}
+					else if (status == AttackStatusEnum.Closing)
+					{
+						var prevHistory = _dbContext.AttackHistories.Where(x => x.AttackId == attack.Id)
+							.OrderByDescending(x => x.Id).Skip(1).FirstOrDefault();
+						if (prevHistory != null)
+						{
+							bool isInvalidRecord = prevHistory.PrevStatusEnum == AttackStatusEnum.None
+							&& prevHistory.Date < treshholdIncorrectValues;
+							if (isInvalidRecord)
+							{
+								_dbContext.DnsAttacks.Remove(attack);
+								_dbContext.AttackGroups.Remove(attack.AttackGroup);
+							}
+						}
 						if (history.Date < treshholdCompleted)
 						{
 							attack.Status = (int)AttackStatusEnum.Completed;
