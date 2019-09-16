@@ -121,6 +121,7 @@ prepare-storage-prod:
   script:
     - 'which ss-agent || (apk update && apk add openssh)'
     - 'which rsync || (apk update && apk add rsync)'
+    - 'which sed || (apk update && apk add sed)'
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
@@ -129,6 +130,7 @@ prepare-storage-prod:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
+    - sed -i 's/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g' init-db.sql
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
@@ -156,7 +158,6 @@ deploy-prod:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
-    - cp init-db.sql $CI_PROJECT_NAME
     - cp prod.env $CI_PROJECT_NAME/.env
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
@@ -290,6 +291,7 @@ prepare-storage-dev:
   script:
     - 'which ss-agent || (apk update && apk add openssh)'
     - 'which rsync || (apk update && apk add rsync)'
+    - 'which sed || (apk update && apk add sed)'
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
@@ -298,6 +300,7 @@ prepare-storage-dev:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
+    - sed -i 's/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g' init-db.sql
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
@@ -329,7 +332,6 @@ deploy-dev:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
-    - cp init-db.sql $CI_PROJECT_NAME
     - cp dev.env $CI_PROJECT_NAME/.env
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&

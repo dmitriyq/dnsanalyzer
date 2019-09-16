@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 DO $$
 BEGIN
-PERFORM dblink_exec('', 'CREATE DATABASE' || :dbName);
+PERFORM dblink_exec('', 'CREATE DATABASE DB_NAME');
 EXCEPTION WHEN duplicate_database THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
 END
 $$;
@@ -14,18 +14,18 @@ BEGIN
    IF NOT EXISTS (
       SELECT
       FROM   pg_catalog.pg_roles
-      WHERE  rolname = :dbUser) THEN
+      WHERE  rolname = 'DB_USER') THEN
 
-      CREATE ROLE :dbUser LOGIN PASSWORD :dbPass;
-	  GRANT ALL PRIVILEGES ON DATABASE :dbName TO :dbUser;
+      CREATE ROLE DB_USER LOGIN PASSWORD 'DB_PASS';
+	  GRANT ALL PRIVILEGES ON DATABASE DB_NAME TO DB_USER;
    END IF;
 END
 $do$;
 
-ALTER ROLE :dbUser SUPERUSER;
+ALTER ROLE DB_USER SUPERUSER;
 
-SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'CREATE EXTENSION IF NOT EXISTS dblink;');
-SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to ' || :dbUserdnsuser || ';');
-SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to ' || :dbUserdnsuser || ';');
-SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to ' || :dbUserdnsuser || ';');
-SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'CREATE EXTENSION IF NOT EXISTS citext;');
+SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'CREATE EXTENSION IF NOT EXISTS dblink;');
+SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to DB_USER;');
+SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to DB_USER;');
+SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to DB_USER;');
+SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'CREATE EXTENSION IF NOT EXISTS citext;');
