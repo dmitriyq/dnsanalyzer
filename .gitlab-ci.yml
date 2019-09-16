@@ -11,6 +11,10 @@ variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
 
+  DB_NAME: 'dnsdb'
+  DB_USER: 'dnsuser'
+  DB_PASSWORD: 'dnsuser'
+
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
   ANALYZER_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
   RESOLVER_AGGREGATOR_IMAGE: $CI_REGISTRY_IMAGE/resolver-aggregator:latest
@@ -21,7 +25,7 @@ variables:
 before_script:
   - docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY
 
-build-hyperlocal:
+build-hyperlocal-prod:
   stage: build
   script:
     - chmod +x Hyperlocal/start.sh
@@ -37,7 +41,7 @@ build-hyperlocal:
   - build
 
 
-build-analyzer:
+build-analyzer-prod:
   stage: build
   script:
     - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
@@ -52,7 +56,7 @@ build-analyzer:
   tags:
   - build
 
-build-resolver-aggregator:
+build-resolver-aggregator-prod:
   stage: build
   script:
     - docker build --pull -t $RESOLVER_AGGREGATOR_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
@@ -66,7 +70,7 @@ build-resolver-aggregator:
   tags:
   - build
 
-build-resolver-consumer:
+build-resolver-consumer-prod:
   stage: build
   script:
     - docker build --pull -t $RESOLVER_CONSUMER_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
@@ -80,7 +84,7 @@ build-resolver-consumer:
   tags:
   - build
 
-build-resolver-producer:
+build-resolver-producer-prod:
   stage: build
   script:
     - docker build --pull -t $RESOLVER_PRODUCER_IMAGE -f Dns.Resolver.Producer/Dockerfile .
@@ -95,7 +99,7 @@ build-resolver-producer:
   tags:
   - build
 
-build-site:
+build-site-prod:
   stage: build
   script:
     - docker build --pull -t $SITE_IMAGE -f Dns.Site/Dockerfile .
@@ -110,7 +114,7 @@ build-site:
   tags:
   - build
 
-prepare-storage:
+prepare-storage-prod:
   stage: prepare-storage
   script:
     - 'which ss-agent || (apk update && apk add openssh)'
@@ -125,7 +129,10 @@ prepare-storage:
     - cp docker-compose.yml $CI_PROJECT_NAME
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
-    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql
+    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
+        DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
+        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres \
+        psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
         && exit"
   only:
     refs:
@@ -135,7 +142,7 @@ prepare-storage:
   tags:
   - deploy
 
-deploy:
+deploy-prod:
   stage: deploy
   script:
     - 'which ss-agent || (apk update && apk add openssh)'
@@ -151,6 +158,7 @@ deploy:
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
+        export DB_NAME=$DB_NAME && DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
         export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
         export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_AGGREGATOR_IMAGE &&
@@ -161,8 +169,180 @@ deploy:
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
-        docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME --prune --with-registry-auth && exit"
+        docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
     - master
+  tags:
+  - deploy
+ 
+
+
+build-hyperlocal-dev:
+  stage: build
+  variables:
+    HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal-dev:latest
+  script:
+    - chmod +x Hyperlocal/start.sh
+    - docker build --pull -t $HYPERLOCAL_IMAGE -f Hyperlocal/Dockerfile .
+    - docker tag $HYPERLOCAL_IMAGE $HYPERLOCAL_IMAGE
+    - docker push $HYPERLOCAL_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Hyperlocal/*
+  tags:
+  - build
+
+
+build-analyzer-dev:
+  stage: build
+  variables:
+    ANALYZER_IMAGE: $CI_REGISTRY_IMAGE/analyzer-dev:latest
+  script:
+    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
+    - docker push $ANALYZER_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Dns.Analyzer/**/*
+      - Dns.Contracts/**/*
+      - Dns.DAL/**/*
+  tags:
+  - build
+
+build-resolver-aggregator-dev:
+  stage: build
+  variables:
+    RESOLVER_AGGREGATOR_IMAGE: $CI_REGISTRY_IMAGE/resolver-aggregator-dev:latest
+  script:
+    - docker build --pull -t $RESOLVER_AGGREGATOR_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker push $RESOLVER_AGGREGATOR_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Dns.Contracts/**/*
+      - Dns.Resolver.Aggregator/**/*
+  tags:
+  - build
+
+build-resolver-consumer-dev:
+  stage: build
+  variables:
+    RESOLVER_CONSUMER_IMAGE: $CI_REGISTRY_IMAGE/resolver-consumer-dev:latest
+  script:
+    - docker build --pull -t $RESOLVER_CONSUMER_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker push $RESOLVER_CONSUMER_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Dns.Contracts/**/*
+      - Dns.Resolver.Consumer/**/*
+  tags:
+  - build
+
+build-resolver-producer-dev:
+  stage: build
+  variables:
+    RESOLVER_PRODUCER_IMAGE: $CI_REGISTRY_IMAGE/resolver-producer-dev:latest 
+  script:
+    - docker build --pull -t $RESOLVER_PRODUCER_IMAGE -f Dns.Resolver.Producer/Dockerfile .
+    - docker push $RESOLVER_PRODUCER_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Dns.Contracts/**/*
+      - Dns.DAL/**/*
+      - Dns.Resolver.Producer/**/*
+  tags:
+  - build
+
+build-site-dev:
+  stage: build
+  variables:
+    SITE_IMAGE: $CI_REGISTRY_IMAGE/site-dev:latest
+  script:
+    - docker build --pull -t $SITE_IMAGE -f Dns.Site/Dockerfile .
+    - docker push $SITE_IMAGE
+  only:
+    refs:
+      - dev/main
+    changes:
+      - Dns.Site/**/*
+      - Dns.Contracts/**/*
+      - Dns.DAL/**/*
+  tags:
+  - build
+
+prepare-storage-dev:
+  stage: prepare-storage
+  variables:
+    DB_NAME: 'dnsdb-dev'
+    DB_USER: 'dnsuser'
+    DB_PASSWORD: 'dnsuser'
+  script:
+    - 'which ss-agent || (apk update && apk add openssh)'
+    - 'which rsync || (apk update && apk add rsync)'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - mkdir -p $CI_PROJECT_NAME
+    - cp docker-compose.yml $CI_PROJECT_NAME
+    - cp init-db.sql $CI_PROJECT_NAME
+    - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
+    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
+        DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
+        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres \
+        psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
+        && exit"
+  only:
+    refs:
+      - dev/main
+    changes:
+      - init-db.sql
+  tags:
+  - deploy
+
+deploy-dev:
+  stage: deploy
+  variables:
+    DB_NAME: 'dnsdb-dev'
+    DB_USER: 'dnsuser'
+    DB_PASSWORD: 'dnsuser'
+  script:
+    - 'which ss-agent || (apk update && apk add openssh)'
+    - 'which rsync || (apk update && apk add rsync)'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - mkdir -p $CI_PROJECT_NAME
+    - cp docker-compose.yml $CI_PROJECT_NAME
+    - cp init-db.sql $CI_PROJECT_NAME
+    - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
+    - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
+        export DB_NAME=$DB_NAME && DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
+        export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
+        export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
+        export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_AGGREGATOR_IMAGE &&
+        export RESOLVER_CONSUMER_IMAGE=$RESOLVER_CONSUMER_IMAGE &&
+        export RESOLVER_PRODUCER_IMAGE=$RESOLVER_PRODUCER_IMAGE &&
+        export SITE_IMAGE=$SITE_IMAGE &&
+        export REDIS_CONNECTION=$REDIS_CONNECTION &&
+        export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
+        export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
+        docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
+        docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
+  only:
+    - dev/main
   tags:
   - deploy

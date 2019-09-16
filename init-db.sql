@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS citext;
 
 DO $$
 BEGIN
-PERFORM dblink_exec('', 'CREATE DATABASE dnsdb');
+PERFORM dblink_exec('', 'CREATE DATABASE' || :dbName);
 EXCEPTION WHEN duplicate_database THEN RAISE NOTICE '%, skipping', SQLERRM USING ERRCODE = SQLSTATE;
 END
 $$;
@@ -14,18 +14,18 @@ BEGIN
    IF NOT EXISTS (
       SELECT
       FROM   pg_catalog.pg_roles
-      WHERE  rolname = 'dnsuser') THEN
+      WHERE  rolname = :dbUser) THEN
 
-      CREATE ROLE dnsuser LOGIN PASSWORD 'dnsuser';
-	  GRANT ALL PRIVILEGES ON DATABASE dnsdb TO dnsuser;
+      CREATE ROLE :dbUser LOGIN PASSWORD :dbPass;
+	  GRANT ALL PRIVILEGES ON DATABASE :dbName TO :dbUser;
    END IF;
 END
 $do$;
 
-ALTER ROLE dnsuser SUPERUSER;
+ALTER ROLE :dbUser SUPERUSER;
 
-SELECT dblink_exec('dbname=dnsdb user=dnsuser password=dnsuser', 'CREATE EXTENSION IF NOT EXISTS dblink;');
-SELECT dblink_exec('dbname=dnsdb user=dnsuser password=dnsuser', 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to dnsuser;');
-SELECT dblink_exec('dbname=dnsdb user=dnsuser password=dnsuser', 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to dnsuser;');
-SELECT dblink_exec('dbname=dnsdb user=dnsuser password=dnsuser', 'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to dnsuser;');
-SELECT dblink_exec('dbname=dnsdb user=dnsuser password=dnsuser', 'CREATE EXTENSION IF NOT EXISTS citext;');
+SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'CREATE EXTENSION IF NOT EXISTS dblink;');
+SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public to ' || :dbUserdnsuser || ';');
+SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public to ' || :dbUserdnsuser || ';');
+SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to ' || :dbUserdnsuser || ';');
+SELECT dblink_exec('dbname=' || :dbName || ' user=' || :dbUser ' password=' || :dbPass || '', 'CREATE EXTENSION IF NOT EXISTS citext;');
