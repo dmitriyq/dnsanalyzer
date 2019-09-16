@@ -30,4 +30,3 @@ SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'GRANT ALL PR
 SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public to DB_USER;');
 SELECT dblink_exec('dbname=DB_NAME user=DB_USER password=DB_PASS', 'CREATE EXTENSION IF NOT EXISTS citext;');
 
-
