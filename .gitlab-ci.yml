@@ -131,8 +131,7 @@ prepare-storage-prod:
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
         DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
-        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres \
-        psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
+        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
         && exit"
   only:
     refs:
@@ -299,8 +298,7 @@ prepare-storage-dev:
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
         DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
-        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres \
-        psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
+        docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
         && exit"
   only:
     refs:
