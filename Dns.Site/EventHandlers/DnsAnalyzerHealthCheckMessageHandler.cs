@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Dns.Site.EventHandlers
 {
-	public class DnsAnalyzerHealthCheckMessageHandler: IMessageQueueHandler<DnsAnalyzerHealthCheckMessage>
+	public class DnsAnalyzerHealthCheckMessageHandler: IAmqpMessageHandler<DnsAnalyzerHealthCheckMessage>
 	{
 		private readonly IHubContext<HealthCheckHub> _hubContext;
 
@@ -18,10 +18,6 @@ namespace Dns.Site.EventHandlers
 			_hubContext = hubContext;
 		}
 
-		public async Task<bool> Handle(DnsAnalyzerHealthCheckMessage message)
-		{
-			await _hubContext.Clients.All.SendAsync("Update", message).ConfigureAwait(false);
-			return true;
-		}
+		public Task Handle(DnsAnalyzerHealthCheckMessage message) => _hubContext.Clients.All.SendAsync("Update", message);
 	}
 }

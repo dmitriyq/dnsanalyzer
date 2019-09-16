@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Aggregator.Messages
 {
-	public class DomainResolvedMessageHandler : IMessageQueueHandler<DomainResolvedMessage>
+	public class DomainResolvedMessageHandler : IAmqpMessageHandler<DomainResolvedMessage>
 	{
 		private readonly IDomainAggregatorService _aggregatorService;
 		private readonly ILogger<DomainResolvedMessageHandler> _logger;
@@ -20,12 +20,12 @@ namespace Dns.Resolver.Aggregator.Messages
 			_logger = logger;
 		}
 
-		public Task<bool> Handle(DomainResolvedMessage message)
+		public Task Handle(DomainResolvedMessage message)
 		{
 			if (message == null) throw new ArgumentNullException(nameof(message));
 			_logger.LogInformation($"Handled ID {message.TraceId} - {message.Name}");
 			_aggregatorService.AddDomain(message);
-			return Task.FromResult(true);
+			return Task.CompletedTask;
 		}
 	}
 }

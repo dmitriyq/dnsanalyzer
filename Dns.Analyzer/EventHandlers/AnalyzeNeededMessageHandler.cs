@@ -14,7 +14,7 @@ using StackExchange.Redis;
 
 namespace Dns.Analyzer.EventHandlers
 {
-	public class AnalyzeNeededMessageHandler : IMessageQueueHandler<AnalyzeNeededMessage>
+	public class AnalyzeNeededMessageHandler : IAmqpMessageHandler<AnalyzeNeededMessage>
 	{
 		private readonly ILogger<AnalyzeNeededMessageHandler> _logger;
 		private readonly IAnalyzeService _analyzeService;
@@ -24,11 +24,10 @@ namespace Dns.Analyzer.EventHandlers
 		private readonly IDatabase _redisDb;
 		private readonly RedisKeys _redisKeys;
 		private readonly IMessageQueue _messageQueue;
-		private readonly string _healthQueue;
 
 		public AnalyzeNeededMessageHandler(ILogger<AnalyzeNeededMessageHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
 			IIpInfoService ipInfoService, SuspectDomainSevice suspectDomainSevice, ConnectionMultiplexer redis, RedisKeys redisKeys,
-			IMessageQueue messageQueue, string healthQueue)
+			IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_analyzeService = analyzeService;
@@ -38,13 +37,12 @@ namespace Dns.Analyzer.EventHandlers
 			_ipInfoService = ipInfoService;
 			_notifyService = notifyService;
 			_messageQueue = messageQueue;
-			_healthQueue = healthQueue;
 		}
 
-		public async Task<bool> Handle(AnalyzeNeededMessage message)
+		public async Task Handle(AnalyzeNeededMessage message)
 		{
 			_logger.LogInformation("Starting analyze");
-			_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Начат анализ DNS-атак"), _healthQueue);
+			await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Начат анализ DNS-атак")).ConfigureAwait(false);
 			try
 			{
 				var redisVigruzkiIps = await _redisDb.SetMembersAsync(_redisKeys.VigruzkiIpKey).ConfigureAwait(false);
@@ -81,18 +79,15 @@ namespace Dns.Analyzer.EventHandlers
 					var groupMessage = await _notifyService.BuildGroupMessage(string.Empty, groupToNotify.ToArray()).ConfigureAwait(false);
 					await _redisDb.PublishAsync(_redisKeys.NotificationSendMessageKey, groupMessage.ProtoSerialize()).ConfigureAwait(false);
 				}
-
-				return true;
 			}
 			catch (Exception ex)
 			{
 				_logger.LogWarning(ex, ex.Message);
-				return false;
 			}
 			finally
 			{
 				_logger.LogInformation("Analyze complete");
-				_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Анализ DNS-атак завершен"), _healthQueue);
+				await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Analyzer", "Анализ DNS-атак завершен")).ConfigureAwait(false);
 			}
 		}
 	}

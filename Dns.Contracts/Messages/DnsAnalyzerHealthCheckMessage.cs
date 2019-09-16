@@ -5,7 +5,7 @@ using Grfc.Library.EventBus.Abstractions.Messages;
 
 namespace Dns.Contracts.Messages
 {
-	public class DnsAnalyzerHealthCheckMessage: QueueMessage
+	public class DnsAnalyzerHealthCheckMessage: AmqpMessage
 	{
 		public string Service { get; set; }
 		public string CurrentAction { get; set; }

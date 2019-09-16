@@ -5,6 +5,7 @@ using Dns.Resolver.Consumer.Messages;
 using Dns.Resolver.Consumer.Services;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.EventBus.Extensions;
 using Grfc.Library.EventBus.RabbitMq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +20,6 @@ namespace Dns.Resolver.Consumer
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_DOMAINS_QUEUE);
-		public const string RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
 
 		public static void Main(string[] args)
 		{
@@ -29,8 +29,7 @@ namespace Dns.Resolver.Consumer
 				EnvironmentExtensions.CheckVariables(
 					HYPERLOCAL_SERVER,
 					RABBITMQ_CONNECTION,
-					RABBITMQ_DNS_DOMAINS_QUEUE,
-					RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE
+					RABBITMQ_DNS_DOMAINS_QUEUE
 					);
 
 				var host = CreateHostBuilder(args);
@@ -38,8 +37,8 @@ namespace Dns.Resolver.Consumer
 
 				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
 				var handler = host.Services.GetRequiredService<DomainPublishMessageHandler>();
-				var producerQueue = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
-				_messageQueue.HandleMessage<DomainPublishMessage, DomainPublishMessageHandler>(handler, producerQueue);
+				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
+				_messageQueue.Subscribe<DomainPublishMessage, DomainPublishMessageHandler>(queueName, handler);
 
 				host.Start();
 				host.WaitForShutdown();
@@ -61,31 +60,15 @@ namespace Dns.Resolver.Consumer
 				services.AddOptions();
 				services.AddLogging(l => l.AddConsole());
 
-				services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
-					var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION) };
-					return new DefaultRabbitMQPersistentConnection(factory, logger);
-				});
+				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
+				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
 
-				services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
-				{
-					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
-				});
 				services.AddTransient<IDomainLookupService, DomainLookupService>(sp => {
 					var dnsServer = EnvironmentExtensions.GetVariable(HYPERLOCAL_SERVER);
 					var logger = sp.GetRequiredService<ILogger<DomainLookupService>>();
 					return new DomainLookupService(logger, dnsServer);
 				});
-				services.AddTransient<DomainPublishMessageHandler>(sp => {
-					var domainLookup = sp.GetRequiredService<IDomainLookupService>();
-					var messageQueue = sp.GetRequiredService<IMessageQueue>();
-					var resolvedQueue = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
-					var logger = sp.GetRequiredService<ILogger<DomainPublishMessageHandler>>();
-					return new DomainPublishMessageHandler(domainLookup, logger, messageQueue, resolvedQueue);
-				});
+				services.AddTransient<DomainPublishMessageHandler>();
 			})
 			.Build();
 	}

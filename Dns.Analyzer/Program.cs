@@ -9,6 +9,7 @@ using Dns.DAL;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
 using Grfc.Library.EventBus.RabbitMq;
+using Grfc.Library.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,7 +32,6 @@ namespace Dns.Analyzer
 		public const string NOTIFY_SEND_CHANNEL = nameof(NOTIFY_SEND_CHANNEL);
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_ANALYZE_QUEUE = nameof(RABBITMQ_ANALYZE_QUEUE);
-		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
 		public const string ANALYZER_SUSPECT_IP_COUNT = nameof(ANALYZER_SUSPECT_IP_COUNT);
@@ -62,7 +62,7 @@ namespace Dns.Analyzer
 				var messageQueue = host.Services.GetRequiredService<IMessageQueue>();
 				var handler = host.Services.GetRequiredService<AnalyzeNeededMessageHandler>();
 				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
-				messageQueue.HandleMessage<AnalyzeNeededMessage, AnalyzeNeededMessageHandler>(handler, queueName);
+				messageQueue.Subscribe<AnalyzeNeededMessage, AnalyzeNeededMessageHandler>(queueName, handler);
 
 				host.Start();
 				host.WaitForShutdown();
@@ -101,19 +101,9 @@ namespace Dns.Analyzer
 					return ConnectionMultiplexer.Connect(redisConnection);
 				});
 
-				services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
-					var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION) };
-					return new DefaultRabbitMQPersistentConnection(factory, logger);
-				});
+				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-				services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
-				{
-					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
-				});
+				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
 
 				services.AddTransient<SuspectDomainSevice>(sp =>
 				{
@@ -147,8 +137,7 @@ namespace Dns.Analyzer
 						vigruzkiIpKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_IPS),
 						vigruzkiSubnetKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_SUBNETS),
 						notifyMessageKey: EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL));
-					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
-					return new AnalyzeNeededMessageHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue, healthQueue);
+					return new AnalyzeNeededMessageHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue);
 				});
 			})
 			.Build();

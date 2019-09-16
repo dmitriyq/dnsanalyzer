@@ -4,6 +4,7 @@ using Dns.Resolver.Aggregator.Messages;
 using Dns.Resolver.Aggregator.Services;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.EventBus.Extensions;
 using Grfc.Library.EventBus.RabbitMq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,8 +19,6 @@ namespace Dns.Resolver.Aggregator
 #pragma warning disable CA1707 // Идентификаторы не должны содержать символы подчеркивания
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
-		public const string RABBITMQ_ANALYZE_QUEUE = nameof(RABBITMQ_ANALYZE_QUEUE);
-		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
 		public const string REDIS_BLACK_DOMAIN_RESOLVED = nameof(REDIS_BLACK_DOMAIN_RESOLVED);
@@ -35,8 +34,6 @@ namespace Dns.Resolver.Aggregator
 				EnvironmentExtensions.CheckVariables(
 					RABBITMQ_CONNECTION,
 					RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE,
-					RABBITMQ_ANALYZE_QUEUE,
-					RABBITMQ_HEALTH_QUEUE,
 					REDIS_CONNECTION,
 					REDIS_BLACK_DOMAIN_RESOLVED,
 					REDIS_WHITE_DOMAIN_RESOLVED
@@ -47,7 +44,8 @@ namespace Dns.Resolver.Aggregator
 
 				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
 				var handler = host.Services.GetRequiredService<DomainResolvedMessageHandler>();
-				_messageQueue.HandleMessage<DomainResolvedMessage, DomainResolvedMessageHandler>(handler, EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE));
+				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
+				_messageQueue.Subscribe<DomainResolvedMessage, DomainResolvedMessageHandler>(queueName, handler);
 
 				host.Start();
 				host.WaitForShutdown();
@@ -75,31 +73,19 @@ namespace Dns.Resolver.Aggregator
 					return ConnectionMultiplexer.Connect(redisConnection);
 				});
 
-				services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
-					var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION) };
-					return new DefaultRabbitMQPersistentConnection(factory, logger);
-				});
+				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-				services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
-				{
-					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
-				});
+				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
 				services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
 				{
 					var logger = sp.GetRequiredService<ILogger<DomainAggregatorService>>();
 					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
-					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
-					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
 
 					var blackDomainKey = EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED);
 					var whiteDomainKey = EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED);
 
-					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey, queueName, healthQueue);
+					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey);
 				});
 
 				services.AddTransient<DomainResolvedMessageHandler>();

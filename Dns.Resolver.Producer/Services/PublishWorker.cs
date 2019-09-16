@@ -17,21 +17,17 @@ namespace Dns.Resolver.Producer.Services
 		private readonly IMessageQueue _messageQueue;
 		private readonly IDomainService _domainService;
 		private readonly TimeSpan _timeOut;
-		private readonly string _queueName;
-		private readonly string _healthQueue;
 
 		private readonly int _producerLimit;
 		private readonly int _producerLimitTimeout;
 
 		public PublishWorker(ILogger<PublishWorker> logger, IMessageQueue messageQueue, IDomainService domainService,
-			string queueName, string healthQueue, int producerLimit, int producerLimitTimeout)
+			int producerLimit, int producerLimitTimeout)
 		{
 			_logger = logger;
 			_messageQueue = messageQueue;
 			_domainService = domainService;
 			_timeOut = TimeSpan.FromSeconds(double.Parse(EnvironmentExtensions.GetVariable(Program.RESOLVER_PUBLISHER_DELAY_SEC)));
-			_queueName = queueName;
-			_healthQueue = healthQueue;
 			_producerLimit = producerLimit;
 			_producerLimitTimeout = producerLimitTimeout;
 		}
@@ -47,7 +43,7 @@ namespace Dns.Resolver.Producer.Services
 				await PublishDomains().ConfigureAwait(false);
 
 				_logger.LogInformation($"PublishWorker background task executed successfully.");
-				_messageQueue.Enqueue(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Producer", "Отправлены домены на резолв"), _healthQueue);
+				await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Producer", "Отправлены домены на резолв")).ConfigureAwait(false);
 				await Task.Delay(_timeOut).ConfigureAwait(false);
 			}
 			throw new Exception();
@@ -62,7 +58,7 @@ namespace Dns.Resolver.Producer.Services
 			int sendedCount = 0;
 			foreach (var blackDomain in blackDomains)
 			{
-				_messageQueue.Enqueue(new DomainPublishMessage(blackDomain, 1, traceId), _queueName);
+				await _messageQueue.PublishAsync(new DomainPublishMessage(blackDomain, 1, traceId)).ConfigureAwait(false);
 				sendedCount++;
 				if (sendedCount > _producerLimit)
 				{
@@ -72,7 +68,7 @@ namespace Dns.Resolver.Producer.Services
 			}
 			foreach (var whiteDomain in whiteDomains)
 			{
-				_messageQueue.Enqueue(new DomainPublishMessage(whiteDomain, 2, traceId), _queueName);
+				await _messageQueue.PublishAsync(new DomainPublishMessage(whiteDomain, 2, traceId)).ConfigureAwait(false);
 				sendedCount++;
 				if (sendedCount > _producerLimit)
 				{

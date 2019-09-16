@@ -5,7 +5,7 @@ using Grfc.Library.EventBus.Abstractions.Messages;
 
 namespace Dns.Contracts.Messages
 {
-	public class DomainResolvedMessage : QueueMessage
+	public class DomainResolvedMessage : AmqpMessage
 	{
 		public string Name { get; set; }
 		public int DomainType { get; set; }

@@ -5,7 +5,7 @@ using Grfc.Library.EventBus.Abstractions.Messages;
 
 namespace Dns.Contracts.Messages
 {
-	public class AnalyzeNeededMessage: QueueMessage
+	public class AnalyzeNeededMessage: AmqpMessage
 	{
 		public Guid TraceId { get; set; }
 

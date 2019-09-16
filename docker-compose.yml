@@ -4,23 +4,15 @@ x-shared-variables: &shared-variables
   PG_CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};'
   PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};'
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis-master,redis-slave-1,redis-slave-2}'
-  ASPNETCORE_ENVIRONMENT: 'Production'
+  RABBITMQ_CONNECTION: 'host=rmq'
+  ASPNETCORE_ENVIRONMENT: '${ENVIRONMENT:-Development}'
   NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
+  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
 
 x-redis-variables: &redis-variables
   REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
   REDIS_VIGRUZKI_IPS: 'Vigruzki_Ips'
   REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
-  REDIS_BLACK_DOMAIN_RESOLVED: 'DNS_Resolved_Black'
-  REDIS_WHITE_DOMAIN_RESOLVED: 'DNS_Resolved_White'
-  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
-
-x-rabbitmq-variables: &rabbitmq-variables
-  RABBITMQ_CONNECTION: 'rmq'
-  RABBITMQ_DNS_DOMAINS_QUEUE: 'queue.dns.resolver.domains'
-  RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE: 'queue.dns.resolver.resolved'
-  RABBITMQ_ANALYZE_QUEUE: 'queue.dns.analyze'
-  RABBITMQ_HEALTH_QUEUE: 'queue.dns.health'
 
 services:
   hyperlocal:
@@ -37,9 +29,10 @@ services:
     image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
     environment:
       <<: *shared-variables
-      <<: *rabbitmq-variables
       <<: *redis-variables
       ANALYZER_SUSPECT_IP_COUNT: 10
+    env_file:
+      - .env
     networks:
       - default
       - postgre_pg-net
@@ -52,8 +45,9 @@ services:
     image: ${RESOLVER_AGGREGATOR_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-aggregator}
     environment:
       <<: *shared-variables
-      <<: *rabbitmq-variables
       <<: *redis-variables
+    env_file:
+      - .env
     networks:
       - default
       - redis-net
@@ -65,8 +59,9 @@ services:
     image: ${RESOLVER_CONSUMER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-consumer}
     environment:
       <<: *shared-variables
-      <<: *rabbitmq-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
+    env_file:
+      - .env
     networks:
       - default
       - rabbitmq_rabbitmq-net
@@ -77,11 +72,12 @@ services:
     image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}
     environment: 
       <<: *shared-variables
-      <<: *rabbitmq-variables
       <<: *redis-variables
       RESOLVER_PUBLISHER_DELAY_SEC: '60'
       RABBITMQ_PRODUCER_LIMIT: '500'
       RABBITMQ_PRODUCER_LIMIT_TIMEOUT: '50'
+    env_file:
+      - .env
     networks:
       - default
       - postgre_pg-net
@@ -104,16 +100,17 @@ services:
       - rabbitmq_rabbitmq-net
     environment: 
       <<: *shared-variables
-      <<: *rabbitmq-variables
       <<: *redis-variables
       AUTH_SERVER_URL: '${AUTH_SERVER_URL}'
       AUTH_COOKIE_BASE_DOMAIN: '${AUTH_COOKIE_BASE_DOMAIN}'
       NOTIFY_SERVICE_URL: 'http://notification_api:80/'
       VIGRUZKI_SERVICE_URL: 'http://vigruzki_api:80/'
+    env_file:
+      - .env
     deploy:
       replicas: 1
       labels:
-        traefik.frontend.rule: "Host:dns.cmim.ru"
+        traefik.frontend.rule: "Host:${SITE_HOSTNAME:-dns.cmim.ru}"
         traefik.enable: "true"
         traefik.port: "80"
         traefik.docker.network: "traefik-net"

@@ -13,9 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
 		default.ruleset = default.ruleset
+		dev.env = dev.env
 		docker-compose.dev.yml = docker-compose.dev.yml
 		docker-compose.yml = docker-compose.yml
 		init-db.sql = init-db.sql
+		prod.env = prod.env
 		README.md = README.md
 	EndProjectSection
 EndProject

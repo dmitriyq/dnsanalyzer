@@ -9,47 +9,43 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Consumer.Messages
 {
-	public class DomainPublishMessageHandler : IMessageQueueHandler<DomainPublishMessage>
+	public class DomainPublishMessageHandler : IAmqpMessageHandler<DomainPublishMessage>
 	{
 		private readonly IDomainLookupService _domainLookup;
 		private readonly ILogger<DomainPublishMessageHandler> _logger;
 		private readonly IMessageQueue _messageQueue;
-		private readonly string _resolvedQueue;
 
 		public DomainPublishMessageHandler(IDomainLookupService domainLookup, ILogger<DomainPublishMessageHandler> logger,
-			IMessageQueue messageQueue, string resolvedQueue)
+			IMessageQueue messageQueue)
 		{
 			_domainLookup = domainLookup;
 			_messageQueue = messageQueue;
-			_resolvedQueue = resolvedQueue;
 			_logger = logger;
 		}
 
-		public async Task<bool> Handle(DomainPublishMessage message)
+		public async Task Handle(DomainPublishMessage message)
 		{
 			try
 			{
 				var ips = await _domainLookup.GetIpAddressesAsync(message.Domain).ConfigureAwait(false);
 				if (ips.Count == 0)
 				{
-					return true;
+					return;
 				}
 				try
 				{
 					var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
-					_messageQueue.Enqueue(resolvedMessage, _resolvedQueue);
+					await _messageQueue.PublishAsync(resolvedMessage).ConfigureAwait(false);
 				}
 				catch
 				{
-					return false;
+					return;
 				}
 			}
 			catch (Exception ex)
 			{
 				_logger.LogWarning(ex, ex.Message);
 			}
-
-			return true;
 		}
 	}
 }

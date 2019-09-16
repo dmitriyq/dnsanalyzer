@@ -8,6 +8,7 @@ using Grfc.Library.Auth.Helpers;
 using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.EventBus.Extensions;
 using Grfc.Library.EventBus.RabbitMq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -78,19 +79,8 @@ namespace Dns.Site
 				opts.InstanceName = "Dns_Redis_Cache";
 			});
 
-			services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-			{
-				var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
-				var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION) };
-				return new DefaultRabbitMQPersistentConnection(factory, logger);
-			});
-
-			services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
-			{
-				var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-				var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-				return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
-			});
+			services.AddMessageBus(EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION));
+			services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
 
 			services.AddControllersWithViews()
 				.AddNewtonsoftJson();
@@ -169,7 +159,7 @@ namespace Dns.Site
 			var messageQueue = app.ApplicationServices.GetRequiredService<IMessageQueue>();
 			var healthCheckEventHandler = app.ApplicationServices.GetRequiredService<DnsAnalyzerHealthCheckMessageHandler>();
 			var healthQueue = EnvironmentExtensions.GetVariable(Program.RABBITMQ_HEALTH_QUEUE);
-			messageQueue.HandleMessage<DnsAnalyzerHealthCheckMessage, DnsAnalyzerHealthCheckMessageHandler>(healthCheckEventHandler, healthQueue);
+			messageQueue.Subscribe<DnsAnalyzerHealthCheckMessage, DnsAnalyzerHealthCheckMessageHandler>(healthQueue, healthCheckEventHandler);
 		}
 
 		private void MigrateDataBase(IServiceProvider provider)

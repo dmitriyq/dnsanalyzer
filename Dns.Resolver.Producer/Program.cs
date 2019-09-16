@@ -6,6 +6,7 @@ using Dns.DAL;
 using Dns.Resolver.Producer.Services;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.EventBus.Extensions;
 using Grfc.Library.EventBus.RabbitMq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,8 +28,6 @@ namespace Dns.Resolver.Producer
 		public const string REDIS_BLACK_DOMAINS = nameof(REDIS_BLACK_DOMAINS);
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
-		public const string RABBITMQ_DNS_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_DOMAINS_QUEUE);
-		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
 		public const string RABBITMQ_PRODUCER_LIMIT = nameof(RABBITMQ_PRODUCER_LIMIT);
 		public const string RABBITMQ_PRODUCER_LIMIT_TIMEOUT = nameof(RABBITMQ_PRODUCER_LIMIT_TIMEOUT);
@@ -48,8 +47,6 @@ namespace Dns.Resolver.Producer
 					REDIS_BLACK_DOMAINS,
 
 					RABBITMQ_CONNECTION,
-					RABBITMQ_DNS_DOMAINS_QUEUE,
-					RABBITMQ_HEALTH_QUEUE,
 
 					RABBITMQ_PRODUCER_LIMIT,
 					RABBITMQ_PRODUCER_LIMIT_TIMEOUT
@@ -87,19 +84,9 @@ namespace Dns.Resolver.Producer
 				services.AddSingleton<ConnectionMultiplexer>(__ =>
 					ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(REDIS_CONNECTION)));
 
-				services.AddSingleton<IRabbitMQPersistentConnection>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<DefaultRabbitMQPersistentConnection>>();
-					var factory = new ConnectionFactory() { HostName = EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION) };
-					return new DefaultRabbitMQPersistentConnection(factory, logger);
-				});
+				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-				services.AddSingleton<IMessageQueue, MessageQueueRabbitMQ>(sp =>
-				{
-					var rabbitMQPersistentConnection = sp.GetRequiredService<IRabbitMQPersistentConnection>();
-					var logger = sp.GetRequiredService<ILogger<MessageQueueRabbitMQ>>();
-					return new MessageQueueRabbitMQ(rabbitMQPersistentConnection, logger);
-				});
+				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
 
 				services.AddTransient<IDomainService, DomainService>();
 				services.AddTransient<PublishWorker>(sp =>
@@ -107,13 +94,11 @@ namespace Dns.Resolver.Producer
 					var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 					var domainSvc = sp.GetRequiredService<IDomainService>();
-					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
-					var healthQueue = EnvironmentExtensions.GetVariable(RABBITMQ_HEALTH_QUEUE);
 
 					var limit = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT));
 					var timeout = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT_TIMEOUT));
 
-					return new PublishWorker(logger, messageQueue, domainSvc, queueName, healthQueue, limit, timeout);
+					return new PublishWorker(logger, messageQueue, domainSvc, limit, timeout);
 				});
 			})
 			.Build();
