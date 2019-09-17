@@ -130,8 +130,7 @@ prepare-storage-prod:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
-    - echo 'sed -i "s/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g" init-db.sql'
-    - sed -i "s/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g" init-db.sql
+    - sed -i 's/DB_NAME/'"$DB_NAME"'/g;s/DB_USER/'"$DB_USER"'/g;/s/DB_PASS/'"$DB_PASSWORD/g" init-db.sql
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
@@ -301,8 +300,7 @@ prepare-storage-dev:
     - chmod 644 ~/.ssh/known_hosts
     - mkdir -p $CI_PROJECT_NAME
     - cp docker-compose.yml $CI_PROJECT_NAME
-    - echo 'sed -i "s/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g" init-db.sql'
-    - sed -i "s/DB_NAME/$DB_NAME/g;s/DB_USER/$DB_USER/g;/s/DB_PASS/$DB_PASSWORD/g" init-db.sql
+    - sed -i 's/DB_NAME/'"$DB_NAME"'/g;s/DB_USER/'"$DB_USER"'/g;/s/DB_PASS/'"$DB_PASSWORD/g" init-db.sql
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
