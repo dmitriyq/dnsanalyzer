@@ -290,7 +290,7 @@ build-site-dev:
 prepare-storage-dev:
   stage: prepare-storage
   variables:
-    DB_NAME: 'dnsdb-dev'
+    DB_NAME: 'dnsdb_dev'
     DB_USER: 'dnsuser'
     DB_PASSWORD: 'dnsuser'
   script:
@@ -328,7 +328,7 @@ prepare-storage-dev:
 deploy-dev:
   stage: deploy
   variables:
-    DB_NAME: 'dnsdb-dev'
+    DB_NAME: 'dnsdb_dev'
     DB_USER: 'dnsuser'
     DB_PASSWORD: 'dnsuser'
   script:
