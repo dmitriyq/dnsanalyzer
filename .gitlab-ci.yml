@@ -150,7 +150,8 @@ prepare-storage-prod:
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_NAME &&
-        DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
+        export DB_USER=$DB_USER &&
+        export DB_PASSWORD=$DB_PASSWORD &&
         docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
         && exit"
   only:
@@ -177,7 +178,9 @@ deploy-prod:
     - cp prod.env $CI_PROJECT_NAME/.env
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
-        export DB_NAME=$DB_NAME && DB_USER=$DB_USER && DB_PASSWORD=$DB_PASSWORD &&
+        export DB_NAME=$DB_NAME &&
+        export DB_USER=$DB_USER &&
+        export DB_PASSWORD=$DB_PASSWORD &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
         export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
         export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_AGGREGATOR_IMAGE &&
@@ -309,7 +312,7 @@ prepare-storage-dev:
     - cp init-db.sql $CI_PROJECT_NAME
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export DB_NAME=$DB_DEV_NAME &&
-        DB_USER=$DB_DEV_USER && DB_PASSWORD=$DB_DEV_PASSWORD &&
+        export DB_USER=$DB_DEV_USER && export DB_PASSWORD=$DB_DEV_PASSWORD &&
         docker run --rm --network postgre_pg-net --env PGPASSWORD=P@ssw0rd -v /home/$SWARM_RUNNER_USER/$CI_PROJECT_NAME/:/etc/db/ postgres psql -h primary -U postgres maindb -f /etc/db/init-db.sql -v dbName=$DB_NAME -v dbUser=$DB_USER -v dbPass=$DB_PASSWORD
         && exit"
   only:
@@ -336,7 +339,9 @@ deploy-dev:
     - cp dev.env $CI_PROJECT_NAME/.env
     - rsync -r $CI_PROJECT_NAME $SWARM_RUNNER_USER@$SWARM_MANAGER:/home/$SWARM_RUNNER_USER
     - ssh -tt $SWARM_RUNNER_USER@$SWARM_MANAGER "export SWARM_MANAGER=$SWARM_MANAGER &&
-        export DB_NAME=$DB_DEV_NAME && DB_USER=$DB_DEV_USER && DB_PASSWORD=$DB_DEV_PASSWORD &&
+        export DB_NAME=$DB_DEV_NAME &&
+        export DB_USER=$DB_DEV_USER &&
+        export DB_PASSWORD=$DB_DEV_PASSWORD &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_DEV_IMAGE &&
         export ANALYZER_IMAGE=$ANALYZER_DEV_RELEASE_IMAGE &&
         export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_DEV_AGGREGATOR_IMAGE &&
