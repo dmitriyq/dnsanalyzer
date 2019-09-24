@@ -16,80 +16,60 @@ namespace Dns.Resolver.Aggregator
 {
 	public sealed class Program
 	{
-#pragma warning disable CA1707 // Идентификаторы не должны содержать символы подчеркивания
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
 
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
 		public const string REDIS_BLACK_DOMAIN_RESOLVED = nameof(REDIS_BLACK_DOMAIN_RESOLVED);
 		public const string REDIS_WHITE_DOMAIN_RESOLVED = nameof(REDIS_WHITE_DOMAIN_RESOLVED);
-#pragma warning restore CA1707 // Идентификаторы не должны содержать символы подчеркивания
 
 		public static void Main(string[] args)
 		{
-			ILogger<Program>? _logger = null;
-
-			try
-			{
-				EnvironmentExtensions.CheckVariables(
+			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
+				entryPointArgs: args,
+				requiredEnvVars: new[]
+				{
 					RABBITMQ_CONNECTION,
 					RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE,
 					REDIS_CONNECTION,
 					REDIS_BLACK_DOMAIN_RESOLVED,
 					REDIS_WHITE_DOMAIN_RESOLVED
-				);
+				},
+				configureServices: (_, services) =>
+				{
+					services.AddOptions();
+					services.AddLogging(l => l.AddConsole()
+						.SetEFCoreLogLevel(LogLevel.Warning));
 
-				var host = CreateHostBuilder(args);
-				_logger = host.Services.GetRequiredService<ILogger<Program>>();
+					services.AddSingleton<ConnectionMultiplexer>(__ =>
+					{
+						var redisConnection = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
+						return ConnectionMultiplexer.Connect(redisConnection);
+					});
 
-				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
-				var handler = host.Services.GetRequiredService<DomainResolvedMessageHandler>();
-				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
-				_messageQueue.Subscribe<DomainResolvedMessage, DomainResolvedMessageHandler>(queueName, handler);
+					services.AddEasyNetQ(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-				host.Start();
-				host.WaitForShutdown();
-				host.Dispose();
-			}
-			catch (Exception ex)
-			{
-				if (_logger != null)
-					_logger.LogCritical(ex, ex.Message);
-				else Console.WriteLine(ex);
-				throw;
-			}
+					services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
+					{
+						var logger = sp.GetRequiredService<ILogger<DomainAggregatorService>>();
+						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
+						var messageQueue = sp.GetRequiredService<IMessageQueue>();
+
+						var blackDomainKey = EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED);
+						var whiteDomainKey = EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED);
+
+						return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey);
+					});
+
+					services.AddTransient<DomainResolvedMessageHandler>();
+				},
+				beforeHostStartAction: services =>
+				{
+					var _messageQueue = services.GetRequiredService<IMessageQueue>();
+					var handler = services.GetRequiredService<DomainResolvedMessageHandler>();
+					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
+					_messageQueue.Subscribe<DomainResolvedMessage, DomainResolvedMessageHandler>(queueName, handler);
+				});
 		}
-
-		public static IHost CreateHostBuilder(string[] args) =>
-			Host.CreateDefaultBuilder(args)
-			.ConfigureServices((_, services) =>
-			{
-				services.AddOptions();
-				services.AddLogging(l => l.AddConsole());
-
-				services.AddSingleton<ConnectionMultiplexer>(__ =>
-				{
-					var redisConnection = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
-					return ConnectionMultiplexer.Connect(redisConnection);
-				});
-
-				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
-
-				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
-				services.AddSingleton<IDomainAggregatorService, DomainAggregatorService>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<DomainAggregatorService>>();
-					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-					var messageQueue = sp.GetRequiredService<IMessageQueue>();
-
-					var blackDomainKey = EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED);
-					var whiteDomainKey = EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED);
-
-					return new DomainAggregatorService(logger, redis, messageQueue, blackDomainKey, whiteDomainKey);
-				});
-
-				services.AddTransient<DomainResolvedMessageHandler>();
-			})
-			.Build();
 	}
 }

@@ -122,3 +122,7 @@ networks:
     external: true
   rabbitmq_rabbitmq-net:
     external: true
+  default:
+    external: false
+    driver: overlay
+    attachable: true

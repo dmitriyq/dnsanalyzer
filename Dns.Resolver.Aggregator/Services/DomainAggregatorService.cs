@@ -91,9 +91,13 @@ namespace Dns.Resolver.Aggregator.Services
 			var redisArray = protoSerialized.Select(x => (RedisValue)x).ToArray();
 			var transaction = _redisDb.CreateTransaction();
 			var deleteResult = transaction.KeyDeleteAsync(key);
-			var addResult = transaction.ListRightPushAsync(key, redisArray);
+			var addTasks = new List<Task<long>>();
+			foreach (var item in redisArray.SplitToMaxRedisChunks())
+			{
+				addTasks.Add(transaction.ListRightPushAsync(key, item.ToArray()));
+			}
 			var transactionResult = await transaction.ExecuteAsync().ConfigureAwait(false);
-			var addCount = await addResult.ConfigureAwait(false);
+			var addCount = await Task.WhenAll(addTasks).ConfigureAwait(false);
 		}
 	}
 }

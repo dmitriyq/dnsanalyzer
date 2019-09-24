@@ -21,7 +21,6 @@ namespace Dns.Analyzer
 {
 	public sealed class Program
 	{
-		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);
 		public const string PG_CONNECTION_STRING_WRITE = nameof(PG_CONNECTION_STRING_WRITE);
 
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
@@ -38,108 +37,84 @@ namespace Dns.Analyzer
 
 		public static void Main(string[] args)
 		{
-			ILogger<Program>? _logger = null;
+			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
+				entryPointArgs: args,
+				requiredEnvVars: new[]
+				{
+					PG_CONNECTION_STRING_WRITE,
+					REDIS_CONNECTION,
+					REDIS_BLACK_DOMAIN_RESOLVED,
+					REDIS_WHITE_DOMAIN_RESOLVED,
+					REDIS_VIGRUZKI_IPS,
+					REDIS_VIGRUZKI_SUBNETS,
+					RABBITMQ_CONNECTION,
+					RABBITMQ_ANALYZE_QUEUE,
+					NOTIFY_SEND_CHANNEL,
+					NOTIFICATION_EMAIL_FROM,
+					ANALYZER_SUSPECT_IP_COUNT
+				},
+				configureServices:
+					(_, services) =>
+					{
+						services.AddOptions();
+						services.AddLogging(l => l.AddConsole()
+							.SetEFCoreLogLevel(LogLevel.Warning));
+						services.AddDbContext<DnsDbContext>(opt =>
+							opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
 
-			EnvironmentExtensions.CheckVariables(
-				PG_CONNECTION_STRING_READ,
-				PG_CONNECTION_STRING_WRITE,
-				REDIS_CONNECTION,
-				REDIS_BLACK_DOMAIN_RESOLVED,
-				REDIS_WHITE_DOMAIN_RESOLVED,
-				REDIS_VIGRUZKI_IPS,
-				REDIS_VIGRUZKI_SUBNETS,
-				RABBITMQ_CONNECTION,
-				NOTIFICATION_EMAIL_FROM,
-				NOTIFY_SEND_CHANNEL,
-				ANALYZER_SUSPECT_IP_COUNT
+						services.AddSingleton<ConnectionMultiplexer>(__ =>
+						{
+							var redisConnection = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
+							return ConnectionMultiplexer.Connect(redisConnection);
+						});
+
+						services.AddEasyNetQ(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
+
+						services.AddTransient<SuspectDomainSevice>(sp =>
+						{
+							var logger = sp.GetRequiredService<ILogger<SuspectDomainSevice>>();
+							var dbContext = sp.GetRequiredService<DnsDbContext>();
+							var suspectIpCount = int.Parse(EnvironmentExtensions.GetVariable(ANALYZER_SUSPECT_IP_COUNT));
+							return new SuspectDomainSevice(logger, dbContext, suspectIpCount);
+						});
+						services.AddTransient<IAnalyzeService, AnalyzeService>();
+						services.AddTransient<IIpInfoService, IpInfoService>();
+						services.AddTransient<INotifyService, NotifyService>(sp =>
+						{
+							var logger = sp.GetRequiredService<ILogger<NotifyService>>();
+							var dbContext = sp.GetRequiredService<DnsDbContext>();
+							var emailFrom = EnvironmentExtensions.GetVariable(NOTIFICATION_EMAIL_FROM);
+							return new NotifyService(logger, dbContext, emailFrom);
+						});
+
+						services.AddTransient<AnalyzeNeededMessageHandler>(sp =>
+						{
+							var logger = sp.GetRequiredService<ILogger<AnalyzeNeededMessageHandler>>();
+							var analyze = sp.GetRequiredService<IAnalyzeService>();
+							var notify = sp.GetRequiredService<INotifyService>();
+							var ipInfo = sp.GetRequiredService<IIpInfoService>();
+							var suspect = sp.GetRequiredService<SuspectDomainSevice>();
+							var redis = sp.GetRequiredService<ConnectionMultiplexer>();
+							var messageQueue = sp.GetRequiredService<IMessageQueue>();
+							var redisKeys = new RedisKeys(
+								blackDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED),
+								whiteDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED),
+								vigruzkiIpKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_IPS),
+								vigruzkiSubnetKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_SUBNETS),
+								notifyMessageKey: EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL));
+							return new AnalyzeNeededMessageHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue);
+						});
+					},
+				beforeHostStartAction:
+					services =>
+					{
+						services.ApplyDbMigration<DnsDbContext>();
+						var messageQueue = services.GetRequiredService<IMessageQueue>();
+						var handler = services.GetRequiredService<AnalyzeNeededMessageHandler>();
+						var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
+						messageQueue.Subscribe<AnalyzeNeededMessage, AnalyzeNeededMessageHandler>(queueName, handler);
+					}
 				);
-
-			try
-			{
-				var host = CreateHostBuilder(args);
-				_logger = host.Services.GetRequiredService<ILogger<Program>>();
-				ApplyMigrations(host.Services);
-				var messageQueue = host.Services.GetRequiredService<IMessageQueue>();
-				var handler = host.Services.GetRequiredService<AnalyzeNeededMessageHandler>();
-				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
-				messageQueue.Subscribe<AnalyzeNeededMessage, AnalyzeNeededMessageHandler>(queueName, handler);
-
-				host.Start();
-				host.WaitForShutdown();
-				host.Dispose();
-			}
-			catch (Exception ex)
-			{
-				if (_logger != null)
-					_logger.LogCritical(ex, ex.Message);
-				else Console.WriteLine(ex);
-				throw;
-			}
 		}
-
-		private static void ApplyMigrations(IServiceProvider services)
-		{
-			var cntx = services.GetService<DnsDbContext>();
-			cntx.Database.Migrate();
-		}
-
-		public static IHost CreateHostBuilder(string[] args) =>
-			Host.CreateDefaultBuilder(args)
-			.ConfigureServices((_, services) =>
-			{
-				services.AddOptions();
-				services.AddLogging(l => l.AddConsole());
-
-				services.AddDbContext<DnsDbContext>(opt =>
-					opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
-				services.AddDbContext<DnsReadOnlyDbContext>(opt =>
-					opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
-
-				services.AddSingleton<ConnectionMultiplexer>(__ =>
-				{
-					var redisConnection = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
-					return ConnectionMultiplexer.Connect(redisConnection);
-				});
-
-				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
-
-				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
-
-				services.AddTransient<SuspectDomainSevice>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<SuspectDomainSevice>>();
-					var dbContext = sp.GetRequiredService<DnsDbContext>();
-					var suspectIpCount = int.Parse(EnvironmentExtensions.GetVariable(ANALYZER_SUSPECT_IP_COUNT));
-					return new SuspectDomainSevice(logger, dbContext, suspectIpCount);
-				});
-				services.AddTransient<IAnalyzeService, AnalyzeService>();
-				services.AddTransient<IIpInfoService, IpInfoService>();
-				services.AddTransient<INotifyService, NotifyService>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<NotifyService>>();
-					var dbContext = sp.GetRequiredService<DnsDbContext>();
-					var emailFrom = EnvironmentExtensions.GetVariable(NOTIFICATION_EMAIL_FROM);
-					return new NotifyService(logger, dbContext, emailFrom);
-				});
-
-				services.AddTransient<AnalyzeNeededMessageHandler>(sp =>
-				{
-					var logger = sp.GetRequiredService<ILogger<AnalyzeNeededMessageHandler>>();
-					var analyze = sp.GetRequiredService<IAnalyzeService>();
-					var notify = sp.GetRequiredService<INotifyService>();
-					var ipInfo = sp.GetRequiredService<IIpInfoService>();
-					var suspect = sp.GetRequiredService<SuspectDomainSevice>();
-					var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-					var messageQueue = sp.GetRequiredService<IMessageQueue>();
-					var redisKeys = new RedisKeys(
-						blackDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_BLACK_DOMAIN_RESOLVED),
-						whiteDomainsResolvedKey: EnvironmentExtensions.GetVariable(REDIS_WHITE_DOMAIN_RESOLVED),
-						vigruzkiIpKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_IPS),
-						vigruzkiSubnetKey: EnvironmentExtensions.GetVariable(REDIS_VIGRUZKI_SUBNETS),
-						notifyMessageKey: EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL));
-					return new AnalyzeNeededMessageHandler(logger, analyze, notify, ipInfo, suspect, redis, redisKeys, messageQueue);
-				});
-			})
-			.Build();
 	}
 }

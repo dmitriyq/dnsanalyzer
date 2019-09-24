@@ -25,55 +25,39 @@ namespace Dns.Resolver.Consumer
 
 		public static void Main(string[] args)
 		{
-			ILogger<Program>? _logger = null;
-			try
-			{
-				EnvironmentExtensions.CheckVariables(
+			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
+				entryPointArgs: args,
+				requiredEnvVars: new[]
+				{
 					HYPERLOCAL_SERVER,
 					RABBITMQ_CONNECTION,
 					RABBITMQ_DNS_DOMAINS_QUEUE,
 					MAX_CONCURRENT_RESOLVE
-					);
+				},
+				configureServices: (_, services) =>
+				{
+					services.AddOptions();
+					services.AddLogging(l => l.AddConsole()
+						.SetEFCoreLogLevel(LogLevel.Warning));
 
-				var host = CreateHostBuilder(args);
-				_logger = host.Services.GetRequiredService<ILogger<Program>>();
+					services.AddEasyNetQ(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-				var _messageQueue = host.Services.GetRequiredService<IMessageQueue>();
-				var handler = host.Services.GetRequiredService<DomainPublishMessageHandler>();
-				var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
-				_messageQueue.Subscribe<DomainPublishMessage, DomainPublishMessageHandler>(queueName, handler);
-
-				host.Start();
-				host.WaitForShutdown();
-				host.Dispose();
-			}
-			catch (Exception ex)
-			{
-				if (_logger != null)
-					_logger.LogCritical(ex, ex.Message);
-				else Console.WriteLine(ex);
-				throw;
-			}
-		}
-
-		public static IHost CreateHostBuilder(string[] args) =>
-			Host.CreateDefaultBuilder(args)
-			.ConfigureServices((_, services) =>
-			{
-				services.AddOptions();
-				services.AddLogging(l => l.AddConsole());
-
-				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
-				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
-
-				services.AddTransient<IDomainLookupService, DomainLookupService>(sp => {
-					var dnsServer = EnvironmentExtensions.GetVariable(HYPERLOCAL_SERVER);
-					var logger = sp.GetRequiredService<ILogger<DomainLookupService>>();
-					var parallelCount = int.Parse(EnvironmentExtensions.GetVariable(MAX_CONCURRENT_RESOLVE));
-					return new DomainLookupService(logger, dnsServer, parallelCount);
+					services.AddTransient<IDomainLookupService, DomainLookupService>(sp =>
+					{
+						var dnsServer = EnvironmentExtensions.GetVariable(HYPERLOCAL_SERVER);
+						var logger = sp.GetRequiredService<ILogger<DomainLookupService>>();
+						var parallelCount = int.Parse(EnvironmentExtensions.GetVariable(MAX_CONCURRENT_RESOLVE));
+						return new DomainLookupService(logger, dnsServer, parallelCount);
+					});
+					services.AddTransient<DomainPublishMessageHandler>();
+				},
+				beforeHostStartAction: services =>
+				{
+					var _messageQueue = services.GetRequiredService<IMessageQueue>();
+					var handler = services.GetRequiredService<DomainPublishMessageHandler>();
+					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_DOMAINS_QUEUE);
+					_messageQueue.Subscribe<DomainPublishMessage, DomainPublishMessageHandler>(queueName, handler);
 				});
-				services.AddTransient<DomainPublishMessageHandler>();
-			})
-			.Build();
+		}
 	}
 }

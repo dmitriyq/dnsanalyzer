@@ -31,73 +31,48 @@ namespace Dns.Resolver.Producer
 
 		public static void Main(string[] args)
 		{
-			ILogger<Program>? _logger = null;
-			try
-			{
-				EnvironmentExtensions.CheckVariables(
+			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
+				entryPointArgs: args,
+				requiredEnvVars: new[]
+				{
 					RESOLVER_PUBLISHER_DELAY_SEC,
-
 					PG_CONNECTION_STRING_READ,
 					PG_CONNECTION_STRING_WRITE,
-
 					REDIS_CONNECTION,
 					REDIS_BLACK_DOMAINS,
-
 					RABBITMQ_CONNECTION
-					);
-
-				var host = CreateHostBuilder(args);
-				_logger = host.Services.GetRequiredService<ILogger<Program>>();
-				var worker = host.Services.GetRequiredService<PublishWorker>();
-				ApplyMigrations(host.Services);
-				_ = worker.RunJob();
-				host.Start();
-				host.WaitForShutdown();
-				host.Dispose();
-			}
-			catch (Exception ex)
-			{
-				if (_logger != null)
-					_logger.LogCritical(ex, ex.Message);
-				else Console.WriteLine(ex);
-				throw;
-			}
-		}
-
-		public static IHost CreateHostBuilder(string[] args) =>
-			Host.CreateDefaultBuilder(args)
-			.ConfigureServices((_, services) =>
-			{
-				services.AddOptions();
-				services.AddLogging(l => l.AddConsole());
-				services.AddDbContext<DnsDbContext>(opt =>
-					opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
-				services.AddDbContext<DnsReadOnlyDbContext>(opt =>
-					opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
-
-				services.AddSingleton<ConnectionMultiplexer>(__ =>
-					ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(REDIS_CONNECTION)));
-
-				services.AddMessageBus(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
-
-				services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
-
-				services.AddTransient<IDomainService, DomainService>();
-				services.AddTransient<PublishWorker>(sp =>
+				},
+				configureServices: (_, services) =>
 				{
-					var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
-					var messageQueue = sp.GetRequiredService<IMessageQueue>();
-					var domainSvc = sp.GetRequiredService<IDomainService>();
+					services.AddOptions();
+					services.AddLogging(l => l.AddConsole()
+						.SetEFCoreLogLevel(LogLevel.Warning));
+					services.AddDbContext<DnsDbContext>(opt =>
+						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
+					services.AddDbContext<DnsReadOnlyDbContext>(opt =>
+						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
 
-					return new PublishWorker(logger, messageQueue, domainSvc);
+					services.AddSingleton<ConnectionMultiplexer>(__ =>
+						ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(REDIS_CONNECTION)));
+
+					services.AddEasyNetQ(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
+
+					services.AddTransient<IDomainService, DomainService>();
+					services.AddTransient<PublishWorker>(sp =>
+					{
+						var logger = sp.GetRequiredService<ILogger<PublishWorker>>();
+						var messageQueue = sp.GetRequiredService<IMessageQueue>();
+						var domainSvc = sp.GetRequiredService<IDomainService>();
+
+						return new PublishWorker(logger, messageQueue, domainSvc);
+					});
+				},
+				beforeHostStartAction: services =>
+				{
+					services.ApplyDbMigration<DnsDbContext>();
+					var worker = services.GetRequiredService<PublishWorker>();
+					_ = worker.RunJob();
 				});
-			})
-			.Build();
-
-		private static void ApplyMigrations(IServiceProvider services)
-		{
-			var cntx = services.GetService<DnsDbContext>();
-			cntx.Database.Migrate();
 		}
 	}
 }

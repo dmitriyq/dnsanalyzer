@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grfc.Library.Common" Version="0.0.3.11" />
-    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.3.11" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.3.13" />
+    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.3.13" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
