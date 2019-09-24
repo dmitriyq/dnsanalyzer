@@ -29,9 +29,6 @@ namespace Dns.Resolver.Producer
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 
-		public const string RABBITMQ_PRODUCER_LIMIT = nameof(RABBITMQ_PRODUCER_LIMIT);
-		public const string RABBITMQ_PRODUCER_LIMIT_TIMEOUT = nameof(RABBITMQ_PRODUCER_LIMIT_TIMEOUT);
-
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
@@ -46,10 +43,7 @@ namespace Dns.Resolver.Producer
 					REDIS_CONNECTION,
 					REDIS_BLACK_DOMAINS,
 
-					RABBITMQ_CONNECTION,
-
-					RABBITMQ_PRODUCER_LIMIT,
-					RABBITMQ_PRODUCER_LIMIT_TIMEOUT
+					RABBITMQ_CONNECTION
 					);
 
 				var host = CreateHostBuilder(args);
@@ -95,10 +89,7 @@ namespace Dns.Resolver.Producer
 					var messageQueue = sp.GetRequiredService<IMessageQueue>();
 					var domainSvc = sp.GetRequiredService<IDomainService>();
 
-					var limit = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT));
-					var timeout = int.Parse(EnvironmentExtensions.GetVariable(RABBITMQ_PRODUCER_LIMIT_TIMEOUT));
-
-					return new PublishWorker(logger, messageQueue, domainSvc, limit, timeout);
+					return new PublishWorker(logger, messageQueue, domainSvc);
 				});
 			})
 			.Build();

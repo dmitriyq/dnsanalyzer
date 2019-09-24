@@ -39,6 +39,6 @@ namespace Dns.DAL.DataMigration.MSSQL
 			.ToView("vSuspectDomains");
 		}
 
-#pragma warning enable 618
+#pragma warning restore 618
 	}
 }

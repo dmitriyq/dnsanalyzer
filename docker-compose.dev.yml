@@ -83,6 +83,7 @@ services:
       <<: *shared-variables
       <<: *rabbitmq-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
+      MAX_CONCURRENT_RESOLVE: 10
     deploy:
       replicas: 10
 

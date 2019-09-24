@@ -21,6 +21,8 @@ namespace Dns.Resolver.Consumer
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_DNS_DOMAINS_QUEUE = nameof(RABBITMQ_DNS_DOMAINS_QUEUE);
 
+		public const string MAX_CONCURRENT_RESOLVE = nameof(MAX_CONCURRENT_RESOLVE);
+
 		public static void Main(string[] args)
 		{
 			ILogger<Program>? _logger = null;
@@ -29,7 +31,8 @@ namespace Dns.Resolver.Consumer
 				EnvironmentExtensions.CheckVariables(
 					HYPERLOCAL_SERVER,
 					RABBITMQ_CONNECTION,
-					RABBITMQ_DNS_DOMAINS_QUEUE
+					RABBITMQ_DNS_DOMAINS_QUEUE,
+					MAX_CONCURRENT_RESOLVE
 					);
 
 				var host = CreateHostBuilder(args);
@@ -66,7 +69,8 @@ namespace Dns.Resolver.Consumer
 				services.AddTransient<IDomainLookupService, DomainLookupService>(sp => {
 					var dnsServer = EnvironmentExtensions.GetVariable(HYPERLOCAL_SERVER);
 					var logger = sp.GetRequiredService<ILogger<DomainLookupService>>();
-					return new DomainLookupService(logger, dnsServer);
+					var parallelCount = int.Parse(EnvironmentExtensions.GetVariable(MAX_CONCURRENT_RESOLVE));
+					return new DomainLookupService(logger, dnsServer, parallelCount);
 				});
 				services.AddTransient<DomainPublishMessageHandler>();
 			})

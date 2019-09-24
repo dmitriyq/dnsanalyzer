@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.0-alpine AS build
+FROM registry.cmim.ru/grfc/infrastructure/net-core/sdk:3.0-alpine AS build
 WORKDIR /build
 
 COPY . .
@@ -7,7 +7,7 @@ RUN dotnet build "Dns.Resolver.Producer/Dns.Resolver.Producer.csproj" -c Release
 RUN dotnet publish "Dns.Resolver.Producer/Dns.Resolver.Producer.csproj" -c Release --no-restore -o /app
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/runtime:3.0-alpine AS base
+FROM registry.cmim.ru/grfc/infrastructure/net-core/runtime:3.0-alpine AS base
 WORKDIR /app
 COPY --from=build /app .
 ENTRYPOINT ["dotnet", "Dns.Resolver.Producer.dll"]
