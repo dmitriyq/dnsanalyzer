@@ -31,9 +31,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hyperlocal", "Hyperlocal", 
 	ProjectSection(SolutionItems) = preProject
 		Hyperlocal\Dockerfile = Hyperlocal\Dockerfile
 		Hyperlocal\named.conf = Hyperlocal\named.conf
-		Hyperlocal\named.conf.options = Hyperlocal\named.conf.options
+		Hyperlocal\rndc.conf = Hyperlocal\rndc.conf
+		Hyperlocal\rndc.key = Hyperlocal\rndc.key
 		Hyperlocal\start.sh = Hyperlocal\start.sh
-		Hyperlocal\zones.rfc1918 = Hyperlocal\zones.rfc1918
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Analyzer", "Dns.Analyzer\Dns.Analyzer.csproj", "{F7DA3E55-8290-4DE2-90F1-3E86DC8CF83F}"

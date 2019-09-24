@@ -1,7 +1,10 @@
-FROM ubuntu:18.04
-RUN apt update && apt upgrade -y && apt install bind9 dnsutils -y && apt clean
-COPY Hyperlocal/* /etc/bind/
+FROM archlinux/base
+RUN pacman -Sy --noconfirm bind bind-tools nano && pacman -Syu --noconfirm
+COPY Hyperlocal/named.conf /etc/
 COPY Hyperlocal/start.sh /usr/local/bin/
+COPY Hyperlocal/rndc.conf /etc/
+COPY Hyperlocal/rndc.key /etc/
 EXPOSE 53
 EXPOSE 53/udp
+RUN sed -i -e 's/\r$//' /usr/local/bin/start.sh
 ENTRYPOINT ["/usr/local/bin/start.sh"]
