@@ -24,7 +24,7 @@ variables:
   RESOLVER_PRODUCER_IMAGE: $CI_REGISTRY_IMAGE/resolver-producer:latest 
   SITE_IMAGE: $CI_REGISTRY_IMAGE/site:latest
 
-  DB_DEV_NAME: 'dnsdb'
+  DB_DEV_NAME: 'dnsdb_dev'
   DB_DEV_USER: 'dnsuser'
   DB_DEV_PASSWORD: 'dnsuser'
 
