@@ -54,6 +54,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Resolver.Aggregator", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dns.Contracts", "Dns.Contracts\Dns.Contracts.csproj", "{D172C423-04A6-403E-BC4C-D28F54530D42}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Knot", "Knot", "{378E9F96-0955-4AA3-99D1-E12328048064}"
+	ProjectSection(SolutionItems) = preProject
+		Hyperlocal\Knot\Dockerfile = Hyperlocal\Knot\Dockerfile
+		Hyperlocal\Knot\kresd.conf = Hyperlocal\Knot\kresd.conf
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -168,6 +174,7 @@ Global
 		{7F95F74F-C7FE-40ED-BE54-E4C7B99F6A5D} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
 		{C6ABEBA2-004E-45F5-9A63-F6D639D45AC6} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
 		{B08AE252-153B-488A-87F4-DA7F45590D6B} = {0B7AAAA1-2168-4D67-9A23-6026C9A4307F}
+		{378E9F96-0955-4AA3-99D1-E12328048064} = {C6ABEBA2-004E-45F5-9A63-F6D639D45AC6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {178EE4E8-D9CD-4994-906C-1BB75896648F}
