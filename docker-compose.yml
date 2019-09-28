@@ -58,14 +58,14 @@ services:
     environment:
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
-      MAX_CONCURRENT_RESOLVE: 10
+      MAX_CONCURRENT_RESOLVE: 200
     env_file:
       - .env
     networks:
       - net
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 20
+      replicas: 30
 
   resolver-producer:
     image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}

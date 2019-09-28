@@ -26,29 +26,33 @@ namespace Dns.Resolver.Consumer.Services
 			_semaphoreSlim = new SemaphoreSlim(maxParrallelRequests);
 		}
 
-		private async Task<(ISet<string> ips, ResponseCode code)> GetIpsAsync(string domain)
+		private async Task<(ISet<string> ips, ResponseCode code)> TryResolveWithRetry(string domain, int retryCount = 0)
 		{
-			var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
-			var ips = resp.Select(x => x.ToString()).ToHashSet();
-			return (ips: ips, code: ResponseCode.NoError);
+			while(retryCount < 3)
+			{
+				try
+				{
+					var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
+					var ips = resp.Select(x => x.ToString()).ToHashSet();
+					return (ips: ips, code: ResponseCode.NoError);
+				}
+				catch (OperationCanceledException) { retryCount++; }
+				catch { throw; }
+			}
+			throw new OperationCanceledException();
 		}
 
 		private async Task<(ISet<string> ips, ResponseCode code)> HandleResolveError(string domain)
 		{
 			try
 			{
-				return await GetIpsAsync(domain).ConfigureAwait(false);
+				return await TryResolveWithRetry(domain).ConfigureAwait(false);
 			}
 			catch (ResponseException re) when (re.Response.ResponseCode == ResponseCode.NameError
 				|| re.Response.ResponseCode == ResponseCode.ServerFailure
 				|| re.Message == "No matching records")
 			{
 				return (ips: new HashSet<string>(), code: re.Response.ResponseCode);
-			}
-			catch (OperationCanceledException)
-			{
-				_logger.LogWarning($"OperationCanceledException for {domain}");
-				return await GetIpsAsync(domain).ConfigureAwait(false);
 			}
 		}
 
