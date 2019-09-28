@@ -43,7 +43,8 @@ namespace Dns.Resolver.Consumer.Services
 				}
 				catch { throw; }
 			}
-			throw new OperationCanceledException($"Timeout for {domain}");
+			_logger.LogWarning($"Timeout for {domain} [{retryCount}]");
+			return (ips: new HashSet<string>(), code: ResponseCode.NoError);
 		}
 
 		private async Task<(ISet<string> ips, ResponseCode code)> HandleResolveError(string domain)
