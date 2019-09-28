@@ -192,7 +192,7 @@ deploy-prod:
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
         export ENVIRONMENT=$ENVIRONMENT &&
-        export SITE_HOSTNAME=$SITE_HOSTNAME
+        export SITE_HOSTNAME=$SITE_HOSTNAME &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
@@ -353,7 +353,7 @@ deploy-dev:
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
-        export SITE_HOSTNAME=$SITE_DEV_HOSTNAME
+        export SITE_HOSTNAME=$SITE_DEV_HOSTNAME &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
