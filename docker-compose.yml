@@ -19,7 +19,7 @@ services:
   hyperlocal:
     image: ${HYPERLOCAL_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/hyperlocal}
     networks:
-      - default
+      - net
     deploy:
       mode: global
 
@@ -32,7 +32,7 @@ services:
     env_file:
       - .env
     networks:
-      - default
+      - net
       - postgre_pg-net
       - redis-net
       - rabbitmq_rabbitmq-net
@@ -47,7 +47,7 @@ services:
     env_file:
       - .env
     networks:
-      - default
+      - net
       - redis-net
       - rabbitmq_rabbitmq-net
     deploy:
@@ -62,7 +62,7 @@ services:
     env_file:
       - .env
     networks:
-      - default
+      - net
       - rabbitmq_rabbitmq-net
     deploy:
       replicas: 20
@@ -76,7 +76,7 @@ services:
     env_file:
       - .env
     networks:
-      - default
+      - net
       - postgre_pg-net
       - redis-net
       - rabbitmq_rabbitmq-net
@@ -88,7 +88,7 @@ services:
     networks:
       - postgre_pg-net
       - redis-net
-      - default
+      - net
       - notification_default
       - vigruzki_default
       - traefik-net
@@ -123,7 +123,7 @@ networks:
     external: true
   rabbitmq_rabbitmq-net:
     external: true
-  default:
+  net:
     external: false
     driver: overlay
     attachable: true
