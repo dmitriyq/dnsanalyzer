@@ -18,7 +18,7 @@ namespace Dns.Resolver.Aggregator.Services
 {
 	public class DomainAggregatorService : IDomainAggregatorService
 	{
-		private readonly DomainQueueCollection _domainCollection;
+		private static readonly DomainQueueCollection _domainCollection = new DomainQueueCollection();
 		private readonly ILogger<DomainAggregatorService> _logger;
 		private readonly IDatabase _redisDb;
 		private readonly IMessageQueue _messageQueue;
@@ -36,13 +36,12 @@ namespace Dns.Resolver.Aggregator.Services
 			_messageQueue = messageQueue;
 			_redisBlackDomainsKey = redisBlackDomainKey;
 			_redisWhiteDomainsKey = redisWhiteDomainKey;
-			_domainCollection = new DomainQueueCollection();
 			_domainCollection.NewIdAdded += DomainCollection_NewIdAdded;
 		}
 
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
-			_logger.LogInformation($"New Id {e.TraceId} Added, currenct count in queue: {e.Count}");
+			_logger.LogInformation($"New Id {e.TraceId} Added, current count in queue: {e.Count}");
 			await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Aggregator", "Завершен резолв доменов")).ConfigureAwait(false);
 			if (e.Count > 2)
 			{
@@ -69,7 +68,7 @@ namespace Dns.Resolver.Aggregator.Services
 		public void NotifyCompletion(Guid traceId)
 		{
 			_messageQueue.Publish(new AnalyzeNeededMessage(traceId));
-			_logger.LogInformation($"AnalyzeStartingEvent has published at {DateTimeOffset.Now}");
+			_logger.LogInformation($"AnalyzeStartingEvent has published for {traceId} at {DateTimeOffset.Now}");
 		}
 
 		public async Task StoreDomainsAsync()

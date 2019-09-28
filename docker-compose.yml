@@ -72,7 +72,7 @@ services:
     environment: 
       <<: *shared-variables
       <<: *redis-variables
-      RESOLVER_PUBLISHER_DELAY_SEC: '120'
+      RESOLVER_PUBLISHER_DELAY_SEC: '30'
     env_file:
       - .env
     networks:

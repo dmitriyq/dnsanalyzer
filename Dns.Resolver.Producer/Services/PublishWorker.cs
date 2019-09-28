@@ -32,18 +32,25 @@ namespace Dns.Resolver.Producer.Services
 
 			while (true)
 			{
-				_logger.LogInformation($"PublishWorker background task executing.");
+				try
+				{
+					_logger.LogInformation($"PublishWorker background task executing.");
 
-				await PublishDomains().ConfigureAwait(false);
+					var guid = await PublishDomains().ConfigureAwait(false);
 
-				_logger.LogInformation($"PublishWorker background task executed successfully.");
-				await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Producer", "Отправлены домены на резолв")).ConfigureAwait(false);
-				await Task.Delay(_timeOut).ConfigureAwait(false);
+					_logger.LogInformation($"PublishWorker background task executed successfully with {guid}.");
+					await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Producer", "Отправлены домены на резолв")).ConfigureAwait(false);
+					await Task.Delay(_timeOut).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogCritical(ex, ex.Message);
+				}
 			}
 			throw new Exception();
 		}
 
-		private async Task PublishDomains()
+		private async Task<Guid> PublishDomains()
 		{
 			var blackDomains = await _domainService.GetBlackDomainsAsync().ConfigureAwait(false);
 			var whiteDomains = await _domainService.GetWhiteDomainsAsync().ConfigureAwait(false);
@@ -56,6 +63,7 @@ namespace Dns.Resolver.Producer.Services
 			{
 				await _messageQueue.PublishAsync(new DomainPublishMessage(whiteDomain, 2, traceId)).ConfigureAwait(false);
 			}
+			return traceId;
 		}
 	}
 }
