@@ -36,10 +36,14 @@ namespace Dns.Resolver.Consumer.Services
 					var ips = resp.Select(x => x.ToString()).ToHashSet();
 					return (ips: ips, code: ResponseCode.NoError);
 				}
-				catch (OperationCanceledException) { retryCount++; }
+				catch (OperationCanceledException)
+				{
+					await Task.Delay(100).ConfigureAwait(false);
+					retryCount++;
+				}
 				catch { throw; }
 			}
-			throw new OperationCanceledException();
+			throw new OperationCanceledException($"Timeout for {domain}");
 		}
 
 		private async Task<(ISet<string> ips, ResponseCode code)> HandleResolveError(string domain)

@@ -58,7 +58,7 @@ services:
     environment:
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
-      MAX_CONCURRENT_RESOLVE: 200
+      MAX_CONCURRENT_RESOLVE: 100
     env_file:
       - .env
     networks:
@@ -72,7 +72,7 @@ services:
     environment: 
       <<: *shared-variables
       <<: *redis-variables
-      RESOLVER_PUBLISHER_DELAY_SEC: '60'
+      RESOLVER_PUBLISHER_DELAY_SEC: '180'
     env_file:
       - .env
     networks:
