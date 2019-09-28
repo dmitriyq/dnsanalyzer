@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DNS.Client;
+using DNS.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Consumer.Services
@@ -25,7 +26,7 @@ namespace Dns.Resolver.Consumer.Services
 			_semaphoreSlim = new SemaphoreSlim(maxParrallelRequests);
 		}
 
-		public async Task<ISet<string>> GetIpAddressesAsync(string domain)
+		public async Task<(ISet<string> ips, ResponseCode code)> GetIpAddressesAsync(string domain)
 		{
 			await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
 			try
@@ -33,22 +34,22 @@ namespace Dns.Resolver.Consumer.Services
 				var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
 				var ips = resp.Select(x => x.ToString()).ToHashSet();
 				_semaphoreSlim.Release();
-				return ips;
+				return (ips: ips, code: ResponseCode.NoError);
 			}
-			catch (DNS.Client.ResponseException re)
+			catch (ResponseException re) when (re.Response.ResponseCode == ResponseCode.NameError
+				|| re.Response.ResponseCode == ResponseCode.ServerFailure)
 			{
-				_logger.LogWarning($"{re.Response.ResponseCode} - {domain}");
-				throw;
+				_semaphoreSlim.Release();
+				return (ips: new HashSet<string>(), code: re.Response.ResponseCode);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogWarning(ex, ex.Message);
 				try
 				{
 					var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
 					var ips = resp.Select(x => x.ToString()).ToHashSet();
 					_semaphoreSlim.Release();
-					return ips;
+					return (ips: ips, code: ResponseCode.NoError);
 				}
 				catch (Exception ex1)
 				{

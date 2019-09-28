@@ -27,19 +27,18 @@ namespace Dns.Resolver.Consumer.Messages
 		{
 			try
 			{
-				var ips = await _domainLookup.GetIpAddressesAsync(message.Domain).ConfigureAwait(false);
-				if (ips.Count == 0)
+				var (ips, code) = await _domainLookup.GetIpAddressesAsync(message.Domain).ConfigureAwait(false);
+				if (code == DNS.Protocol.ResponseCode.NoError && ips.Count > 0)
 				{
-					return;
-				}
-				try
-				{
-					var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
-					await _messageQueue.PublishAsync(resolvedMessage).ConfigureAwait(false);
-				}
-				catch
-				{
-					return;
+					try
+					{
+						var resolvedMessage = new DomainResolvedMessage(message.Domain, message.DomainType, ips, message.TraceId);
+						await _messageQueue.PublishAsync(resolvedMessage).ConfigureAwait(false);
+					}
+					catch
+					{
+						return;
+					}
 				}
 			}
 			catch (Exception ex)
