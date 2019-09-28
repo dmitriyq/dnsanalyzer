@@ -20,19 +20,12 @@ namespace Dns.Resolver.Aggregator.Messages
 			_logger = logger;
 		}
 
-		public async Task Handle(DomainResolvedMessage message)
+		public Task Handle(DomainResolvedMessage message)
 		{
-			await Task.CompletedTask.ConfigureAwait(false);
-			try
-			{
-				if (message == null) throw new ArgumentNullException(nameof(message));
-				_aggregatorService.AddDomain(message);
-				return;
-			}
-			catch (Exception ex)
-			{
-				_logger.LogCritical(ex, ex.Message);
-			}
+			if (message == null) throw new ArgumentNullException(nameof(message));
+			_logger.LogInformation($"Handled {message.TraceId} - {message.Name}");
+			_aggregatorService.AddDomain(message);
+			return Task.CompletedTask;
 		}
 	}
 }

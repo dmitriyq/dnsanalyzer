@@ -18,7 +18,8 @@ namespace Dns.Resolver.Aggregator.Services
 {
 	public class DomainAggregatorService : IDomainAggregatorService
 	{
-		private static readonly DomainQueueCollection _domainCollection = new DomainQueueCollection();
+		private static readonly DomainQueueCollection<DomainResolvedMessage> _domainResolvedCollection = new DomainQueueCollection<DomainResolvedMessage>();
+		private static readonly DomainQueueCollection<DomainUnresolvedMessage> _domainUnresolvedCollection = new DomainQueueCollection<DomainUnresolvedMessage>();
 		private readonly ILogger<DomainAggregatorService> _logger;
 		private readonly IDatabase _redisDb;
 		private readonly IMessageQueue _messageQueue;
@@ -36,33 +37,66 @@ namespace Dns.Resolver.Aggregator.Services
 			_messageQueue = messageQueue;
 			_redisBlackDomainsKey = redisBlackDomainKey;
 			_redisWhiteDomainsKey = redisWhiteDomainKey;
-			_domainCollection.NewIdAdded += DomainCollection_NewIdAdded;
+			_domainResolvedCollection.NewIdAdded += DomainCollection_NewIdAdded;
+			_domainUnresolvedCollection.NewIdAdded += DomainUnresolvedCollection_NewIdAdded;
+		}
+
+		private void DomainUnresolvedCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
+		{
+			_logger.LogInformation($"New Id {e.TraceId} to unresolved queue added, current count in queue: {e.Count}");
+			if (e.Count > 2)
+			{
+				var domains = _domainUnresolvedCollection.DequeueDomains();
+				var stats = domains.GroupBy(x => x.ResolveErrorType);
+				foreach (var type in stats)
+				{
+					_logger.LogInformation($"Unresolved with {type.Key} - {type.Count()}");
+				}
+				_logger.LogInformation($"Unresolved total - {domains.Count()}");
+			}
 		}
 
 		private async void DomainCollection_NewIdAdded(object? sender, UniqueIdCountChangedArgs e)
 		{
-			_logger.LogInformation($"New Id {e.TraceId} Added, current count in queue: {e.Count}");
+			_logger.LogInformation($"New Id {e.TraceId} to resolved queue added, current count in queue: {e.Count}");
 			await _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage("Dns.Resolver.Aggregator", "Завершен резолв доменов")).ConfigureAwait(false);
 			if (e.Count > 2)
 			{
-				try
+				bool isStored = false;
+				const int maxTryCount = 3;
+				int currentTry = 0;
+				while (isStored || currentTry > maxTryCount)
 				{
-					await StoreDomainsAsync().ConfigureAwait(false);
-					NotifyCompletion(e.TraceId);
+					try
+					{
+						await StoreAndNotifyAsync(e.TraceId).ConfigureAwait(false);
+						isStored = true;
+					}
+					catch (Exception ex)
+					{
+						_logger.LogWarning(ex, ex.Message);
+						currentTry++;
+					}
 				}
-				catch (Exception ex)
-				{
-					_logger.LogCritical(ex, ex.Message);
-					throw;
-				}
+				if (!isStored) _logger.LogCritical($"Cant store resolved domains in Redis [{e.TraceId}]");
 			}
 		}
+
+		private Task StoreAndNotifyAsync(Guid traceId) =>
+			StoreDomainsAsync().ContinueWith(_ => NotifyCompletion(traceId), TaskScheduler.Current);
 
 		public void AddDomain(DomainResolvedMessage domain)
 		{
 			if (domain == null) throw new ArgumentNullException(nameof(domain));
 
-			_domainCollection.Add(domain);
+			_domainResolvedCollection.Add(domain);
+		}
+
+		public void AddDomain(DomainUnresolvedMessage domain)
+		{
+			if (domain == null) throw new ArgumentNullException(nameof(domain));
+
+			_domainUnresolvedCollection.Add(domain);
 		}
 
 		public void NotifyCompletion(Guid traceId)
@@ -73,7 +107,7 @@ namespace Dns.Resolver.Aggregator.Services
 
 		public async Task StoreDomainsAsync()
 		{
-			var domains = _domainCollection.DequeueDomains();
+			var domains = _domainResolvedCollection.DequeueDomains();
 
 			var whiteDomains = domains.Where(x => x.DomainType == 2)
 				.Select(x => new ResolvedDomain(x.Name, x.IPAddresses.ToHashSet()));

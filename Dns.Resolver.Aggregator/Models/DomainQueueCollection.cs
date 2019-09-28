@@ -6,15 +6,15 @@ using Dns.Contracts.Messages;
 
 namespace Dns.Resolver.Aggregator.Models
 {
-	public class DomainQueueCollection
+	public class DomainQueueCollection<T> where T: ITraceable
 	{
 		private readonly Queue<Guid> _uniqueIds = new Queue<Guid>();
-		private readonly List<DomainResolvedMessage> _domains = new List<DomainResolvedMessage>();
+		private readonly List<T> _domains = new List<T>();
 		private readonly object _domainsLock = new object();
 
 		public event EventHandler<UniqueIdCountChangedArgs>? NewIdAdded;
 
-		public void Add(DomainResolvedMessage domain)
+		public void Add(T domain)
 		{
 			if (domain == null) throw new ArgumentNullException(nameof(domain));
 
@@ -29,7 +29,7 @@ namespace Dns.Resolver.Aggregator.Models
 			}
 		}
 
-		public IEnumerable<DomainResolvedMessage> DequeueDomains()
+		public IEnumerable<T> DequeueDomains()
 		{
 			var id = _uniqueIds.Dequeue();
 			var domains = _domains.Where(x => x.TraceId == id).ToArray();

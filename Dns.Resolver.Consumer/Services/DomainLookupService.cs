@@ -38,13 +38,12 @@ namespace Dns.Resolver.Consumer.Services
 				}
 				catch (OperationCanceledException)
 				{
-					await Task.Delay(100).ConfigureAwait(false);
 					retryCount++;
 				}
 				catch { throw; }
 			}
 			_logger.LogWarning($"Timeout for {domain} [{retryCount}]");
-			return (ips: new HashSet<string>(), code: ResponseCode.NoError);
+			return (ips: new HashSet<string>(), code: ResponseCode.NotImplemented);
 		}
 
 		private async Task<(ISet<string> ips, ResponseCode code)> HandleResolveError(string domain)

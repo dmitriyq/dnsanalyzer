@@ -14,5 +14,6 @@ namespace Dns.Resolver.Aggregator.Services
 
 		void NotifyCompletion(Guid traceId);
 		void AddDomain(DomainResolvedMessage domain);
+		void AddDomain(DomainUnresolvedMessage domain);
 	}
 }
