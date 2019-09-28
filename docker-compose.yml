@@ -18,12 +18,6 @@ x-redis-variables: &redis-variables
 services:
   hyperlocal:
     image: ${HYPERLOCAL_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/hyperlocal}
-    ports:
-      - "53:53"
-      - "53:53/udp"
-      - "443/tcp"
-      - "853/tcp"
-      - "8453:8453/tcp"
     networks:
       - default
     deploy:
