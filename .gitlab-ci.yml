@@ -42,7 +42,6 @@ before_script:
 build-hyperlocal-prod:
   stage: build
   script:
-    - chmod +x Hyperlocal/start.sh
     - docker build --pull -t $HYPERLOCAL_IMAGE -f Hyperlocal/Dockerfile .
     - docker tag $HYPERLOCAL_IMAGE $HYPERLOCAL_IMAGE
     - docker push $HYPERLOCAL_IMAGE
@@ -205,7 +204,6 @@ deploy-prod:
 build-hyperlocal-dev:
   stage: build
   script:
-    - chmod +x Hyperlocal/start.sh
     - docker build --pull -t $HYPERLOCAL_DEV_IMAGE -f Hyperlocal/Dockerfile .
     - docker tag $HYPERLOCAL_DEV_IMAGE $HYPERLOCAL_DEV_IMAGE
     - docker push $HYPERLOCAL_DEV_IMAGE
