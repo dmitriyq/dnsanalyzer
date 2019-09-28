@@ -8,6 +8,7 @@ x-shared-variables: &shared-variables
   ASPNETCORE_ENVIRONMENT: '${ENVIRONMENT:-Development}'
   NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
   NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
+  SITE_HOSTNAME: 'dns.cmim.ru'
 
 x-redis-variables: &redis-variables
   REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
@@ -57,14 +58,14 @@ services:
     environment:
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
-      MAX_CONCURRENT_RESOLVE: 10
+      MAX_CONCURRENT_RESOLVE: 100
     env_file:
       - .env
     networks:
       - default
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 10
+      replicas: 30
 
   resolver-producer:
     image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}

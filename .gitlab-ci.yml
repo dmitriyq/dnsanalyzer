@@ -14,7 +14,7 @@ variables:
   DB_NAME: 'dnsdb'
   DB_USER: 'dnsuser'
   DB_PASSWORD: 'dnsuser'
-
+  SITE_HOSTNAME: 'dns.cmim.ru'
   ENVIRONMENT: 'Production'
 
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
@@ -27,6 +27,7 @@ variables:
   DB_DEV_NAME: 'dnsdb_dev'
   DB_DEV_USER: 'dnsuser'
   DB_DEV_PASSWORD: 'dnsuser'
+  SITE_DEV_HOSTNAME: 'dev.dns.cmim.ru'
 
   HYPERLOCAL_DEV_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal-dev:latest
   ANALYZER_DEV_IMAGE: $CI_REGISTRY_IMAGE/analyzer-dev:latest
@@ -191,6 +192,7 @@ deploy-prod:
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
         export ENVIRONMENT=$ENVIRONMENT &&
+        export SITE_HOSTNAME=$SITE_HOSTNAME
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
@@ -351,6 +353,7 @@ deploy-dev:
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
+        export SITE_HOSTNAME=$SITE_DEV_HOSTNAME
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
