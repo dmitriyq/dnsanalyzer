@@ -26,13 +26,18 @@ namespace Dns.Resolver.Consumer.Services
 			_semaphoreSlim = new SemaphoreSlim(maxParrallelRequests);
 		}
 
-		private async Task<(ISet<string> ips, ResponseCode code)> ResolveIpInternal(string domain)
+		private async Task<(ISet<string> ips, ResponseCode code)> GetIpsAsync(string domain)
+		{
+			var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
+			var ips = resp.Select(x => x.ToString()).ToHashSet();
+			return (ips: ips, code: ResponseCode.NoError);
+		}
+
+		private async Task<(ISet<string> ips, ResponseCode code)> HandleResolveError(string domain)
 		{
 			try
 			{
-				var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
-				var ips = resp.Select(x => x.ToString()).ToHashSet();
-				return (ips: ips, code: ResponseCode.NoError);
+				return await GetIpsAsync(domain).ConfigureAwait(false);
 			}
 			catch (ResponseException re) when (re.Response.ResponseCode == ResponseCode.NameError
 				|| re.Response.ResponseCode == ResponseCode.ServerFailure
@@ -43,7 +48,7 @@ namespace Dns.Resolver.Consumer.Services
 			catch (OperationCanceledException)
 			{
 				_logger.LogWarning($"OperationCanceledException for {domain}");
-				throw;
+				return await GetIpsAsync(domain).ConfigureAwait(false);
 			}
 		}
 
@@ -52,7 +57,7 @@ namespace Dns.Resolver.Consumer.Services
 			await _semaphoreSlim.WaitAsync().ConfigureAwait(false);
 			try
 			{
-				var result = await ResolveIpInternal(domain).ConfigureAwait(false);
+				var result = await HandleResolveError(domain).ConfigureAwait(false);
 				_semaphoreSlim.Release();
 				return result;
 			}
