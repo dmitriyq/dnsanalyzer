@@ -37,13 +37,15 @@ namespace Dns.Resolver.Consumer.Services
 				return (ips: ips, code: ResponseCode.NoError);
 			}
 			catch (ResponseException re) when (re.Response.ResponseCode == ResponseCode.NameError
-				|| re.Response.ResponseCode == ResponseCode.ServerFailure)
+				|| re.Response.ResponseCode == ResponseCode.ServerFailure 
+				|| re.Message == "No matching records")
 			{
 				_semaphoreSlim.Release();
 				return (ips: new HashSet<string>(), code: re.Response.ResponseCode);
 			}
-			catch (Exception ex)
+			catch (OperationCanceledException oce)
 			{
+				_logger.LogWarning($"OperationCanceledException for {domain}");
 				try
 				{
 					var resp = await _dnsClient.Lookup(_idnMapping.GetAscii(domain)).ConfigureAwait(false);
@@ -53,10 +55,16 @@ namespace Dns.Resolver.Consumer.Services
 				}
 				catch (Exception ex1)
 				{
-					_logger.LogWarning(ex1, ex1.Message);
+					_logger.LogWarning(ex1, $"After second retry: {ex1.Message}");
 					_semaphoreSlim.Release();
 					throw;
 				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogCritical(ex, ex.Message);
+				_semaphoreSlim.Release();
+				throw;
 			}
 		}
 	}
