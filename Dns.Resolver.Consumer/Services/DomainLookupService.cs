@@ -38,6 +38,7 @@ namespace Dns.Resolver.Consumer.Services
 				}
 				catch (OperationCanceledException)
 				{
+					await Task.Delay(100);
 					retryCount++;
 				}
 				catch { throw; }

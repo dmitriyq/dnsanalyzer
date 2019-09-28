@@ -64,13 +64,17 @@ namespace Dns.Resolver.Aggregator
 					});
 
 					services.AddTransient<DomainResolvedMessageHandler>();
+					services.AddTransient<DomainUnresolvedMessageHandler>();
 				},
 				beforeHostStartAction: services =>
 				{
 					var _messageQueue = services.GetRequiredService<IMessageQueue>();
-					var handler = services.GetRequiredService<DomainResolvedMessageHandler>();
-					var queueName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
-					_messageQueue.Subscribe<DomainResolvedMessage, DomainResolvedMessageHandler>(queueName, handler);
+					var domainResolvedHandler = services.GetRequiredService<DomainResolvedMessageHandler>();
+					var domainUnresolvedHandler = services.GetRequiredService<DomainUnresolvedMessageHandler>();
+					var queueResolvedName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_RESOLVED_DOMAINS_QUEUE);
+					var queueUnresolvedName = EnvironmentExtensions.GetVariable(RABBITMQ_DNS_UNRESOLVED_DOMAINS_QUEUE);
+					_messageQueue.Subscribe<DomainResolvedMessage, DomainResolvedMessageHandler>(queueResolvedName, domainResolvedHandler);
+					_messageQueue.Subscribe<DomainUnresolvedMessage, DomainUnresolvedMessageHandler>(queueUnresolvedName, domainUnresolvedHandler);
 				});
 		}
 	}

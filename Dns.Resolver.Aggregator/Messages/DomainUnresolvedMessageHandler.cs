@@ -9,18 +9,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Aggregator.Messages
 {
-	public class DomainResolvedMessageHandler : IAmqpMessageHandler<DomainResolvedMessage>
+	public class DomainUnresolvedMessageHandler : IAmqpMessageHandler<DomainUnresolvedMessage>
 	{
 		private readonly IDomainAggregatorService _aggregatorService;
-		private readonly ILogger<DomainResolvedMessageHandler> _logger;
+		private readonly ILogger<DomainUnresolvedMessageHandler> _logger;
 
-		public DomainResolvedMessageHandler(IDomainAggregatorService aggregatorService, ILogger<DomainResolvedMessageHandler> logger)
+		public DomainUnresolvedMessageHandler(IDomainAggregatorService aggregatorService, ILogger<DomainUnresolvedMessageHandler> logger)
 		{
 			_aggregatorService = aggregatorService;
 			_logger = logger;
 		}
-
-		public Task Handle(DomainResolvedMessage message)
+		public Task Handle(DomainUnresolvedMessage message)
 		{
 			if (message == null) throw new ArgumentNullException(nameof(message));
 			_aggregatorService.AddDomain(message);
