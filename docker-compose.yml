@@ -21,7 +21,7 @@ services:
     networks:
       - default
     deploy:
-      replicas: 1
+      mode: global
 
   analyzer:
     image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
@@ -58,21 +58,21 @@ services:
     environment:
       <<: *shared-variables
       HYPERLOCAL_SERVER: 'hyperlocal'
-      MAX_CONCURRENT_RESOLVE: 100
+      MAX_CONCURRENT_RESOLVE: 25
     env_file:
       - .env
     networks:
       - default
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 30
+      replicas: 20
 
   resolver-producer:
     image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}
     environment: 
       <<: *shared-variables
       <<: *redis-variables
-      RESOLVER_PUBLISHER_DELAY_SEC: '180'
+      RESOLVER_PUBLISHER_DELAY_SEC: '120'
     env_file:
       - .env
     networks:
