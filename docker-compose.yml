@@ -21,7 +21,7 @@ services:
     networks:
       - default
     deploy:
-      mode: global
+      replicas: 2
 
   analyzer:
     image: ${ANALYZER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/analyzer}
