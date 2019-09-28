@@ -35,6 +35,11 @@ namespace Dns.Resolver.Consumer.Services
 				_semaphoreSlim.Release();
 				return ips;
 			}
+			catch (DNS.Client.ResponseException re)
+			{
+				_logger.LogWarning($"{re.Response.ResponseCode} - {domain}");
+				throw;
+			}
 			catch (Exception ex)
 			{
 				_logger.LogWarning(ex, ex.Message);
