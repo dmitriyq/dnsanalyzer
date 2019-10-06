@@ -55,13 +55,13 @@ build-hyperlocal-prod:
 build-analyzer-prod:
   stage: build
   script:
-    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Analyzer/Dockerfile .
+    - docker build --pull -t $ANALYZER_IMAGE -f Dns.Resolver.Analyzer/Dockerfile .
     - docker push $ANALYZER_IMAGE
   only:
     refs:
       - master
     changes:
-      - Dns.Analyzer/**/*
+      - Dns.Resolver.Analyzer/**/*
       - Dns.Contracts/**/*
       - Dns.DAL/**/*
   tags:
@@ -70,7 +70,7 @@ build-analyzer-prod:
 build-resolver-blacklist-prod:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_BLACKLIST_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker build --pull -t $RESOLVER_BLACKLIST_IMAGE -f Dns.Resolver.Blacklist/Dockerfile .
     - docker push $RESOLVER_BLACKLIST_IMAGE
   only:
     refs:
@@ -84,7 +84,7 @@ build-resolver-blacklist-prod:
 build-resolver-whitelist-prod:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_WHITELIST_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker build --pull -t $RESOLVER_WHITELIST_IMAGE -f Dns.Resolver.Whitelist/Dockerfile .
     - docker push $RESOLVER_WHITELIST_IMAGE
   only:
     refs:
@@ -202,13 +202,13 @@ build-hyperlocal-dev:
 build-analyzer-dev:
   stage: build
   script:
-    - docker build --pull -t $ANALYZER_DEV_IMAGE -f Dns.Analyzer/Dockerfile .
+    - docker build --pull -t $ANALYZER_DEV_IMAGE -f Dns.Resolver.Analyzer/Dockerfile .
     - docker push $ANALYZER_DEV_IMAGE
   only:
     refs:
       - dev/main
     changes:
-      - Dns.Analyzer/**/*
+      - Dns.Resolver.Analyzer/**/*
       - Dns.Contracts/**/*
       - Dns.DAL/**/*
   tags:
@@ -217,28 +217,28 @@ build-analyzer-dev:
 build-resolver-blacklist-dev:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_DEV_BLACKLIST_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker build --pull -t $RESOLVER_DEV_BLACKLIST_IMAGE -f Dns.Resolver.Blacklist/Dockerfile .
     - docker push $RESOLVER_DEV_BLACKLIST_IMAGE
   only:
     refs:
       - dev/main
     changes:
       - Dns.Contracts/**/*
-      - Dns.Resolver.Aggregator/**/*
+      - Dns.Resolver.Blacklist/**/*
   tags:
   - build
 
 build-resolver-whitelist-dev:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_DEV_WHITELIST_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker build --pull -t $RESOLVER_DEV_WHITELIST_IMAGE -f Dns.Resolver.Whitelist/Dockerfile .
     - docker push $RESOLVER_DEV_WHITELIST_IMAGE
   only:
     refs:
       - dev/main
     changes:
       - Dns.Contracts/**/*
-      - Dns.Resolver.Consumer/**/*
+      - Dns.Resolver.Whitelist/**/*
       - Dns.DAL/**/*
   tags:
   - build
