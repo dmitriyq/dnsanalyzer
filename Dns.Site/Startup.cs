@@ -1,5 +1,6 @@
 using System;
 using Dns.Contracts.Messages;
+using Dns.Contracts.Services;
 using Dns.DAL;
 using Dns.Site.EventHandlers;
 using Dns.Site.Hubs;
@@ -87,7 +88,7 @@ namespace Dns.Site
 
 			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
 				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
-					opt.Configuration.ChannelPrefix = "Dns_SignalR_");
+					opt.Configuration.ChannelPrefix = "Dns_Sote_SignalR_");
 
 			if (HostEnvironment.IsProduction())
 			{

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dns.Contracts.Services;
 using Dns.DAL;
 using Dns.DAL.Enums;
 using Dns.Site.Hubs;

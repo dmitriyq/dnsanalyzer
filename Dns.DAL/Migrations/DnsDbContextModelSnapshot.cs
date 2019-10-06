@@ -17,23 +17,28 @@ namespace Dns.DAL.Migrations
             modelBuilder
                 .HasAnnotation("Npgsql:PostgresExtension:citext", ",,")
                 .HasAnnotation("Npgsql:PostgresExtension:dblink", ",,")
-                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.SerialColumn)
-                .HasAnnotation("ProductVersion", "3.0.0-preview5.19227.1")
+                .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                .HasAnnotation("ProductVersion", "3.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             modelBuilder.Entity("Dns.DAL.Models.AttackGroupHistories", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("AttackGroupId");
+                    b.Property<int>("AttackGroupId")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("CurrentStatus");
+                    b.Property<int>("CurrentStatus")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamptz");
 
-                    b.Property<int>("PrevStatus");
+                    b.Property<int>("PrevStatus")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -48,7 +53,9 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.AttackGroups", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTimeOffset>("DateBegin")
                         .HasColumnType("timestamptz");
@@ -56,7 +63,13 @@ namespace Dns.DAL.Migrations
                     b.Property<DateTimeOffset?>("DateClose")
                         .HasColumnType("timestamptz");
 
-                    b.Property<int>("Status");
+                    b.Property<DateTimeOffset>("LastUpdate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamptz")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -69,16 +82,21 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.AttackHistories", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("AttackId");
+                    b.Property<int>("AttackId")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("CurrentStatus");
+                    b.Property<int>("CurrentStatus")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamptz");
 
-                    b.Property<int>("PrevStatus");
+                    b.Property<int>("PrevStatus")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -93,9 +111,12 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.AttackNotes", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("AttackGroupId");
+                    b.Property<int>("AttackGroupId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamptz");
@@ -116,27 +137,36 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.Attacks", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("AttackGroupId");
+                    b.Property<int>("AttackGroupId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("BlackDomain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("Ip")
                         .IsRequired()
+                        .HasColumnType("character varying(45)")
                         .HasMaxLength(45);
 
-                    b.Property<bool>("IpBlocked");
+                    b.Property<bool>("IpBlocked")
+                        .HasColumnType("boolean");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SubnetBlocked")
+                        .HasColumnType("character varying(18)")
                         .HasMaxLength(18);
 
                     b.Property<string>("WhiteDomain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");
@@ -164,14 +194,18 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.DomainExcludedNames", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("BlackDomain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("WhiteDomain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");
@@ -191,9 +225,12 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.DomainInfo", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("Company");
+                    b.Property<string>("Company")
+                        .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("DateCreate")
                         .HasColumnType("timestamptz");
@@ -203,9 +240,11 @@ namespace Dns.DAL.Migrations
 
                     b.Property<string>("Domain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
-                    b.Property<string>("Registrant");
+                    b.Property<string>("Registrant")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -222,11 +261,15 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.DomainNSs", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("DomainId");
+                    b.Property<int>("DomainId")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("NsId");
+                    b.Property<int>("NsId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -243,17 +286,23 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.IpInfo", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<string>("Company");
+                    b.Property<string>("Company")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Country");
+                    b.Property<string>("Country")
+                        .HasColumnType("text");
 
                     b.Property<string>("Ip")
                         .IsRequired()
+                        .HasColumnType("character varying(45)")
                         .HasMaxLength(45);
 
                     b.Property<string>("Subnet")
+                        .HasColumnType("character varying(18)")
                         .HasMaxLength(18);
 
                     b.HasKey("Id");
@@ -271,9 +320,12 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.NameServers", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<string>("NameServer")
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");
@@ -287,30 +339,42 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.StatisticHistories", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<int>("AttackComplete");
+                    b.Property<int>("AttackComplete")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("AttackIntersection");
+                    b.Property<int>("AttackIntersection")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("AttackNew");
+                    b.Property<int>("AttackNew")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("AttackTotal");
+                    b.Property<int>("AttackTotal")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamptz");
 
-                    b.Property<int>("GroupAttack");
+                    b.Property<int>("GroupAttack")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("GroupComplete");
+                    b.Property<int>("GroupComplete")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("GroupDynamic");
+                    b.Property<int>("GroupDynamic")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("GroupNew");
+                    b.Property<int>("GroupNew")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("GroupThreat");
+                    b.Property<int>("GroupThreat")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("GroupTotal");
+                    b.Property<int>("GroupTotal")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -326,11 +390,14 @@ namespace Dns.DAL.Migrations
 
             modelBuilder.Entity("Dns.DAL.Models.SuspectDomains", b =>
                 {
-                    b.Property<int>("Id");
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Domain");
+                    b.Property<string>("Domain")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Ip");
+                    b.Property<string>("Ip")
+                        .HasColumnType("text");
 
                     b.HasKey("Id")
                         .HasName("PK_SuspectDomain_Id");
@@ -341,13 +408,16 @@ namespace Dns.DAL.Migrations
             modelBuilder.Entity("Dns.DAL.Models.WhiteDomains", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
                     b.Property<DateTimeOffset>("DateAdded")
                         .HasColumnType("timestamptz");
 
                     b.Property<string>("Domain")
                         .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Id");

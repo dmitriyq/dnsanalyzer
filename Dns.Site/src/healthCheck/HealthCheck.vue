@@ -30,17 +30,12 @@
 	import { Component } from 'vue-property-decorator';
 	import IDataTableHeaders from '@/models/data-table';
 	import * as signalR from '@aspnet/signalr';
+	import { HealthStatus } from '@/models/health-status';
 
 	@Component({})
 	export default class HealthCheck extends Vue {
 		public healthHub: signalR.HubConnection;
-		public statuses = [
-			{
-				service: '',
-				creationDate: new Date(),
-				currentAction: ''
-			},
-		];
+		public statuses: HealthStatus[] = [];
 		public panelDomains: boolean[] = [];
 		public pagination = { rowsPerPage: -1 };
 		public tableHeaders: IDataTableHeaders[] = [
@@ -60,8 +55,8 @@
 				// tslint:disable-next-line:no-console
 				.catch((err: any) => console.error(err));
 
-			this.healthHub.on('Update', (event: { service: string, currentAction: string, creationDate: Date }) => {
-				const oldInfo = this.statuses.findIndex((val) => val.service == event.service);
+			this.healthHub.on('Update', (event: HealthStatus) => {
+				const oldInfo = this.statuses.findIndex((val) => val.service === event.service);
 				if (oldInfo !== -1) {
 					this.statuses.splice(oldInfo, 1, event);
 				} else {

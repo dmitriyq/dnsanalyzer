@@ -20,6 +20,8 @@ namespace Dns.DAL.Models
 
 		public int Status { get; set; }
 
+		public DateTimeOffset LastUpdate { get; set; }
+
 		[NotMapped]
 		public AttackGroupStatusEnum StatusEnum => (AttackGroupStatusEnum)Status;
 

@@ -19,9 +19,8 @@ variables:
 
   HYPERLOCAL_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal:latest
   ANALYZER_IMAGE: $CI_REGISTRY_IMAGE/analyzer:latest
-  RESOLVER_AGGREGATOR_IMAGE: $CI_REGISTRY_IMAGE/resolver-aggregator:latest
-  RESOLVER_CONSUMER_IMAGE: $CI_REGISTRY_IMAGE/resolver-consumer:latest
-  RESOLVER_PRODUCER_IMAGE: $CI_REGISTRY_IMAGE/resolver-producer:latest 
+  RESOLVER_BLACKLIST_IMAGE: $CI_REGISTRY_IMAGE/resolver-blacklist:latest
+  RESOLVER_WHITELIST_IMAGE: $CI_REGISTRY_IMAGE/resolver-whitelist:latest
   SITE_IMAGE: $CI_REGISTRY_IMAGE/site:latest
 
   DB_DEV_NAME: 'dnsdb_dev'
@@ -31,9 +30,8 @@ variables:
 
   HYPERLOCAL_DEV_IMAGE: $CI_REGISTRY_IMAGE/hyperlocal-dev:latest
   ANALYZER_DEV_IMAGE: $CI_REGISTRY_IMAGE/analyzer-dev:latest
-  RESOLVER_DEV_AGGREGATOR_IMAGE: $CI_REGISTRY_IMAGE/resolver-aggregator-dev:latest
-  RESOLVER_DEV_CONSUMER_IMAGE: $CI_REGISTRY_IMAGE/resolver-consumer-dev:latest
-  RESOLVER_DEV_PRODUCER_IMAGE: $CI_REGISTRY_IMAGE/resolver-producer-dev:latest 
+  RESOLVER_DEV_BLACKLIST_IMAGE: $CI_REGISTRY_IMAGE/resolver-blacklist-dev:latest
+  RESOLVER_DEV_WHITELIST_IMAGE: $CI_REGISTRY_IMAGE/resolver-whitelist-dev:latest
   SITE_DEV_IMAGE: $CI_REGISTRY_IMAGE/site-dev:latest
 
 before_script:
@@ -69,46 +67,32 @@ build-analyzer-prod:
   tags:
   - build
 
-build-resolver-aggregator-prod:
+build-resolver-blacklist-prod:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_AGGREGATOR_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
-    - docker push $RESOLVER_AGGREGATOR_IMAGE
+    - docker build --pull -t $RESOLVER_BLACKLIST_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker push $RESOLVER_BLACKLIST_IMAGE
   only:
     refs:
       - master
     changes:
       - Dns.Contracts/**/*
-      - Dns.Resolver.Aggregator/**/*
+      - Dns.Resolver.Blacklist/**/*
   tags:
   - build
 
-build-resolver-consumer-prod:
+build-resolver-whitelist-prod:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_CONSUMER_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
-    - docker push $RESOLVER_CONSUMER_IMAGE
+    - docker build --pull -t $RESOLVER_WHITELIST_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker push $RESOLVER_WHITELIST_IMAGE
   only:
     refs:
       - master
     changes:
       - Dns.Contracts/**/*
-      - Dns.Resolver.Consumer/**/*
-  tags:
-  - build
-
-build-resolver-producer-prod:
-  stage: build
-  script:
-    - docker build --pull -t $RESOLVER_PRODUCER_IMAGE -f Dns.Resolver.Producer/Dockerfile .
-    - docker push $RESOLVER_PRODUCER_IMAGE
-  only:
-    refs:
-      - master
-    changes:
-      - Dns.Contracts/**/*
+      - Dns.Resolver.Whitelist/**/*
       - Dns.DAL/**/*
-      - Dns.Resolver.Producer/**/*
   tags:
   - build
 
@@ -183,9 +167,8 @@ deploy-prod:
         export DB_PASSWORD=$DB_PASSWORD &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_IMAGE &&
         export ANALYZER_IMAGE=$ANALYZER_RELEASE_IMAGE &&
-        export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_AGGREGATOR_IMAGE &&
-        export RESOLVER_CONSUMER_IMAGE=$RESOLVER_CONSUMER_IMAGE &&
-        export RESOLVER_PRODUCER_IMAGE=$RESOLVER_PRODUCER_IMAGE &&
+        export RESOLVER_BLACKLIST_IMAGE=$RESOLVER_BLACKLIST_IMAGE &&
+        export RESOLVER_WHITELIST_IMAGE=$RESOLVER_WHITELIST_IMAGE &&
         export SITE_IMAGE=$SITE_IMAGE &&
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
@@ -231,11 +214,11 @@ build-analyzer-dev:
   tags:
   - build
 
-build-resolver-aggregator-dev:
+build-resolver-blacklist-dev:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_DEV_AGGREGATOR_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
-    - docker push $RESOLVER_DEV_AGGREGATOR_IMAGE
+    - docker build --pull -t $RESOLVER_DEV_BLACKLIST_IMAGE -f Dns.Resolver.Aggregator/Dockerfile .
+    - docker push $RESOLVER_DEV_BLACKLIST_IMAGE
   only:
     refs:
       - dev/main
@@ -245,32 +228,18 @@ build-resolver-aggregator-dev:
   tags:
   - build
 
-build-resolver-consumer-dev:
+build-resolver-whitelist-dev:
   stage: build
   script:
-    - docker build --pull -t $RESOLVER_DEV_CONSUMER_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
-    - docker push $RESOLVER_DEV_CONSUMER_IMAGE
+    - docker build --pull -t $RESOLVER_DEV_WHITELIST_IMAGE -f Dns.Resolver.Consumer/Dockerfile .
+    - docker push $RESOLVER_DEV_WHITELIST_IMAGE
   only:
     refs:
       - dev/main
     changes:
       - Dns.Contracts/**/*
       - Dns.Resolver.Consumer/**/*
-  tags:
-  - build
-
-build-resolver-producer-dev:
-  stage: build
-  script:
-    - docker build --pull -t $RESOLVER_DEV_PRODUCER_IMAGE -f Dns.Resolver.Producer/Dockerfile .
-    - docker push $RESOLVER_DEV_PRODUCER_IMAGE
-  only:
-    refs:
-      - dev/main
-    changes:
-      - Dns.Contracts/**/*
       - Dns.DAL/**/*
-      - Dns.Resolver.Producer/**/*
   tags:
   - build
 
@@ -344,9 +313,8 @@ deploy-dev:
         export DB_PASSWORD=$DB_DEV_PASSWORD &&
         export HYPERLOCAL_IMAGE=$HYPERLOCAL_DEV_IMAGE &&
         export ANALYZER_IMAGE=$ANALYZER_DEV_RELEASE_IMAGE &&
-        export RESOLVER_AGGREGATOR_IMAGE=$RESOLVER_DEV_AGGREGATOR_IMAGE &&
-        export RESOLVER_CONSUMER_IMAGE=$RESOLVER_DEV_CONSUMER_IMAGE &&
-        export RESOLVER_PRODUCER_IMAGE=$RESOLVER_DEV_PRODUCER_IMAGE &&
+        export RESOLVER_BLACKLIST_IMAGE=$RESOLVER_DEV_BLACKLIST_IMAGE &&
+        export RESOLVER_WHITELIST_IMAGE=$RESOLVER_DEV_WHITELIST_IMAGE &&
         export SITE_IMAGE=$SITE_DEV_IMAGE &&
         export REDIS_CONNECTION=$REDIS_CONNECTION &&
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&

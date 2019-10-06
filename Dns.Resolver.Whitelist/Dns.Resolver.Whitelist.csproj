@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+		<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DNS" Version="5.0.0" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.3.13" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dns.Contracts\Dns.Contracts.csproj" />
+    <ProjectReference Include="..\Dns.DAL\Dns.DAL.csproj" />
+  </ItemGroup>
+
+</Project>

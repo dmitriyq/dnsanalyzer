@@ -9,11 +9,12 @@ x-shared-variables: &shared-variables
   NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
   NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
   SITE_HOSTNAME: 'dns.cmim.ru'
+  HYPERLOCAL_SERVER: 'hyperlocal'
 
 x-redis-variables: &redis-variables
   REDIS_BLACK_DOMAINS: 'Vigruzki_Domains'
   REDIS_VIGRUZKI_IPS: 'Vigruzki_Ips'
-  REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
+  REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets'
 
 services:
   hyperlocal:
@@ -28,7 +29,9 @@ services:
     environment:
       <<: *shared-variables
       <<: *redis-variables
-      ANALYZER_SUSPECT_IP_COUNT: 10
+      ANALYZE_CLOSE_INTERVAL: '86400'
+      ANALYZE_EXPIRE_INTERVAL: '300'
+      ANALYZE_FALSE_POSITIVE_INTERVAL: '3600'
     env_file:
       - .env
     networks:
@@ -39,11 +42,13 @@ services:
     deploy:
       replicas: 1
 
-  resolver-aggregator:
-    image: ${RESOLVER_AGGREGATOR_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-aggregator}
+  resolver-blacklist:
+    image: ${RESOLVER_BLACKLIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-blacklist}
     environment:
       <<: *shared-variables
       <<: *redis-variables
+      MAX_CONCURRENT_RESOLVE: '100'
+      REFRESH_INTERVAL: '240'
     env_file:
       - .env
     networks:
@@ -51,28 +56,15 @@ services:
       - redis-net
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 1
+      replicas: 10
 
-  resolver-consumer:
-    image: ${RESOLVER_CONSUMER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-consumer}
+  resolver-whitelist:
+    image: ${RESOLVER_WHITELIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-whitelist}
     environment:
       <<: *shared-variables
-      HYPERLOCAL_SERVER: 'hyperlocal'
-      MAX_CONCURRENT_RESOLVE: 100
-    env_file:
-      - .env
-    networks:
-      - net
-      - rabbitmq_rabbitmq-net
-    deploy:
-      replicas: 30
-
-  resolver-producer:
-    image: ${RESOLVER_PRODUCER_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-producer}
-    environment: 
-      <<: *shared-variables
       <<: *redis-variables
-      RESOLVER_PUBLISHER_DELAY_SEC: '120'
+      MAX_CONCURRENT_RESOLVE: '100'
+      REFRESH_INTERVAL: '240'
     env_file:
       - .env
     networks:
@@ -103,7 +95,7 @@ services:
     env_file:
       - .env
     deploy:
-      replicas: 1
+      replicas: 2
       labels:
         traefik.frontend.rule: "Host:${SITE_HOSTNAME:-dns.cmim.ru}"
         traefik.enable: "true"

@@ -1,4 +1,5 @@
-﻿using Dns.DAL.Models;
+﻿using System;
+using Dns.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dns.DAL
@@ -75,6 +76,8 @@ namespace Dns.DAL
 					.HasName("IX_AttackGroups_Id");
 				entity.Property(e => e.DateBegin).HasColumnType("timestamptz");
 				entity.Property(e => e.DateClose).HasColumnType("timestamptz");
+				entity.Property(e => e.LastUpdate).HasColumnType("timestamptz")
+				.HasDefaultValueSql("NOW()");
 			});
 
 			modelBuilder.Entity<AttackHistories>(entity =>
@@ -234,7 +237,7 @@ namespace Dns.DAL
 			modelBuilder
 				.Entity<SuspectDomainsView>()
 				.HasNoKey()
-				.ToTable("vSuspectDomains");
+				.ToView("vSuspectDomains");
 		}
 	}
 }
