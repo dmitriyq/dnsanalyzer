@@ -65,7 +65,7 @@
 	import DateRangeOptions from '@/models/date-range';
 	import { format as fnsFormat } from 'date-fns';
 	import Utils from '@/utils/Utils';
-	import * as signalR from '@aspnet/signalr';
+	import * as signalR from '@microsoft/signalr';
 	import { EventBus } from '@/utils/event-bus';
 	import DnsLocalStorage from '@/models/local-storage';
 

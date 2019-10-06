@@ -29,7 +29,7 @@
 	import Vue from 'vue';
 	import { Component } from 'vue-property-decorator';
 	import IDataTableHeaders from '@/models/data-table';
-	import * as signalR from '@aspnet/signalr';
+	import * as signalR from '@microsoft/signalr';
 	import { HealthStatus } from '@/models/health-status';
 
 	@Component({})

@@ -77,7 +77,7 @@ namespace Dns.Site
 			services.AddStackExchangeRedisCache(opts =>
 			{
 				opts.Configuration = EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION);
-				opts.InstanceName = "Dns_Redis_Cache";
+				opts.InstanceName = typeof(Dns.Site.Startup).Namespace;
 			});
 
 			services.AddMessageBus(EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION));
