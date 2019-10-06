@@ -37,12 +37,16 @@ namespace Dns.Resolver.Blacklist.Services.Implementation
 		{
 			if (!_memoryCache.TryGetValue(_whiteListKey, out ResolvedDomain[] domains))
 			{
-				domains = await _distributedCache.GetAsync(_whiteListKey)
+				var distCacheValue = await _distributedCache.GetAsync(_whiteListKey).ConfigureAwait(false);
+				if (distCacheValue != null)
+				{
+					domains = await _distributedCache.GetAsync(_whiteListKey)
 					.ContinueWith(t => t.Result.ProtoDeserialize<ResolvedDomain[]>())
 					.ConfigureAwait(false);
-				var cacheOpts = new MemoryCacheEntryOptions()
-					.SetAbsoluteExpiration(TimeSpan.FromMinutes(1));
-				_memoryCache.Set(_whiteListKey, domains, cacheOpts);
+					var cacheOpts = new MemoryCacheEntryOptions()
+						.SetAbsoluteExpiration(TimeSpan.FromMinutes(1));
+					_memoryCache.Set(_whiteListKey, domains, cacheOpts);
+				}
 			}
 			return domains;
 		}

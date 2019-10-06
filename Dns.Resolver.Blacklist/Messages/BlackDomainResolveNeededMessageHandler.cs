@@ -29,15 +29,18 @@ namespace Dns.Resolver.Blacklist.Messages
 			if (_domainLookup.IsSuccessResolve(resolve))
 			{
 				var whiteDomains = await _cacheService.GetWhiteListAsync().ConfigureAwait(false);
-				foreach (var ip in resolve.ips)
+				if (whiteDomains != null)
 				{
-					if (whiteDomains.Any(x => x.IPAddresses.Contains(ip)))
+					foreach (var ip in resolve.ips)
 					{
-						var ipIntersection = whiteDomains.Where(x => x.IPAddresses.Contains(ip));
-						foreach (var intersection in ipIntersection)
+						if (whiteDomains.Any(x => x.IPAddresses.Contains(ip)))
 						{
-							var msg = new AttackFoundMessage(message.Domain, intersection.Name, ip);
-							await _messageQueue.PublishAsync(msg).ConfigureAwait(false);
+							var ipIntersection = whiteDomains.Where(x => x.IPAddresses.Contains(ip));
+							foreach (var intersection in ipIntersection)
+							{
+								var msg = new AttackFoundMessage(message.Domain, intersection.Name, ip);
+								await _messageQueue.PublishAsync(msg).ConfigureAwait(false);
+							}
 						}
 					}
 				}
