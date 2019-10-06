@@ -54,6 +54,7 @@ namespace Dns.Resolver.Blacklist
 					services.AddSingleton<ConnectionMultiplexer>(__ =>
 						ConnectionMultiplexer.Connect(EnvironmentExtensions.GetVariable(REDIS_CONNECTION)));
 
+					services.AddMemoryCache();
 					services.AddStackExchangeRedisCache(opts =>
 					{
 						opts.Configuration = EnvironmentExtensions.GetVariable(REDIS_CONNECTION);
