@@ -18,6 +18,8 @@ namespace Dns.Site
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
 
+		public const string DISABLE_AUTH = nameof(DISABLE_AUTH);
+
 		public static void Main(string[] args)
 		{
 			EnvironmentExtensions.CheckVariables(
@@ -30,7 +32,8 @@ namespace Dns.Site
 				NOTIFY_SEND_CHANNEL,
 				NOTIFICATION_EMAIL_FROM,
 				RABBITMQ_CONNECTION,
-				RABBITMQ_HEALTH_QUEUE);
+				RABBITMQ_HEALTH_QUEUE,
+				DISABLE_AUTH);
 
 			CreateHostBuilder(args).Build().Run();
 		}

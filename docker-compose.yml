@@ -92,6 +92,7 @@ services:
       AUTH_COOKIE_BASE_DOMAIN: '${AUTH_COOKIE_BASE_DOMAIN}'
       NOTIFY_SERVICE_URL: 'http://notification_api:80/'
       VIGRUZKI_SERVICE_URL: 'http://vigruzki_api:80/'
+      DISABLE_AUTH: '${DISABLE_AUTH}'
     env_file:
       - .env
     deploy:

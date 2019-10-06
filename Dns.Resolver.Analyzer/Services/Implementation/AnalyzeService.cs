@@ -256,26 +256,29 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					}
 					else if (lastStatus == AttackStatusEnum.Closing)
 					{
-						var prevChange = attack.Histories.OrderByDescending(x => x.Id).First();
-						var correctStatusToFalsePositive = prevChange.PrevStatusEnum == AttackStatusEnum.None
-							|| prevChange.PrevStatusEnum == AttackStatusEnum.Intersection;
-						if (correctStatusToFalsePositive)
+						var prevChange = attack.Histories.OrderByDescending(x => x.Id).FirstOrDefault();
+						if (prevChange != null)
 						{
-							if (prevChange.PrevStatusEnum != AttackStatusEnum.None)
+							var correctStatusToFalsePositive = prevChange.PrevStatusEnum == AttackStatusEnum.None
+								|| prevChange.PrevStatusEnum == AttackStatusEnum.Intersection;
+							if (correctStatusToFalsePositive)
 							{
-								var prevHistory = attack.Histories.OrderByDescending(x => x.Id).Skip(1).First();
-								if (prevHistory.Date > falsePositiveThreshold)
+								if (prevChange.PrevStatusEnum != AttackStatusEnum.None)
 								{
-									falsePositiveAttacks.Add(attack);
-									changedAttackIds.Add(attack.Id);
+									var prevHistory = attack.Histories.OrderByDescending(x => x.Id).Skip(1).FirstOrDefault();
+									if (prevHistory != null && prevHistory.Date > falsePositiveThreshold)
+									{
+										falsePositiveAttacks.Add(attack);
+										changedAttackIds.Add(attack.Id);
+									}
 								}
-							}
-							else
-							{
-								if (prevChange.Date > falsePositiveThreshold)
+								else
 								{
-									falsePositiveAttacks.Add(attack);
-									changedAttackIds.Add(attack.Id);
+									if (prevChange.Date > falsePositiveThreshold)
+									{
+										falsePositiveAttacks.Add(attack);
+										changedAttackIds.Add(attack.Id);
+									}
 								}
 							}
 						}

@@ -90,12 +90,17 @@ namespace Dns.Site
 				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
 					opt.Configuration.ChannelPrefix = "Dns_Sote_SignalR_");
 
-			if (HostEnvironment.IsProduction())
+			if (!EnvironmentExtensions.GetVariable(Program.DISABLE_AUTH).ToBool())
 			{
 				services.ConfigureSharedCookieAuthentication();
 
 				services.AddAuthorization(opts =>
 					opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(context => context.User.HasRole(UserRoles.DnsViewer))));
+			}
+			else
+			{
+				services.AddAuthorization(opts =>
+					opts.AddPolicy("DnsPolicy", policy => policy.RequireAssertion(_ => true)));
 			}
 
 			//ADD SERVICES
@@ -141,11 +146,8 @@ namespace Dns.Site
 			app.UseCors("AllowAll");
 			app.UseRouting();
 
-			if (env.IsProduction())
-			{
-				app.UseAuthentication();
-				app.UseAuthorization();
-			}
+			app.UseAuthentication();
+			app.UseAuthorization();
 
 			app.UseSwagger();
 			app.UseSwaggerUI(x => x.SwaggerEndpoint("/swagger/v1/swagger.json", "Notification API"));
