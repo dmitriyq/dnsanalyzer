@@ -321,7 +321,7 @@ deploy-dev:
         export AUTH_SERVER_URL=$AUTH_SERVER_URL &&
         export AUTH_COOKIE_BASE_DOMAIN=$AUTH_COOKIE_BASE_DOMAIN &&
         export SITE_HOSTNAME=$SITE_DEV_HOSTNAME &&
-        export DISABLE_AUTH=true &&
+        export DISABLE_AUTH=false &&
         docker login -u $REGISTRY_USER -p $REGISTRY_USER_PASS $CI_REGISTRY &&
         docker stack deploy -c $CI_PROJECT_NAME/docker-compose.yml $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG --prune --with-registry-auth && exit"
   only:
