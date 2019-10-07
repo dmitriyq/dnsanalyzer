@@ -19,43 +19,47 @@
 						name="editStatus"></EditAttack>
 		</v-list-tile-content>
 		<v-list-tile-content>
-			<v-expansion-panel v-model="panelBlocks.history" expand>
-				<v-expansion-panel-content lazy>
-					<template v-slot:header>
-						<div class="subheading">История изменений</div>
-					</template>
-					<v-divider></v-divider>
-					<v-list>
-						<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-							<InfoRow v-for="history in attack.histories" :key="history.id"
-									 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
-							</InfoRow>
-						</v-list-tile-content>
-					</v-list>
-				</v-expansion-panel-content>
-			</v-expansion-panel>
+			<v-expansion-panels>
+				<v-expansion-panel v-model="panelBlocks.history" expand>
+					<v-expansion-panel-content lazy>
+						<template v-slot:header>
+							<div class="subheading">История изменений</div>
+						</template>
+						<v-divider></v-divider>
+						<v-list>
+							<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
+								<InfoRow v-for="history in attack.histories" :key="history.id"
+										 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
+								</InfoRow>
+							</v-list-tile-content>
+						</v-list>
+					</v-expansion-panel-content>
+				</v-expansion-panel>
+			</v-expansion-panels>
 		</v-list-tile-content>
 		<v-divider></v-divider>
 		<v-list-tile-content>
-			<v-expansion-panel v-model="panelBlocks.notes" expand>
-				<v-expansion-panel-content lazy>
-					<template v-slot:header>
-						<div class="subheading">Комментарии</div>
-					</template>
-					<v-divider></v-divider>
-					<v-list>
-						<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-							<InfoRow v-for="note in attack.notes" :key="note.id"
-									 :title="note.create" :desc="note.text">
-							</InfoRow>
-							<EditAttack :attackFull="attack"
-										name="addComment"
-										v-if="isDnsAdmin"
-										:isEditStatus="false"></EditAttack>
-						</v-list-tile-content>
-					</v-list>
-				</v-expansion-panel-content>
-			</v-expansion-panel>
+			<v-expansion-panels>
+				<v-expansion-panel v-model="panelBlocks.notes" expand>
+					<v-expansion-panel-content lazy>
+						<template v-slot:header>
+							<div class="subheading">Комментарии</div>
+						</template>
+						<v-divider></v-divider>
+						<v-list>
+							<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
+								<InfoRow v-for="note in attack.notes" :key="note.id"
+										 :title="note.create" :desc="note.text">
+								</InfoRow>
+								<EditAttack :attackFull="attack"
+											name="addComment"
+											v-if="isDnsAdmin"
+											:isEditStatus="false"></EditAttack>
+							</v-list-tile-content>
+						</v-list>
+					</v-expansion-panel-content>
+				</v-expansion-panel>
+			</v-expansion-panels>
 		</v-list-tile-content>
 	</v-flex>
 </template>

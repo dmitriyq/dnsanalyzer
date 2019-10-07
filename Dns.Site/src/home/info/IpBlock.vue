@@ -6,50 +6,52 @@
 			</v-subheader>
 		</v-list>
 		<v-list-tile-content>
-			<v-expansion-panel v-model="ipPanels" expand>
-				<v-expansion-panel-content v-for="ip in attack.attacks" :key="ip.id" class="ip-panel" lazy>
-					<template v-slot:header>
-						<div class="subheading font-weight-medium">
-							<StatusRow :title="ip.ip" :status="ip.status" statType="ip"></StatusRow>
-						</div>
-					</template>
-					<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-						<InfoRow title="Ограцнизация" :desc="ip.ipInfo && ip.ipInfo.company"></InfoRow>
-						<InfoRow title="Страна" :desc="ip.ipInfo && ip.ipInfo.country"></InfoRow>
-						<InfoRow title="Подсеть" :desc="ip.ipInfo && ip.ipInfo.subnet"></InfoRow>
-						<InfoRow title="IP в реестре" :desc="ip.ipBlocked"></InfoRow>
-						<InfoRow title="Подсеть в реестре" :desc="ip.subnetBlocked"></InfoRow>
-						<v-list-tile-title style="height:auto;">
-							<v-layout row wrap>
-								<v-flex xs5 wrap class="body-2">IPv4Info:</v-flex>
-								<v-flex xs7 wrap class="body-1">
-									<v-btn :href="'http://ipv4info.ru/?act=check&ip='+ip.ip" target="_blank" style="float:right;">
-										Просмотреть
-									</v-btn>
-								</v-flex>
-							</v-layout>
-						</v-list-tile-title>
-					</v-list-tile-content>
-					<v-divider></v-divider>
-					<v-list-tile-content>
-						<v-expansion-panel>
-							<v-expansion-panel-content lazy>
-								<template v-slot:header>
-									<div class="subheading">История изменений</div>
-								</template>
-								<v-divider></v-divider>
-								<v-list>
-									<v-list-tile-content class="pt-2 pr-3 pb-0 pl-5">
-										<InfoRow v-for="history in ip.histories" :key="history.id"
-												 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
-										</InfoRow>
-									</v-list-tile-content>
-								</v-list>
-							</v-expansion-panel-content>
-						</v-expansion-panel>
-					</v-list-tile-content>
-				</v-expansion-panel-content>
-			</v-expansion-panel>
+			<v-expansion-panels>
+				<v-expansion-panel v-model="ipPanels" expand>
+					<v-expansion-panel-content v-for="ip in attack.attacks" :key="ip.id" class="ip-panel" lazy>
+						<template v-slot:header>
+							<div class="subheading font-weight-medium">
+								<StatusRow :title="ip.ip" :status="ip.status" statType="ip"></StatusRow>
+							</div>
+						</template>
+						<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
+							<InfoRow title="Ограцнизация" :desc="ip.ipInfo && ip.ipInfo.company"></InfoRow>
+							<InfoRow title="Страна" :desc="ip.ipInfo && ip.ipInfo.country"></InfoRow>
+							<InfoRow title="Подсеть" :desc="ip.ipInfo && ip.ipInfo.subnet"></InfoRow>
+							<InfoRow title="IP в реестре" :desc="ip.ipBlocked"></InfoRow>
+							<InfoRow title="Подсеть в реестре" :desc="ip.subnetBlocked"></InfoRow>
+							<v-list-tile-title style="height:auto;">
+								<v-layout row wrap>
+									<v-flex xs5 wrap class="body-2">IPv4Info:</v-flex>
+									<v-flex xs7 wrap class="body-1">
+										<v-btn :href="'http://ipv4info.ru/?act=check&ip='+ip.ip" target="_blank" style="float:right;">
+											Просмотреть
+										</v-btn>
+									</v-flex>
+								</v-layout>
+							</v-list-tile-title>
+						</v-list-tile-content>
+						<v-divider></v-divider>
+						<v-list-tile-content>
+							<v-expansion-panel>
+								<v-expansion-panel-content lazy>
+									<template v-slot:header>
+										<div class="subheading">История изменений</div>
+									</template>
+									<v-divider></v-divider>
+									<v-list>
+										<v-list-tile-content class="pt-2 pr-3 pb-0 pl-5">
+											<InfoRow v-for="history in ip.histories" :key="history.id"
+													 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
+											</InfoRow>
+										</v-list-tile-content>
+									</v-list>
+								</v-expansion-panel-content>
+							</v-expansion-panel>
+						</v-list-tile-content>
+					</v-expansion-panel-content>
+				</v-expansion-panel>
+			</v-expansion-panels>
 		</v-list-tile-content>
 		<v-divider></v-divider>
 	</v-flex>

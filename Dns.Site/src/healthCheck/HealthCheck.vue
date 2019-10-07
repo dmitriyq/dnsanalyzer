@@ -1,21 +1,21 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<v-layout row wrap justify-start>
 			<v-flex xs12 class="mb-3">
-				<p class="text-xs-center subheading">Статус компонентов системы</p>
+				<p class="text-center subheading">Статус компонентов системы</p>
 			</v-flex>
 			<v-flex xs12>
 				<v-data-table :headers="tableHeaders"
 							  :items="statuses"
-							  hide-action
-							  :pagination.sync="pagination">
+							  hide-default-footer
+							  :rowsPerPage="pagination.rowsPerPage">
 					<template slot="items" slot-scope="props">
-						<td class="text-xs-center">{{ props.item.service }}</td>
-						<td class="text-xs-center">{{ props.item.creationDate }}</td>
-						<td class="text-xs-left">{{ props.item.currentAction }}</td>
+						<td class="text-center">{{ props.item.service }}</td>
+						<td class="text-center">{{ props.item.creationDate }}</td>
+						<td class="text-left">{{ props.item.currentAction }}</td>
 					</template>
 					<template slot="no-data">
-						<v-alert :value="true" color="primary" outline>
+						<v-alert :value="true" color="primary" outlined>
 							Ничего не найдено
 						</v-alert>
 					</template>

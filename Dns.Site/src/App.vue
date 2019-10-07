@@ -6,56 +6,56 @@
 							 v-model="drawer"
 							 app>
 			<v-list>
-				<v-list-tile router
+				<v-list-item router
 							 :to="item.to"
 							 :key="i"
 							 v-for="(item, i) in items"
 							 exact>
-					<v-list-tile-action>
+					<v-list-item-action>
 						<v-icon v-html="item.icon"></v-icon>
-					</v-list-tile-action>
-					<v-list-tile-content>
-						<v-list-tile-title v-text="item.title"></v-list-tile-title>
-					</v-list-tile-content>
-				</v-list-tile>
+					</v-list-item-action>
+					<v-list-item-content>
+						<v-list-item-title v-text="item.title"></v-list-item-title>
+					</v-list-item-content>
+				</v-list-item>
 				<v-divider></v-divider>
 				<v-subheader inset v-if="isLogged">Учетная запись</v-subheader>
-				<v-list-tile>
-					<v-list-tile-action>
+				<v-list-item>
+					<v-list-item-action>
 						<v-icon>account_box</v-icon>
-					</v-list-tile-action>
-					<v-list-tile-content>
-						<v-list-tile-title v-text="user.name"></v-list-tile-title>
-					</v-list-tile-content>
-				</v-list-tile>
-				<v-list-tile :href="changePassUrl()" v-if="user.canChangePass">
-					<v-list-tile-action>
+					</v-list-item-action>
+					<v-list-item-content>
+						<v-list-item-title v-text="user.name"></v-list-item-title>
+					</v-list-item-content>
+				</v-list-item>
+				<v-list-item :href="changePassUrl()" v-if="user.canChangePass">
+					<v-list-item-action>
 						<v-icon>vpn_key</v-icon>
-					</v-list-tile-action>
-					<v-list-tile-content>
-						<v-list-tile-title>Сменить пароль</v-list-tile-title>
-					</v-list-tile-content>
-				</v-list-tile>
-				<v-list-tile :href="logoutUrl()">
-					<v-list-tile-action>
+					</v-list-item-action>
+					<v-list-item-content>
+						<v-list-item-title>Сменить пароль</v-list-item-title>
+					</v-list-item-content>
+				</v-list-item>
+				<v-list-item :href="logoutUrl()">
+					<v-list-item-action>
 						<v-icon>exit_to_app</v-icon>
-					</v-list-tile-action>
-					<v-list-tile-content>
-						<v-list-tile-title>Выход</v-list-tile-title>
-					</v-list-tile-content>
-				</v-list-tile>
+					</v-list-item-action>
+					<v-list-item-content>
+						<v-list-item-title>Выход</v-list-item-title>
+					</v-list-item-content>
+				</v-list-item>
 			</v-list>
 		</v-navigation-drawer>
-		<v-toolbar class="blue white--text"
+		<v-app-bar class="blue white--text"
 				   fixed
 				   app
 				   :clipped-left="true">
-			<v-toolbar-side-icon class="white--text" @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+			<v-app-bar-nav-icon class="white--text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
 			<v-toolbar-title>DNS анализатор</v-toolbar-title>
 			<v-spacer></v-spacer>
-		</v-toolbar>
+		</v-app-bar>
 		<v-content>
-			<v-container fill-height fluid style="padding:0;">
+			<v-container fill-height container--fluid style="padding:0;">
 				<v-slide-y-transition mode="out-in">
 					<v-layout column align-center fill-height>
 						<router-view></router-view>
@@ -64,7 +64,6 @@
 			</v-container>
 		</v-content>
 		<v-footer :fixed="false" app style="justify-content:center">
-			<div style="text-align:center;margin:10px">{{ footerText }}</div>
 		</v-footer>
 	</v-app>
 </template>

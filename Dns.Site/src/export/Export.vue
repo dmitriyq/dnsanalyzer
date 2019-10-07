@@ -1,8 +1,8 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<v-layout row wrap justify-start>
 			<v-flex xs12 class="mb-3">
-				<p class="text-xs-center title">Выгрузки в Excel</p>
+				<p class="text-center title">Выгрузки в Excel</p>
 			</v-flex>
 			<v-flex lg3 md4 sm5 xs12 class="mr-2 mt-2">
 				<v-card class="text-xs-center">
@@ -11,19 +11,19 @@
 					</v-card-title>
 					<v-card-actions>
 						<v-layout align-center justify-end>
-							<v-btn flat outline color="info" @click="suspectDownload" :loading="buttonsState.suspect">Скачать</v-btn>
+							<v-btn text outlined color="info" @click="suspectDownload" :loading="buttonsState.suspect">Скачать</v-btn>
 						</v-layout>
 					</v-card-actions>
 				</v-card>
 			</v-flex>
 			<v-flex lg3 md4 sm5 xs12 class="mr-2 mt-2">
-				<v-card class="text-xs-center">
+				<v-card class="text-center">
 					<v-card-title primary-title class="pb-0">
 						<span class="subheading font-weight-regular">Белый список</span>
 					</v-card-title>
 					<v-card-actions>
 						<v-layout align-center justify-end>
-							<v-btn flat outline color="info" @click="whitelistDownload" :loading="buttonsState.white">Скачать</v-btn>
+							<v-btn text outlined color="info" @click="whitelistDownload" :loading="buttonsState.white">Скачать</v-btn>
 						</v-layout>
 					</v-card-actions>
 				</v-card>
@@ -33,24 +33,24 @@
 					<v-card-title primary-title class="pb-0">
 						<v-layout row wrap justify-start>
 							<v-flex xs12 sm6 md3>
-								<p class="subheading font-weight-regular text-xs-center w-100">Предустановленные значения</p>
+								<p class="subheading font-weight-regular text-center w-100">Предустановленные значения</p>
 							</v-flex>
 							<v-flex xs12 md6>
-								<p class="title font-weight-regular w-100 text-xs-center">Статистика DNS</p>
+								<p class="title font-weight-regular w-100 text-center">Статистика DNS</p>
 							</v-flex>
 						</v-layout>
 					</v-card-title>
 					<v-card-text>
 						<v-layout row wrap justify-start>
 							<v-flex xs12 sm6 md3>
-								<v-btn flat outline color="info" @click="setWeek">Неделя</v-btn>
-								<v-btn flat outline color="info" @click="setMonth">Месяц</v-btn>
-								<v-btn flat outline color="info" @click="setYear">Год</v-btn>
-								<v-btn flat outline color="info" @click="setFull">Полная</v-btn>
+								<v-btn text outlined color="info" @click="setWeek">Неделя</v-btn>
+								<v-btn text outlined color="info" @click="setMonth">Месяц</v-btn>
+								<v-btn text outlined color="info" @click="setYear">Год</v-btn>
+								<v-btn text outlined color="info" @click="setFull">Полная</v-btn>
 							</v-flex>
 							<v-flex xs12 md4>
 								<v-menu v-model="datePickers.fromOpen" :close-on-content-click="false" :nudge-right="40"
-										lazy transition="scale-transition" offset-y full-width min-width="290px" max-width="290px">
+										transition="scale-transition" offset-y min-width="290px" max-width="290px">
 									<template v-slot:activator="{ on }">
 										<v-text-field v-model="diplayFromDate" label="Начало периода"
 													  prepend-icon="event" readonly v-on="on"></v-text-field>
@@ -61,7 +61,7 @@
 							</v-flex>
 							<v-flex xs12 md4>
 								<v-menu v-model="datePickers.toOpen" :close-on-content-click="false" :nudge-right="40"
-										lazy transition="scale-transition" offset-y full-width min-width="290px" max-width="290px">
+										transition="scale-transition" offset-y min-width="290px" max-width="290px">
 									<template v-slot:activator="{ on }">
 										<v-text-field v-model="displayToDate" label="Конец периода"
 													  prepend-icon="event" readonly v-on="on"></v-text-field>
@@ -167,10 +167,10 @@
 				});
 		}
 		private formatDateISO(date: Date): string {
-			return fnsFormat(date, 'YYYY-MM-DD');
+			return fnsFormat(date, 'yyyy-MM-dd');
 		}
 		private formatDateDisplay(date: Date): string {
-			return fnsFormat(date, 'DD.MM.YYYY');
+			return fnsFormat(date, 'dd.MM.yyyy');
 		}
 		private parseISODate(date: string): Date {
 			const [year, month, day] = date.split('-');

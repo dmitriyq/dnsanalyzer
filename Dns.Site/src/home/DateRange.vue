@@ -1,6 +1,6 @@
 ﻿<template>
-	<v-container fluid wrap grid-list-sm class="pb-0">
-		<v-layout row wrap fluid align-start class="date-range">
+	<v-container container--fluid wrap grid-list-sm class="pb-0">
+		<v-layout row wrap container--fluid align-start class="date-range">
 			<v-flex xs12 sm2 v-if="!noPresets"
 					class="date-range__presets">
 				<v-list :dark="dark">

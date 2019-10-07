@@ -1,5 +1,5 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<!--<StatCalendar></StatCalendar>-->
 		<StatTables></StatTables>
 	</v-container>

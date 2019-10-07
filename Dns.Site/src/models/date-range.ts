@@ -1,5 +1,5 @@
 ﻿import format from 'date-fns/format';
-import addDays from 'date-fns/add_days';
+import addDays from 'date-fns/addDays';
 
 class DateRangeCommonDates {
 	public static dateFormat: string = 'YYYY-MM-DD';

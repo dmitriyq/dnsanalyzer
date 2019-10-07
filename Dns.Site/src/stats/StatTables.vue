@@ -3,24 +3,24 @@
 		<v-flex sm6 xs12>
 			<p style="font-size:16px;text-align:center">Статистика по атакам</p>
 			<v-data-table class="elevation-1"
-						  hide-actions
+						  hide-default-footer
 						  :headers="theaders"
 						  :items="groups">
 				<template slot="items" slot-scope="props">
-					<td class="text-xs-center">{{ props.item.name }}</td>
-					<td class="text-xs-center">{{ props.item.count }}</td>
+					<td class="text-center">{{ props.item.name }}</td>
+					<td class="text-center">{{ props.item.count }}</td>
 				</template>
 			</v-data-table>
 		</v-flex>
 		<v-flex sm6 xs12>
 			<p style="font-size:16px;text-align:center">Статистика по IP адресам</p>
 			<v-data-table class="elevation-1"
-						  hide-actions
+						  hide-default-footer
 						  :headers="theaders"
 						  :items="attacks">
 				<template slot="items" slot-scope="props">
-					<td class="text-xs-center">{{ props.item.name }}</td>
-					<td class="text-xs-center">{{ props.item.count }}</td>
+					<td class="text-center">{{ props.item.name }}</td>
+					<td class="text-center">{{ props.item.count }}</td>
 				</template>
 			</v-data-table>
 		</v-flex>

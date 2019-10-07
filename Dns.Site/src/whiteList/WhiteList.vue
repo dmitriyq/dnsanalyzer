@@ -1,8 +1,8 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<v-layout row wrap justify-start>
 			<v-flex xs12 class="elevation-1">
-				<v-toolbar dense extended prominent flat color="white">
+				<v-toolbar dense extended prominent>
 					<v-toolbar-title class="hidden-xs-only">Белый список</v-toolbar-title>
 					<v-spacer></v-spacer>
 					<v-text-field v-model="tableSearch"
@@ -47,7 +47,7 @@
 										</v-flex>
 										<v-flex xs12 v-else>
 											<p><span>Если файл .csv или .txt, то нужна кодировка Windows-1251. При импорте будут добавлены только новые домены</span></p>
-											<div class="text-xs-center">
+											<div class="text-center">
 												<v-progress-circular indeterminate v-if="isUploading"
 																	 color="primary"></v-progress-circular>
 											</div>
@@ -74,18 +74,18 @@
 				</v-toolbar>
 				<v-data-table :headers="tableHeaders"
 							  ref="whitelistTable"
-							  :pagination.sync="pagination"
-							  :rows-per-page-items="rowsPerPage"
+							  :sortBy="pagination.sortBy"
+							  :rowsPerPage="pagination.rowsPerPage"
 							  :search="tableSearch"
 							  v-model="selectedDomains"
 							  item-key="id"
 							  :items="domains">
 					<template v-slot:items="props">
-						<td class="text-xs-left pr-0 hidden-xs-only" v-if="isDnsAdmin">
+						<td class="text-left pr-0 hidden-xs-only" v-if="isDnsAdmin">
 							<v-checkbox v-model="props.selected" primary hide-details></v-checkbox>
 						</td>
-						<td class="text-xs-left">{{props.item.id}}</td>
-						<td class="text-xs-center">{{props.item.domain}}</td>
+						<td class="text-left">{{props.item.id}}</td>
+						<td class="text-center">{{props.item.domain}}</td>
 						<td class="justify-center layout px-0" v-if="isDnsAdmin">
 							<v-icon small class="mr-2" @click="editItem(props.item)">edit</v-icon>
 							<v-icon small @click="deleteItem(props.item)">delete</v-icon>

@@ -1,8 +1,8 @@
 ﻿<template>
-	<v-container fluid grid-list-md>
-		<v-layout align-start row wrap fluid>
+	<v-container container--fluid grid-list-md>
+		<v-layout align-start row wrap container--fluid>
 			<v-flex xs12>
-				<p class="text-xs-center font-weight-bold">Поиск в Реестре</p>
+				<p class="text-center font-weight-bold">Поиск в Реестре</p>
 			</v-flex>
 			<v-flex xs12 sm6 align-self-baseline>
 				<v-text-field v-model="search"
@@ -20,26 +20,27 @@
 				<v-data-table :headers="tableHeaders"
 							  :items="reestr"
 							  :loading="loading"
-							  :total-items="pagination.totalItems"
-							  :pagination.sync="pagination">
+							  :server-items-length="pagination.totalItems"
+							  :rowsPerPage="pagination.rowsPerPage"
+							  :page="pagination.page">
 					<template slot="items" slot-scope="props">
 						<tr :class="highLightRow(props.index) + ' rowHover'">
-							<td class="text-xs-center">{{ props.item.created }}</td>
-							<td class="text-xs-center">{{ props.item.domain }}</td>
-							<td class="text-xs-left">{{ props.item.urlRkn }}</td>
-							<td class="text-xs-center">{{ props.item.ip }}</td>
-							<td class="text-xs-center">{{ props.item.subnet }}</td>
-							<td class="text-xs-left">{{ props.item.urlMinjust }}</td>
+							<td class="text-center">{{ props.item.created }}</td>
+							<td class="text-center">{{ props.item.domain }}</td>
+							<td class="text-left">{{ props.item.urlRkn }}</td>
+							<td class="text-center">{{ props.item.ip }}</td>
+							<td class="text-center">{{ props.item.subnet }}</td>
+							<td class="text-left">{{ props.item.urlMinjust }}</td>
 						</tr>
 					</template>
 					<template slot="no-data">
-						<v-alert :value="true" color="primary" outline>
+						<v-alert :value="true" color="primary" outlined>
 							Ничего не найдено
 						</v-alert>
 					</template>
 				</v-data-table>
-				<div class="text-xs-center" v-if="totalPages > 1">
-					<v-container fluid class="p-0">
+				<div class="text-center" v-if="totalPages > 1">
+					<v-container container--fluid class="p-0">
 						<v-layout justify-center>
 							<v-flex xs12>
 								<v-card>

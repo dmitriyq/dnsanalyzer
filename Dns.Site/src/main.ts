@@ -7,9 +7,9 @@ import './app.scss';
 import 'es6-shim';
 import './plugins/axios';
 
-import 'vuetify/src/stylus/app.styl';
 import Vue from 'vue';
-import './plugins/vuetify';
+import 'vuetify/dist/vuetify.min.css';
+import vuetify from '@/plugins/vuetify';
 import App from './App.vue';
 
 import router from './router';
@@ -29,5 +29,6 @@ const app = new Vue({
 	el: '#app',
 	render: (h) => h(App),
 	router,
+	vuetify,
 	data: store,
 });

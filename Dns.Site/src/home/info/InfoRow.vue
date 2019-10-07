@@ -15,8 +15,8 @@
 
 import Vue from 'vue';
 import { Component, Prop } from 'vue-property-decorator';
-import { format as fnsFormat } from 'date-fns';
-import isValid from 'date-fns/is_valid';
+import { format as fnsFormat, parseISO } from 'date-fns';
+import isValid from 'date-fns/isValid';
 
 @Component({
 	filters: {
@@ -26,7 +26,8 @@ import isValid from 'date-fns/is_valid';
 			}
 			else if (typeof value === 'string') {
 				if (isValid(new Date(value))) {
-					return fnsFormat(value, 'DD.MM.YYYY HH:mm');
+					const date = parseISO(value);
+					return fnsFormat(date, 'DD.MM.YYYY HH:mm');
 				} else {
 					return value as string;
 				}

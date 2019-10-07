@@ -1,26 +1,28 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<v-layout row wrap justify-start>
 			<v-flex xs12 class="mb-3">
-				<p class="text-xs-center subheading">Домены из черного списка у которых больше 10 IP-адресов</p>
+				<p class="text-center subheading">Домены из черного списка у которых больше 10 IP-адресов</p>
 			</v-flex>
 			<v-flex xs12>
-				<v-expansion-panel v-model="panelDomains" expand>
-					<v-expansion-panel-content v-for="domain in domains" :key="domain.domain">
-						<template v-slot:header>
-							<v-flex xs6>{{domain.domain}}</v-flex>
-							<v-flex xs6>{{domain.ips.length}} IP</v-flex>
-						</template>
-						<v-data-table :items="domain.ips" :headers="tableHeaders" hide-action :pagination.sync="pagination">
-							<template v-slot:items="props">
-								<td>{{ props.item.ip }}</td>
-								<td>{{ props.item.subnet }}</td>
-								<td>{{ props.item.country }}</td>
-								<td>{{ props.item.company }}</td>
+				<v-expansion-panels>
+					<v-expansion-panel v-model="panelDomains" expand>
+						<v-expansion-panel-content v-for="domain in domains" :key="domain.domain">
+							<template v-slot:header>
+								<v-flex xs6>{{domain.domain}}</v-flex>
+								<v-flex xs6>{{domain.ips.length}} IP</v-flex>
 							</template>
-						</v-data-table>
-					</v-expansion-panel-content>
-				</v-expansion-panel>
+							<v-data-table :items="domain.ips" :headers="tableHeaders" hide-action :pagination.sync="pagination">
+								<template v-slot:items="props">
+									<td>{{ props.item.ip }}</td>
+									<td>{{ props.item.subnet }}</td>
+									<td>{{ props.item.country }}</td>
+									<td>{{ props.item.company }}</td>
+								</template>
+							</v-data-table>
+						</v-expansion-panel-content>
+					</v-expansion-panel>
+				</v-expansion-panels>
 			</v-flex>
 		</v-layout>
 	</v-container>

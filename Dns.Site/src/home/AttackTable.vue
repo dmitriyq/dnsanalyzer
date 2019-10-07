@@ -1,11 +1,10 @@
 ﻿<template>
 	<v-data-table class="elevation-1"
-				  :hide-actions="true"
+				  hide-default-footer
 				  :headers="tableHeader"
 				  :items="dnsAttacks"
 				  must-sort
-				  disable-initial-sort
-				  :pagination.sync="tableSort"
+				  :rowsPerPage="tableSort"
 				  v-model="checkBoxedAttacks"
 				  :search="filterExpr"
 				  :loading="tableUpdating">
@@ -14,24 +13,24 @@
 			<tr :class="highLightRow(props.item.id) + ' rowHover'"
 				v-if="showRow(props.item.status)">
 				<td v-if="isDnsAdmin"
-					class="text-xs-left pr-0 hidden-xs-only"
+					class="text-left pr-0 hidden-xs-only"
 					@click="props.selected = !props.selected">
 					<v-checkbox :input-value="!!props.selected"
 								primary
 								hide-details></v-checkbox>
 				</td>
-				<td class="text-xs-center px-0">
+				<td class="text-center px-0">
 					<v-icon x-large
 							:class="getColorStatus(props.item.status)">
 						{{ props.item.status | statusIcon }}
 					</v-icon>
 				</td>
-				<td class="text-xs-left">{{ props.item.whiteDomain }}</td>
-				<td class="text-xs-left hidden-xs-only">{{ props.item.blackDomain }}</td>
+				<td class="text-left">{{ props.item.whiteDomain }}</td>
+				<td class="text-left hidden-xs-only">{{ props.item.blackDomain }}</td>
 				<td class="hidden-xs-only">
 					<span v-for="summ in props.item.summary">
 						{{summ.count}}
-						<v-icon :class="getColorIpStatus(summ.status) + 'text-xs-center'">
+						<v-icon :class="getColorIpStatus(summ.status) + 'text-center'">
 							{{ summ.status | statusIpIcon }}
 						</v-icon>
 					</span>
@@ -44,7 +43,7 @@
 			</tr>
 		</template>
 		<template slot="no-data">
-			<v-alert :value="true" color="error" icon="warning" outline>
+			<v-alert :value="true" color="error" icon="warning" outlined>
 				Нет данных
 			</v-alert>
 		</template>

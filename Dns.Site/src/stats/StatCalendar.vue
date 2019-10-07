@@ -2,7 +2,7 @@
 	<v-layout row wrap justify-start>
 		<v-flex xs12 class="mb-5">
 			<v-sheet height="450">
-				<p class="text-xs-center subheading">Статистика за {{monthLabels.current}}г.</p>
+				<p class="text-center subheading">Статистика за {{monthLabels.current}}г.</p>
 				<v-calendar type="month"
 							ref="calendar"
 							v-model="calendarInitalValue"
@@ -10,13 +10,13 @@
 							locale="ru"
 							:weekdays="[1, 2, 3, 4, 5, 6, 0]">
 					<template v-slot:day="{ date }">
-						<v-container fluid class="px-0 py-0">
+						<v-container container--fluid class="px-0 py-0">
 							<v-layout align-center justify-space-between row fill-height>
 								<v-flex xs12 class="text-xs-center">
 									<v-data-iterator hide-actions :items="getEvent(date)">
 										<template v-slot:item="props">
 											<v-card>
-												<v-card-title class="px-0 py-0 pt-1"><span class="text-xs-center">Атака</span></v-card-title>
+												<v-card-title class="px-0 py-0 pt-1"><span class="text-center">Атака</span></v-card-title>
 												<v-divider></v-divider>
 												<v-list dense class="list-item-height-20">
 													<v-list-tile>
@@ -44,7 +44,7 @@
 									<v-data-iterator hide-actions :items="getEvent(date)">
 										<template v-slot:item="props">
 											<v-card>
-												<v-card-title class="px-0 py-0 pt-1"><span class="text-xs-center">IP</span></v-card-title>
+												<v-card-title class="px-0 py-0 pt-1"><span class="text-center">IP</span></v-card-title>
 												<v-divider></v-divider>
 												<v-list dense class="list-item-height-20">
 													<v-list-tile>
@@ -70,13 +70,13 @@
 				</v-calendar>
 			</v-sheet>
 		</v-flex>
-		<v-flex xs6 class="text-sm-left text-xs-center">
+		<v-flex xs6 class="text-left">
 			<v-btn @click="prevMonthClick">
 				<v-icon dark left>keyboard_arrow_left</v-icon>
 				{{monthLabels.prev}}
 			</v-btn>
 		</v-flex>
-		<v-flex xs6 class="text-sm-right text-xs-center">
+		<v-flex xs6 class="text-right">
 			<v-btn @click="nextMonthClick" :disabled="nextMonthBtnDisabled">
 				{{monthLabels.next}}
 				<v-icon right dark>keyboard_arrow_right</v-icon>

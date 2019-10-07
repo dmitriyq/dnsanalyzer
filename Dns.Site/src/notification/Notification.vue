@@ -1,9 +1,9 @@
 ﻿<template>
-	<v-container fluid>
+	<v-container container--fluid>
 		<v-form v-model="formValid" ref="notifyForm">
 			<v-layout row wrap justify-start fill-height>
 				<v-flex xs12>
-					<p class="display-1 text-xs-center">Настройки уведомлений</p>
+					<p class="display-1 text-center">Настройки уведомлений</p>
 				</v-flex>
 				<v-flex xs12 sm3>
 					<v-layout xs6 row wrap justify-start v-for="item in notifies"
@@ -16,7 +16,7 @@
 							</v-text-field>
 						</v-flex>
 						<v-flex xs2>
-							<v-btn flat outline color="error" icon left @click="delRow(item.id)">
+							<v-btn text outlined color="error" icon left @click="delRow(item.id)">
 								<v-icon>delete</v-icon>
 							</v-btn>
 						</v-flex>
@@ -26,12 +26,12 @@
 				<v-flex xs12 sm3>
 					<v-layout xs6 row wrap align-center justify-space-between>
 						<v-flex xs6>
-							<v-btn flat outline color="primary" icon @click="addRow">
+							<v-btn text outlined color="primary" icon @click="addRow">
 								<v-icon>add</v-icon>
 							</v-btn>
 						</v-flex>
 						<v-flex xs6>
-							<v-btn flat outline color="primary" @click="saveNotify">
+							<v-btn text outlined color="primary" @click="saveNotify">
 								Сохранить
 							</v-btn>
 						</v-flex>
@@ -44,7 +44,7 @@
 					multi-line
 					color="success"
 					:timeout="2000">
-			<p class="title text-xs-center">Настройки уведомлений сохранены.</p>
+			<p class="title text-center">Настройки уведомлений сохранены.</p>
 		</v-snackbar>
 	</v-container>
 </template>

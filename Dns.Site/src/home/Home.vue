@@ -1,28 +1,30 @@
 ﻿<template>
-	<v-container fluid grid-list-md text-xs-center fill-height class="pb-0">
-		<v-layout row wrap fluid>
+	<v-container container--fluid grid-list-md text-center fill-height class="pb-0">
+		<v-layout row wrap container--fluid>
 			<v-flex xs12>
-				<v-expansion-panel>
-					<v-expansion-panel-content ripple>
-						<div slot="header">Фильтр записей</div>
-						<v-layout align-start justify-start row wrap class="mx-3">
-							<v-flex>
-								<v-switch label="Показывать динамические IP"
-										  color="primary"
-										  v-model="tableFilters.showDymanic"
-										  @change="saveFilter">
-								</v-switch>
-							</v-flex>
-							<v-flex>
-								<v-switch label="Показывать законченные атаки"
-										  color="primary"
-										  v-model="tableFilters.showCompleted"
-										  @change="saveFilter">
-								</v-switch>
-							</v-flex>
-						</v-layout>
-					</v-expansion-panel-content>
-				</v-expansion-panel>
+				<v-expansion-panels>
+					<v-expansion-panel>
+						<v-expansion-panel-content ripple>
+							<div slot="header">Фильтр записей</div>
+							<v-layout align-start justify-start row wrap class="mx-3">
+								<v-flex>
+									<v-switch label="Показывать динамические IP"
+											  color="primary"
+											  v-model="tableFilters.showDymanic"
+											  @change="saveFilter">
+									</v-switch>
+								</v-flex>
+								<v-flex>
+									<v-switch label="Показывать законченные атаки"
+											  color="primary"
+											  v-model="tableFilters.showCompleted"
+											  @change="saveFilter">
+									</v-switch>
+								</v-flex>
+							</v-layout>
+						</v-expansion-panel-content>
+					</v-expansion-panel>
+				</v-expansion-panels>
 				<v-card-title class="py-0">
 					<v-flex v-if="selected.length > 0 && isDnsAdmin" xs5 sm1>
 						<EditAttack :isEditStatus="true"

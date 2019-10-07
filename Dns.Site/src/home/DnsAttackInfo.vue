@@ -1,5 +1,5 @@
 ﻿<template>
-	<v-container fluid style="padding:0;">
+	<v-container container--fluid style="padding:0;">
 		<v-layout row wrap>
 			<v-flex>
 				<v-progress-circular :size="70"
@@ -9,7 +9,7 @@
 									 indeterminate>
 				</v-progress-circular>
 				<v-flex v-if="!isLoading">
-					<v-flex xs12 class="text-xs-center headline p-0 info--text">
+					<v-flex xs12 class="text-center headline p-0 info--text">
 						Информация об атаке
 					</v-flex>
 					<SummaryBlock :attack="attack"></SummaryBlock>

@@ -6,34 +6,36 @@
 			</v-subheader>
 		</v-list>
 		<v-list-tile-content>
-			<v-expansion-panel v-model="panels" expand>
-				<v-expansion-panel-content lazy v-if="whiteDomain!==null">
-					<template v-slot:header>
-						<div class="subheading font-weight-medium">{{whiteDomain.domain}}</div>
-					</template>
-					<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-						<InfoRow title="Ограцнизация" :desc="whiteDomain.company"></InfoRow>
-						<InfoRow title="Регистратор" :desc="whiteDomain.registrant"></InfoRow>
-						<InfoRow title="Дата регистрации" :desc="whiteDomain.dateCreate"></InfoRow>
-						<InfoRow title="Срок регистрации" :desc="whiteDomain.dateUntil"></InfoRow>
-						<InfoRow title="NameServers" :desc="whiteDomain.nameServers"></InfoRow>
-					</v-list-tile-content>
-					<v-divider></v-divider>
-				</v-expansion-panel-content>
-				<v-expansion-panel-content lazy v-if="blackDomain!==null">
-					<template v-slot:header>
-						<div class="subheading font-weight-medium">{{blackDomain.domain}}</div>
-					</template>
-					<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-						<InfoRow title="Ограцнизация" :desc="blackDomain.company"></InfoRow>
-						<InfoRow title="Регистратор" :desc="blackDomain.registrant"></InfoRow>
-						<InfoRow title="Дата регистрации" :desc="blackDomain.dateCreate"></InfoRow>
-						<InfoRow title="Срок регистрации" :desc="blackDomain.dateUntil"></InfoRow>
-						<InfoRow title="NameServers" :desc="blackDomain.nameServers"></InfoRow>
-					</v-list-tile-content>
-					<v-divider></v-divider>
-				</v-expansion-panel-content>
-			</v-expansion-panel>
+			<v-expansion-panels>
+				<v-expansion-panel v-model="panels" expand>
+					<v-expansion-panel-content lazy v-if="whiteDomain!==null">
+						<template v-slot:header>
+							<div class="subheading font-weight-medium">{{whiteDomain.domain}}</div>
+						</template>
+						<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
+							<InfoRow title="Ограцнизация" :desc="whiteDomain.company"></InfoRow>
+							<InfoRow title="Регистратор" :desc="whiteDomain.registrant"></InfoRow>
+							<InfoRow title="Дата регистрации" :desc="whiteDomain.dateCreate"></InfoRow>
+							<InfoRow title="Срок регистрации" :desc="whiteDomain.dateUntil"></InfoRow>
+							<InfoRow title="NameServers" :desc="whiteDomain.nameServers"></InfoRow>
+						</v-list-tile-content>
+						<v-divider></v-divider>
+					</v-expansion-panel-content>
+					<v-expansion-panel-content lazy v-if="blackDomain!==null">
+						<template v-slot:header>
+							<div class="subheading font-weight-medium">{{blackDomain.domain}}</div>
+						</template>
+						<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
+							<InfoRow title="Ограцнизация" :desc="blackDomain.company"></InfoRow>
+							<InfoRow title="Регистратор" :desc="blackDomain.registrant"></InfoRow>
+							<InfoRow title="Дата регистрации" :desc="blackDomain.dateCreate"></InfoRow>
+							<InfoRow title="Срок регистрации" :desc="blackDomain.dateUntil"></InfoRow>
+							<InfoRow title="NameServers" :desc="blackDomain.nameServers"></InfoRow>
+						</v-list-tile-content>
+						<v-divider></v-divider>
+					</v-expansion-panel-content>
+				</v-expansion-panel>
+			</v-expansion-panels>
 		</v-list-tile-content>
 		<v-divider></v-divider>
 	</v-flex>
