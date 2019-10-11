@@ -9,8 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Grfc.Library.EventBus" Version="0.0.3.13" />
     <PackageReference Include="Grfc.Library.Notification" Version="0.0.3.13" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.12" />
-    <PackageReference Include="protobuf-net" Version="2.4.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
+    <PackageReference Include="protobuf-net" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>

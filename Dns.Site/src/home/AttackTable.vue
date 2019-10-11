@@ -1,62 +1,52 @@
 ﻿<template>
 	<v-data-table class="elevation-1"
-				  hide-default-footer
-				  :headers="tableHeader"
-				  :items="dnsAttacks"
+				  fixed-header
+				  :loading="tableUpdating"
+				  loading-text="Получение данных"
+				  locale="ru-RU"
 				  must-sort
-				  :rowsPerPage="tableSort"
+				  no-data-text="Нет данных"
+				  no-results-text="Не найдено данных, подходящих под условие запроса"
+				  show-group-by
+				  :show-select="isAdmin"
+				  :headers="tableHeaders"
+				  :items="dnsAttacks"
+				  item-key="id"
+				  :items-per-page="25"
 				  v-model="checkBoxedAttacks"
 				  :search="filterExpr"
-				  :loading="tableUpdating">
+				  :footer-props="tableFooterOpts">
 		<v-progress-linear slot="progress" color="blue" indeterminate></v-progress-linear>
-		<template slot="items" slot-scope="props">
-			<tr :class="highLightRow(props.item.id) + ' rowHover'"
-				v-if="showRow(props.item.status)">
-				<td v-if="isDnsAdmin"
-					class="text-left pr-0 hidden-xs-only"
-					@click="props.selected = !props.selected">
-					<v-checkbox :input-value="!!props.selected"
-								primary
-								hide-details></v-checkbox>
-				</td>
-				<td class="text-center px-0">
-					<v-icon x-large
-							:class="getColorStatus(props.item.status)">
-						{{ props.item.status | statusIcon }}
-					</v-icon>
-				</td>
-				<td class="text-left">{{ props.item.whiteDomain }}</td>
-				<td class="text-left hidden-xs-only">{{ props.item.blackDomain }}</td>
-				<td class="hidden-xs-only">
-					<span v-for="summ in props.item.summary">
-						{{summ.count}}
-						<v-icon :class="getColorIpStatus(summ.status) + 'text-center'">
-							{{ summ.status | statusIpIcon }}
-						</v-icon>
-					</span>
-				</td>
-				<td @click="showInfo(props.item.id);">
-					<a>
-						<v-icon x-large>more_horiz</v-icon>
-					</a>
-				</td>
-			</tr>
+		<template v-slot:item.status="{ item }">
+			<v-icon x-large
+					:class="getColorStatus(item.status)">
+				{{ item.status | statusIcon }}
+			</v-icon>
 		</template>
-		<template slot="no-data">
-			<v-alert :value="true" color="error" icon="warning" outlined>
-				Нет данных
-			</v-alert>
+		<template v-slot:item.summary="{ item }">
+			<span v-for="summ in item.summary">
+				{{summ.count}}
+				<v-icon :class="getColorIpStatus(summ.status) + 'text-center'">
+					{{ summ.status | statusIpIcon }}
+				</v-icon>
+			</span>
+		</template>
+		<template v-slot:item.info="{ item }">
+			<a @click="showInfo(item.id);">
+				<v-icon x-large>more_horiz</v-icon>
+			</a>
 		</template>
 	</v-data-table>
 </template>
 
 <script lang="ts">
 	import Vue from 'vue';
-	import { Component, Prop, Watch } from 'vue-property-decorator';
+	import { Component, Prop, PropSync, Watch } from 'vue-property-decorator';
 	import DnsAttack from '@/models/dns-attack';
 	import Utils from '@/utils/Utils';
 	import IDataTableHeaders from '@/models/data-table';
 	import { EventBus } from '@/utils/event-bus';
+	import { IAttackTableFilters } from '@/models/local-storage';
 
 	@Component({
 		filters: {
@@ -69,79 +59,66 @@
 		},
 	})
 	export default class AttackTable extends Vue {
-		@Prop() public attacks: DnsAttack[];
-		@Prop() public selectedAttacks: DnsAttack[];
+		@PropSync('attacks') public dnsAttacks: DnsAttack[];
+		@PropSync('selectedAttacks') public checkBoxedAttacks: DnsAttack[];
+		@Prop() public isAdmin: boolean;
 		@Prop() public tableUpdating: boolean;
-		@Prop() public tableFilters: ({
-			showDymanic: boolean,
-			showCompleted: boolean,
-		});
-		@Prop() public isShowingInfo: boolean;
+		@Prop() public tableFilters: IAttackTableFilters;
 		@Prop() public filterExpr: string;
 
-		public checkBoxedAttacks: DnsAttack[] = [];
+		public tableFooterOpts = {
+			'showFirstLastPage': true,
+			'show-current-page': true,
+			'items-per-page-all-text': 'Все',
+			'items-per-page-options': [10, 25, 100, -1],
+			'items-per-page-text': 'Кол-во на странице',
+			'page-text': 'записей'
+		};
 
 		public selectedId: number = 0;
-		public isShowInfo: boolean = false;
-		public search: string = '';
 		public tableHeaders: IDataTableHeaders[] = [
-			{ text: '', value: '', sortable: false, align: 'left', width: '50px', class: 'hidden-xs-only' },
-			{ text: 'Статус', value: 'status', align: 'center', width: '100px', class: 'pl-0 pr-2' },
+			{
+				text: 'Статус',
+				value: 'status',
+				align: 'center',
+				width: '100px',
+				class: 'pl-0 pr-2',
+				filter: (value: number, search: string, item: DnsAttack) => {
+					if (!this.tableFilters.showCompleted && value === 5) {
+						return false;
+					} else if (!this.tableFilters.showDynamic && value === 4) {
+						return false;
+					} else {
+						return true;
+					}
+				},
+			},
 			{ text: 'Атакуемый домен', value: 'whiteDomain' },
 			{ text: 'Атакующий домен', value: 'blackDomain', class: 'hidden-xs-only' },
-			{ text: 'IP', value: 'summary', width: '150px', class: 'hidden-xs-only', align: 'center' },
-			{ text: 'Подробнее', value: '', width: '100px', align: 'center' },
+			{ text: 'IP', value: 'summary', width: '150px', class: 'hidden-xs-only', align: 'center', filterable: false, },
+			{ text: 'Подробнее', value: 'info', width: '100px', align: 'center', filterable: false, },
 		];
-		public tableSort: any = {rowsPerPage: -1 };
-
-		public highLightRow(id: number): string {
-			let style = '';
-			if (this.isShowingInfo && id === this.selectedId) {
-				style = 'blue lighten-3';
-			}
-			return style;
-		}
 
 		public showInfo(id: number) {
 			this.$emit('showattackinfo', id);
-		}
-		public showRow(status: number): boolean {
-
-			if (status === 4 && !this.tableFilters.showDymanic) {
-				return false;
-			} else if (status === 5 && !this.tableFilters.showCompleted) {
-				return false;
-			} else {
-				return true;
-			}
 		}
 
 		public getColorStatus(status: number): string { return Utils.getStatusColor(status); }
 		public getColorIpStatus(status: number): string { return Utils.getStatusIpColor(status); }
 
 		public created() {
-			EventBus.$on('clearselectedattacks', () => {
-				this.checkBoxedAttacks = this.checkBoxedAttacks.slice(0, 0);
-			});
 			EventBus.$on('updateSelectedId', (id: string) => this.selectedId = parseInt(id, 10));
 		}
 
-		get dnsAttacks(): DnsAttack[] {
-			return this.attacks;
-		}
-
-		get isDnsAdmin(): boolean {
-			return Utils.getUser(this).isDnsAdmin;
-		}
-
-		get tableHeader(): IDataTableHeaders[] {
-			if (!this.isDnsAdmin) {
-				return this.tableHeaders
-					.filter((val, indx) => indx !== 0);
-			} else {
-				return this.tableHeaders;
+		@Watch('tableFilters', { deep: true })
+		private onTableFilterChanged(val: IAttackTableFilters, oldVal: IAttackTableFilters) {
+			if (!val.showCompleted) {
+				this.checkBoxedAttacks = this.checkBoxedAttacks.filter(val => val.status !== 5);
+			} else if (!val.showDynamic) {
+				this.checkBoxedAttacks = this.checkBoxedAttacks.filter(val => val.status !== 4);
 			}
 		}
+
 
 		@Watch('checkBoxedAttacks')
 		private onCheckBoxedAttacks() {
@@ -149,19 +126,3 @@
 		}
 	}
 </script>
-
-<style scoped>
-	.bordered {
-		box-sizing: border-box;
-		border: solid #2196f3 1px;
-	}
-
-	.rowHover:hover {
-		background: #90caf9 !important;
-	}
-</style>
-<style>
-	.tile > div {
-		height: auto !important;
-	}
-</style>

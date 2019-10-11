@@ -27,10 +27,10 @@ namespace Dns.Site.Services
 					Count = x.Count(),
 					Status = x.Key
 				}).OrderBy(x => x.Status).ToList(),
-				BlackDomain = attackGroup.Attacks.FirstOrDefault().BlackDomain,
+				BlackDomain = attackGroup.Attacks.FirstOrDefault()?.BlackDomain,
 				Status = attackGroup.Status,
 				Id = attackGroup.Id,
-				WhiteDomain = attackGroup.Attacks.FirstOrDefault().WhiteDomain
+				WhiteDomain = attackGroup.Attacks.FirstOrDefault()?.WhiteDomain
 			};
 		}
 

@@ -1,7 +1,7 @@
 ﻿<template>
 	<div style="width:100%;">
 		<v-dialog v-model="dialog" lazy persistent max-width="700px" style="float:right;">
-			<v-btn slot="activator" color="info">{{ buttonText }}</v-btn>
+			<v-btn slot="activator" color="secondary">{{ buttonText }}</v-btn>
 			<v-form v-model="formValid" ref="editStatusForm">
 				<v-card>
 					<v-card-title>

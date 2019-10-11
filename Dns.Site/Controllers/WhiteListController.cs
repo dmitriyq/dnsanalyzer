@@ -32,9 +32,10 @@ namespace Dns.Site.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetWhiteList()
 		{
-			var entities = _dnsDb.WhiteDomains;
-			var domains = await CastToModel(entities).ToListAsync().ConfigureAwait(false);
-			return new JsonResult(domains);
+			await Task.CompletedTask;
+			var entities = await _dnsDb.WhiteDomains.Select(x => CastToModel(x)).ToListAsync().ConfigureAwait(false);
+			//var domains = await CastToModel(entities.Select(x => x)).ToListAsync().ConfigureAwait(false);
+			return new JsonResult(entities);
 		}
 
 		[HttpGet("{id}")]
@@ -158,10 +159,10 @@ namespace Dns.Site.Controllers
 			return new JsonResult(new { success = validDomains, error = invalidDomains });
 		}
 
-		private WhiteDomainViewModel CastToModel(WhiteDomains item)
+		private static WhiteDomainViewModel CastToModel(WhiteDomains item)
 			=> new WhiteDomainViewModel { DateAdded = item.DateAdded, Domain = item.Domain, Id = item.Id };
 
-		private IQueryable<WhiteDomainViewModel> CastToModel(IQueryable<WhiteDomains> items)
+		private static IQueryable<WhiteDomainViewModel> CastToModel(IQueryable<WhiteDomains> items)
 			=> items.Select(x => CastToModel(x));
 
 		public class ErrorMessage

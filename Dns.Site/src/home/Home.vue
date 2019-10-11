@@ -1,53 +1,39 @@
 ﻿<template>
-	<v-container container--fluid grid-list-md text-center fill-height class="pb-0">
-		<v-layout row wrap container--fluid>
-			<v-flex xs12>
-				<v-expansion-panels>
-					<v-expansion-panel>
-						<v-expansion-panel-content ripple>
-							<div slot="header">Фильтр записей</div>
-							<v-layout align-start justify-start row wrap class="mx-3">
-								<v-flex>
-									<v-switch label="Показывать динамические IP"
-											  color="primary"
-											  v-model="tableFilters.showDymanic"
-											  @change="saveFilter">
-									</v-switch>
-								</v-flex>
-								<v-flex>
-									<v-switch label="Показывать законченные атаки"
-											  color="primary"
-											  v-model="tableFilters.showCompleted"
-											  @change="saveFilter">
-									</v-switch>
-								</v-flex>
-							</v-layout>
-						</v-expansion-panel-content>
-					</v-expansion-panel>
-				</v-expansion-panels>
-				<v-card-title class="py-0">
-					<v-flex v-if="selected.length > 0 && isDnsAdmin" xs5 sm1>
-						<EditAttack :isEditStatus="true"
-									:attacks="selected"
-									name="editStatus"></EditAttack>
-					</v-flex>
-					<v-spacer></v-spacer>
-					<v-flex xs12 sm6>
-						<v-text-field v-model="search"
-									  append-icon="search"
-									  label="Поиск"
-									  single-line
-									  hide-details></v-text-field>
-					</v-flex>
-				</v-card-title>
-				<AttackTable @selectedupdate="showMultiActionButton"
-							 @showattackinfo="showInfo"
-							 :isShowingInfo="isShowInfo"
-							 :attacks="dnsAttacks"
+	<v-container fluid>
+		<v-row>
+			<v-col cols="12">
+				<AttackFilterPanel :filters.sync="tableFilters"/>
+			</v-col>
+		</v-row>
+		<v-row justify="space-between">
+			<v-col cols="4">
+				<EditAttack v-if="selected.length > 0 && isDnsAdmin"
+							:isEditStatus="true"
+							:attacks="selected"
+							name="editStatus"></EditAttack>
+			</v-col>
+			<v-col cols="6" class="pr-5" style="width:50%">
+				<v-text-field v-model="search"
+							  append-icon="search"
+							  label="Поиск"
+							  single-line
+							  hide-details></v-text-field>
+			</v-col>
+		</v-row>
+		<v-row>
+			<v-col cols="12">
+				<AttackTable @showattackinfo="showInfo"
+							 :isAdmin="isDnsAdmin"
+							 :attacks.sync="dnsAttacks"
+							 :selectedAttacks.sync="selected"
 							 :filterExpr="search"
 							 :tableUpdating="tableUpdating"
 							 :tableFilters="tableFilters">
 				</AttackTable>
+			</v-col>
+		</v-row>
+		<v-layout row wrap container--fluid>
+			<v-flex xs12>
 			</v-flex>
 			<v-flex>
 				<InfoContainer :isShowingInfo="isShowInfo" @hideinfo="onHideInfo">
@@ -60,19 +46,20 @@
 <script lang="ts">
 	import Vue from 'vue';
 	import { Component, Prop, Watch } from 'vue-property-decorator';
+	import AttackFilterPanel from '@/home/AttackFilterPanel.vue';
 	import EditAttack from '@/home/EditAttack.vue';
 	import InfoContainer from '@/home/InfoContainer.vue';
 	import AttackTable from '@/home/AttackTable.vue';
 	import DnsAttack from '@/models/dns-attack';
-	import DateRangeOptions from '@/models/date-range';
 	import { format as fnsFormat } from 'date-fns';
 	import Utils from '@/utils/Utils';
 	import * as signalR from '@microsoft/signalr';
 	import { EventBus } from '@/utils/event-bus';
-	import DnsLocalStorage from '@/models/local-storage';
+	import { IAttackTableFilters, DnsLocalStorage } from '@/models/local-storage';
 
 	@Component({
 		components: {
+			AttackFilterPanel,
 			EditAttack,
 			InfoContainer,
 			AttackTable,
@@ -96,26 +83,12 @@
 		public attackHub: signalR.HubConnection;
 		public search: string = '';
 
+		public showDynamic: false;
+		public showCompleted: false;
 		public tableFilters = {
-			showDymanic: false,
+			showDynamic: false,
 			showCompleted: false,
 		};
-
-		public dateChange(from: Date | null, to: Date | null) {
-			this.attackHub.send('AttackList', from, to)
-				.then(() => this.tableUpdating = true);
-		}
-		public monthChanged(month: Date) {
-			if (this.hubIsConnected()) {
-				this.attackHub.send('getCalendarEvents', month, false);
-			} else {
-				window.setTimeout(() => this.monthChanged(month), 200);
-			}
-		}
-
-		public showMultiActionButton(atts: DnsAttack[]) {
-			this.selected = atts;
-		}
 
 		public created() {
 			this.tableFilters = DnsLocalStorage.getTableFilters();
@@ -130,7 +103,8 @@
 		}
 
 		get isDnsAdmin(): boolean {
-			return Utils.getUser(this).isDnsAdmin;
+			return true;
+			//return Utils.getUser(this).isDnsAdmin;
 		}
 
 		public showInfo(id: number, isReload: boolean = false) {
@@ -147,6 +121,11 @@
 				EventBus.$emit('updateSelectedId', id);
 				this.$router.push({ name: 'DnsAttackInfo', params: { id: this.selectedId.toString() } });
 			}
+		}
+
+		@Watch('tableFilters', { deep: true })
+		private onTableFilterChanged(val: IAttackTableFilters, oldVal: IAttackTableFilters) {
+			DnsLocalStorage.setTableFilters(val);
 		}
 
 		private hubIsConnected(): boolean {
@@ -187,7 +166,6 @@
 					}
 					return 0;
 				});
-				this.monthChanged(new Date((this.$refs.calendComp as any).selectedMonth));
 			});
 			this.attackHub.onclose(() => {
 				this.initHub();
@@ -199,9 +177,6 @@
 			this.$router.push('/');
 		}
 
-		private saveFilter(): void {
-			DnsLocalStorage.setTableFilters(this.tableFilters);
-		}
 	}
 </script>
 

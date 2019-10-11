@@ -1,6 +1,11 @@
 ﻿import Utils from '@/utils/Utils';
 
-export default class DnsLocalStorage {
+interface IAttackTableFilters {
+	showDynamic: boolean;
+	showCompleted: boolean;
+}
+
+class DnsLocalStorage {
 	public static getSavedDateRange(): ({ from: Date, to: Date }) {
 		const rangeJson = localStorage.getItem('DNS_DateRange');
 		if (!!rangeJson) {
@@ -22,31 +27,23 @@ export default class DnsLocalStorage {
 		localStorage.setItem('DNS_DateRange', json);
 	}
 
-	public static getTableFilters(): ({
-		showDymanic: boolean,
-		showCompleted: boolean,
-	}) {
+	public static getTableFilters(): IAttackTableFilters {
 		const filterJson = localStorage.getItem('DNS_TableFilter');
 		if (!!filterJson) {
-			return Utils.deserialize(filterJson) as ({
-				showDymanic: boolean,
-				showCompleted: boolean,
-			});
+			return Utils.deserialize(filterJson) as IAttackTableFilters;
 		} else {
 			const defaultFilters = {
-				showDymanic: false,
+				showDynamic: false,
 				showCompleted: false,
-			};
+			} as IAttackTableFilters;
 			DnsLocalStorage.setTableFilters(defaultFilters);
 			return defaultFilters;
 		}
 	}
 
-	public static setTableFilters(data: ({
-		showDymanic: boolean,
-		showCompleted: boolean,
-	})): void {
+	public static setTableFilters(data: IAttackTableFilters): void {
 		const json = JSON.stringify(data);
 		localStorage.setItem('DNS_TableFilter', json);
 	}
 }
+export { IAttackTableFilters, DnsLocalStorage };

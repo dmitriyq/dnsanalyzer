@@ -16,7 +16,7 @@ export default class Utils {
 	public static getStatusColor(status: number): string {
 		switch (status) {
 			case 1: return 'grey--text darken-3'; break;
-			case 2: return 'red--text darken-1'; break;
+			case 2: return 'red--text accent-1'; break;
 			case 3: return 'yellow--text accent-2'; break;
 			case 4: return 'grey--text darken-3'; break;
 			case 5: return 'green--text accent-4'; break;
