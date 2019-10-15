@@ -45,8 +45,7 @@
 	import DnsAttack from '@/models/dns-attack';
 	import Utils from '@/utils/Utils';
 	import IDataTableHeaders from '@/models/data-table';
-	import { EventBus } from '@/utils/event-bus';
-	import { IAttackTableFilters } from '@/models/local-storage';
+	import IAttackTableFilters from '@/models/attack-table-filters';
 
 	@Component({
 		filters: {
@@ -57,11 +56,16 @@
 				return Utils.getStatusIpIcon(status);
 			},
 		},
+		mounted() {
+			window.document.querySelectorAll('.v-data-table-header__icon').forEach((el, i) => {
+				el.nextElementSibling!.innerHTML = 'сгруппировать';
+			});
+
+		},
 	})
 	export default class AttackTable extends Vue {
 		@PropSync('attacks') public dnsAttacks: DnsAttack[];
 		@PropSync('selectedAttacks') public checkBoxedAttacks: DnsAttack[];
-		@Prop() public isAdmin: boolean;
 		@Prop() public tableUpdating: boolean;
 		@Prop() public tableFilters: IAttackTableFilters;
 		@Prop() public filterExpr: string;
@@ -72,7 +76,7 @@
 			'items-per-page-all-text': 'Все',
 			'items-per-page-options': [10, 25, 100, -1],
 			'items-per-page-text': 'Кол-во на странице',
-			'page-text': 'записей'
+			'page-text': 'записей',
 		};
 
 		public selectedId: number = 0;
@@ -82,7 +86,7 @@
 				value: 'status',
 				align: 'center',
 				width: '100px',
-				class: 'pl-0 pr-2',
+				class: 'pl-0 pr-2 no-grouppable',
 				filter: (value: number, search: string, item: DnsAttack) => {
 					if (!this.tableFilters.showCompleted && value === 5) {
 						return false;
@@ -94,9 +98,9 @@
 				},
 			},
 			{ text: 'Атакуемый домен', value: 'whiteDomain' },
-			{ text: 'Атакующий домен', value: 'blackDomain', class: 'hidden-xs-only' },
-			{ text: 'IP', value: 'summary', width: '150px', class: 'hidden-xs-only', align: 'center', filterable: false, },
-			{ text: 'Подробнее', value: 'info', width: '100px', align: 'center', filterable: false, },
+			{ text: 'Атакующий домен', value: 'blackDomain' },
+			{ text: 'IP', value: 'summary', width: '150px', class: 'no-grouppable', align: 'center', filterable: false },
+			{ text: 'Подробнее', value: 'info', width: '120px', align: 'center', class: 'no-grouppable', filterable: false },
 		];
 
 		public showInfo(id: number) {
@@ -106,16 +110,16 @@
 		public getColorStatus(status: number): string { return Utils.getStatusColor(status); }
 		public getColorIpStatus(status: number): string { return Utils.getStatusIpColor(status); }
 
-		public created() {
-			EventBus.$on('updateSelectedId', (id: string) => this.selectedId = parseInt(id, 10));
+		get isAdmin(): boolean {
+			return this.$store.getters.isAdmin;
 		}
 
 		@Watch('tableFilters', { deep: true })
 		private onTableFilterChanged(val: IAttackTableFilters, oldVal: IAttackTableFilters) {
 			if (!val.showCompleted) {
-				this.checkBoxedAttacks = this.checkBoxedAttacks.filter(val => val.status !== 5);
+				this.checkBoxedAttacks = this.checkBoxedAttacks.filter((v) => v.status !== 5);
 			} else if (!val.showDynamic) {
-				this.checkBoxedAttacks = this.checkBoxedAttacks.filter(val => val.status !== 4);
+				this.checkBoxedAttacks = this.checkBoxedAttacks.filter((v) => v.status !== 4);
 			}
 		}
 
@@ -126,3 +130,8 @@
 		}
 	}
 </script>
+<style>
+	th[role="columnheader"][scope="col"].no-grouppable span~i~span{
+		display: none;
+	}
+</style>

@@ -1,4 +1,4 @@
-﻿import User from '@/models/user';
+﻿import IUser from '@/models/user';
 import Vue from 'vue';
 import ISelectModel from '@/models/select-model';
 
@@ -50,10 +50,10 @@ export default class Utils {
 		}
 	}
 
-	public static getUser(vue: Vue): User {
-		return (vue.$root.$data as any).user as User;
+	public static getUser(vue: Vue): IUser {
+		return (vue.$root.$data as any).user as IUser;
 	}
-	public static setUser(vue: Vue, user: User) {
+	public static setUser(vue: Vue, user: IUser) {
 		(vue.$root.$data as any).user = user;
 	}
 

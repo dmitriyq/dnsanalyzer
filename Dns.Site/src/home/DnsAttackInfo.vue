@@ -1,24 +1,23 @@
 ﻿<template>
-	<v-container container--fluid style="padding:0;">
-		<v-layout row wrap>
-			<v-flex>
-				<v-progress-circular :size="70"
-									 :width="7"
-									 v-if="isLoading"
-									 color="primary"
-									 indeterminate>
-				</v-progress-circular>
-				<v-flex v-if="!isLoading">
-					<v-flex xs12 class="text-center headline p-0 info--text">
-						Информация об атаке
-					</v-flex>
-					<SummaryBlock :attack="attack"></SummaryBlock>
-					<DomainBlock :whiteDomain="attack.whiteDomainInfo" :blackDomain="attack.blackDomainInfo"></DomainBlock>
-					<IpBlock :attack="attack"></IpBlock>
-				</v-flex>
-			</v-flex>
-		</v-layout>
-	</v-container>
+	<div>
+		<v-container fluid v-if="isLoading">
+			<v-row>
+				<v-col cols="12" class="text-center">
+					<v-progress-circular :size="70" :width="5" color="accent" indeterminate />
+				</v-col>
+			</v-row>
+		</v-container>
+		<v-container fluid class="pa-0" v-else>
+			<v-row class="elevation-4 mb-4">
+				<v-col cols="12" class="headline text-center white--text primary" style="height:64px;">
+					Информация об атаке
+				</v-col>
+			</v-row>
+			<SummaryBlock :attack="attack" />
+			<DomainBlock :whiteDomain="attack.whiteDomainInfo" :blackDomain="attack.blackDomainInfo" />
+			<IpBlock :attack="attack"/>
+		</v-container>
+	</div>
 </template>
 
 <script lang="ts">
@@ -113,6 +112,3 @@
 		}
 	}
 </script>
-
-<style scoped>
-</style>

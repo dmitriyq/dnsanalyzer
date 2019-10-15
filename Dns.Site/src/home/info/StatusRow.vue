@@ -1,16 +1,21 @@
 ﻿<template>
-	<v-list-tile-title>
-		<v-layout row wrap>
-			<v-flex xs5 wrap class="body-2">
-				{{ title }}:
-			</v-flex>
-			<v-flex xs7 wrap class="body-1">
-				{{ currentStatus.text }}
-				<v-icon :class="statusColor" v-text="statusIcon">
-				</v-icon>
-			</v-flex>
-		</v-layout>
-	</v-list-tile-title>
+	<v-list-item>
+		<v-list-item-content>
+			<v-list-item-title>
+				<v-container fluid class="pa-0 pt-2">
+					<v-row no-gutters>
+						<v-col col="5" class="body-2">
+							{{ title }}:
+						</v-col>
+						<v-col col="7" class="body-1">
+							{{ currentStatus.text }}
+							<v-icon :class="statusColor" v-text="statusIcon"/>
+						</v-col>
+					</v-row>
+				</v-container>
+			</v-list-item-title>
+		</v-list-item-content>
+	</v-list-item>
 </template>
 
 <script lang="ts">
@@ -68,6 +73,3 @@ export default class StatusRow extends Vue {
 	}
 }
 </script>
-
-<style scoped>
-</style>

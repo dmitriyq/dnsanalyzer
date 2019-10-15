@@ -50,7 +50,9 @@
 
 		private initHub() {
 			this.healthHub = new signalR.HubConnectionBuilder()
-				.withUrl('/healthHub').build();
+				.withAutomaticReconnect({
+					nextRetryDelayInMilliseconds: ((c) => 1000),
+				}).withUrl('/healthHub').build();
 			this.healthHub.start()
 				// tslint:disable-next-line:no-console
 				.catch((err: any) => console.error(err));

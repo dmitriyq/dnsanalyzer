@@ -1,67 +1,61 @@
 ﻿<template>
-	<v-flex class="elevation-1 m-0 p-0 mb-3">
-		<v-list subheader>
-			<v-subheader class="blue lighten-4 subheading">
-				Общая информация
-			</v-subheader>
-		</v-list>
-		<v-list-tile-content class="pt-2 pr-3 pb-0 pl-3">
-			<StatusRow title="Текущий статус" :status="attack.status" statType="group"></StatusRow>
-			<InfoRow title="Атакуемый домен" :desc="attack.whiteDomain"></InfoRow>
-			<InfoRow title="Атакующий домен" :desc="attack.blackDomain"></InfoRow>
-			<InfoRow title="Дата обнаружения" :desc="attack.begin"></InfoRow>
-			<InfoRow title="Дата завершения" :desc="attack.close"></InfoRow>
-		</v-list-tile-content>
-		<v-divider></v-divider>
-		<v-list-tile-content v-if="isDnsAdmin" class="w-100">
-			<EditAttack :isEditStatus="true"
-						:attackFull="attack"
-						name="editStatus"></EditAttack>
-		</v-list-tile-content>
-		<v-list-tile-content>
-			<v-expansion-panels>
-				<v-expansion-panel v-model="panelBlocks.history" expand>
-					<v-expansion-panel-content lazy>
-						<template v-slot:header>
-							<div class="subheading">История изменений</div>
-						</template>
-						<v-divider></v-divider>
-						<v-list>
-							<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-								<InfoRow v-for="history in attack.histories" :key="history.id"
-										 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
-								</InfoRow>
-							</v-list-tile-content>
-						</v-list>
-					</v-expansion-panel-content>
-				</v-expansion-panel>
-			</v-expansion-panels>
-		</v-list-tile-content>
-		<v-divider></v-divider>
-		<v-list-tile-content>
-			<v-expansion-panels>
-				<v-expansion-panel v-model="panelBlocks.notes" expand>
-					<v-expansion-panel-content lazy>
-						<template v-slot:header>
-							<div class="subheading">Комментарии</div>
-						</template>
-						<v-divider></v-divider>
-						<v-list>
-							<v-list-tile-content class="pt-2 pr-3 pb-0 pl-4">
-								<InfoRow v-for="note in attack.notes" :key="note.id"
-										 :title="note.create" :desc="note.text">
-								</InfoRow>
-								<EditAttack :attackFull="attack"
-											name="addComment"
-											v-if="isDnsAdmin"
-											:isEditStatus="false"></EditAttack>
-							</v-list-tile-content>
-						</v-list>
-					</v-expansion-panel-content>
-				</v-expansion-panel>
-			</v-expansion-panels>
-		</v-list-tile-content>
-	</v-flex>
+	<v-row no-gutters>
+		<v-col cols="12">
+			<v-list dense>
+				<v-subheader class="subtitle-1 primary white--text">
+					Общая информация
+				</v-subheader>
+				<StatusRow title="Текущий статус" :status="attack.status" statType="group" />
+				<InfoRow title="Атакуемый домен" :desc="attack.whiteDomain" />
+				<InfoRow title="Атакующий домен" :desc="attack.blackDomain" />
+				<InfoRow title="Дата обнаружения" :desc="attack.begin" />
+				<InfoRow title="Дата завершения" :desc="attack.close" />
+				<v-divider></v-divider>
+				<v-list-item>
+					<v-list-item-content v-if="isDnsAdmin">
+						<v-row>
+							<v-col cols="12" md="4">
+								<EditAttack :isEditStatus="true"
+											:attackFull="attack" />
+							</v-col>
+						</v-row>
+					</v-list-item-content>
+				</v-list-item>
+				<v-list-item>
+					<v-list-item-content>
+						<v-expansion-panels multiple>
+							<v-expansion-panel>
+								<v-expansion-panel-header class="pa-1">
+									<div class="subtitle-1">История изменений</div>
+								</v-expansion-panel-header>
+								<v-expansion-panel-content>
+									<v-list dense>
+										<InfoRow v-for="history in attack.histories" :key="history.id"
+												 :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
+										</InfoRow>
+									</v-list>
+								</v-expansion-panel-content>
+							</v-expansion-panel>
+							<v-expansion-panel>
+								<v-expansion-panel-header class="pa-1">
+									<div class="subtitle-1">Комментарии</div>
+								</v-expansion-panel-header>
+								<v-expansion-panel-content>
+									<v-list dense>
+										<InfoRow v-for="note in attack.notes" :key="note.id"
+												 :title="note.create" :desc="note.text" />
+										<EditAttack :attackFull="attack"
+													v-if="isDnsAdmin"
+													:isEditStatus="false" />
+									</v-list>
+								</v-expansion-panel-content>
+							</v-expansion-panel>
+						</v-expansion-panels>
+					</v-list-item-content>
+				</v-list-item>
+			</v-list>
+		</v-col>
+	</v-row>
 </template>
 
 <script lang="ts">
@@ -72,7 +66,7 @@
 	import { Component, Prop } from 'vue-property-decorator';
 	import { IDnsAttackInfo } from '@/models/dns-attack';
 	import Utils from '@/utils/Utils';
-	import ISelectModel from '../../models/select-model';
+	import ISelectModel from '@/models/select-model';
 	import Axios from 'axios';
 
 	@Component({
@@ -86,13 +80,9 @@
 		@Prop() public attack: IDnsAttackInfo;
 
 		public statuses: Array<ISelectModel<number>> = [];
-		public panelBlocks = {
-			history: [false],
-			notes: [false],
-		};
 
 		get isDnsAdmin(): boolean {
-			return Utils.getUser(this).isDnsAdmin;
+			return this.$store.getters.isAdmin as boolean;
 		}
 
 		public beforeMount() {

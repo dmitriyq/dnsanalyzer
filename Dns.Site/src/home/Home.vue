@@ -23,7 +23,6 @@
 		<v-row>
 			<v-col cols="12">
 				<AttackTable @showattackinfo="showInfo"
-							 :isAdmin="isDnsAdmin"
 							 :attacks.sync="dnsAttacks"
 							 :selectedAttacks.sync="selected"
 							 :filterExpr="search"
@@ -32,14 +31,11 @@
 				</AttackTable>
 			</v-col>
 		</v-row>
-		<v-layout row wrap container--fluid>
-			<v-flex xs12>
-			</v-flex>
-			<v-flex>
-				<InfoContainer :isShowingInfo="isShowInfo" @hideinfo="onHideInfo">
-				</InfoContainer>
-			</v-flex>
-		</v-layout>
+		<v-row>
+			<v-col cols="12">
+				<InfoContainer @hideinfo="onHideInfo"/>
+			</v-col>
+		</v-row>
 	</v-container>
 </template>
 
@@ -55,7 +51,8 @@
 	import Utils from '@/utils/Utils';
 	import * as signalR from '@microsoft/signalr';
 	import { EventBus } from '@/utils/event-bus';
-	import { IAttackTableFilters, DnsLocalStorage } from '@/models/local-storage';
+	import DnsLocalStorage from '@/models/local-storage';
+	import IAttackTableFilters from '@/models/attack-table-filters';
 
 	@Component({
 		components: {
@@ -77,15 +74,12 @@
 
 		public dnsAttacks: DnsAttack[] = [];
 		public selected: DnsAttack[] = [];
-		public isShowInfo: boolean = false;
 		public tableUpdating: boolean = true;
 		public selectedId: number | null;
 		public attackHub: signalR.HubConnection;
 		public search: string = '';
 
-		public showDynamic: false;
-		public showCompleted: false;
-		public tableFilters = {
+		public tableFilters: IAttackTableFilters = {
 			showDynamic: false,
 			showCompleted: false,
 		};
@@ -93,6 +87,9 @@
 		public created() {
 			this.tableFilters = DnsLocalStorage.getTableFilters();
 			this.initHub();
+			if (this.isSideModalOpened && this.$route.query.id === undefined) {
+				this.isSideModalOpened = false;
+			}
 		}
 		public beforeMount() {
 			const urlQuery = this.$router.currentRoute.query;
@@ -103,22 +100,28 @@
 		}
 
 		get isDnsAdmin(): boolean {
-			return true;
-			//return Utils.getUser(this).isDnsAdmin;
+			return this.$store.getters.isAdmin as boolean;
 		}
 
-		public showInfo(id: number, isReload: boolean = false) {
+		get isSideModalOpened(): boolean {
+			return this.$store.state.sideDialogOpened;
+		}
+		set isSideModalOpened(val: boolean) {
+			this.$store.dispatch('updateSideDialogState', val);
+		}
+
+		public showInfo(id: number) {
+
 			if (id === this.selectedId) {
-				this.isShowInfo = !this.isShowInfo;
+				this.isSideModalOpened = !this.isSideModalOpened;
 			} else {
-				this.isShowInfo = true;
+				this.isSideModalOpened = true;
 			}
-			if (!this.isShowInfo) {
+			if (!this.isSideModalOpened) {
 				this.selectedId = null;
 				this.$router.push('/');
 			} else {
 				this.selectedId = id;
-				EventBus.$emit('updateSelectedId', id);
 				this.$router.push({ name: 'DnsAttackInfo', params: { id: this.selectedId.toString() } });
 			}
 		}
@@ -128,14 +131,10 @@
 			DnsLocalStorage.setTableFilters(val);
 		}
 
-		private hubIsConnected(): boolean {
-			const state = (this.attackHub as any).connection.connectionState;
-			return state === 1 ? true : false;
-		}
-
 		private initHub() {
-			this.attackHub = new signalR.HubConnectionBuilder()
-				.withUrl('/attackHub').build();
+			this.attackHub = new signalR.HubConnectionBuilder().withAutomaticReconnect({
+				nextRetryDelayInMilliseconds: ((c) => 1000),
+			}).withUrl('/attackHub').build();
 			this.attackHub.start()
 				.then(() => {
 					this.attackHub.send('AttackList', null, null)
@@ -151,7 +150,7 @@
 				const oldInfo = this.dnsAttacks.findIndex((val) => val.id === updatedAttack.id);
 				if (oldInfo !== -1) {
 					this.dnsAttacks.splice(oldInfo, 1, updatedAttack);
-					if (this.selectedId === updatedAttack.id && this.isShowInfo) {
+					if (this.selectedId === updatedAttack.id && this.isSideModalOpened) {
 						EventBus.$emit('update-info');
 					}
 				} else {
@@ -172,7 +171,7 @@
 			});
 		}
 		private onHideInfo() {
-			this.isShowInfo = false;
+			this.$store.dispatch('updateSideDialogState', false);
 			this.selectedId = null;
 			this.$router.push('/');
 		}

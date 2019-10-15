@@ -1,7 +1,7 @@
 ﻿<template>
 	<v-app>
 		<Navigation :navBarState="navigationState"></Navigation>
-		<v-app-bar class="primary white--text" fixed app :clipped-left="true">
+		<v-app-bar class="primary white--text" app :clipped-left="true">
 			<v-app-bar-nav-icon class="white--text" @click.stop="navigationState = !navigationState"></v-app-bar-nav-icon>
 			<v-toolbar-title>DNS анализатор</v-toolbar-title>
 		</v-app-bar>
@@ -24,5 +24,19 @@
 	})
 	export default class AppComponent extends Vue {
 		public navigationState: boolean = true;
+
+		public created() {
+			const isDarkMode = this.initDarkMode();
+			this.$store.dispatch('updateDarkMode', isDarkMode);
+		}
+
+		private initDarkMode(): boolean {
+			const isDark = localStorage.getItem('isDarkMode');
+			if (isDark === null || isDark === 'false') {
+				return false;
+			} else {
+				return true;
+			}
+		}
 	}
 </script>

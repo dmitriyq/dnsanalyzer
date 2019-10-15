@@ -1,8 +1,41 @@
 ﻿<template>
-	<v-container container--fluid>
+	<v-container fluid>
+		<v-row align="start">
+			<v-col cols="12">
+				<p class="text-center subtitle-1">Домены из черного списка у которых больше 10 IP-адресов</p>
+			</v-col>
+		</v-row>
+		<v-row justify="center">
+			<v-col cols="12" md="6">
+				<v-expansion-panels multiple>
+					<v-expansion-panel v-for="domain in domains" :key="domain.domain">
+						<v-expansion-panel-header>
+							<v-container fluid class="pa-0">
+								<v-row>
+									<v-col cols="10" class="pa-0">{{domain.domain}}</v-col>
+									<v-col cols="2" class="pa-0">{{domain.ips.length}} шт.</v-col>
+								</v-row>
+							</v-container>
+						</v-expansion-panel-header>
+						<v-expansion-panel-content>
+							<v-data-table fixed-header
+										  hide-default-footer
+										  :items="domain.ips"
+										  :items-per-page="-1"
+										  item-key="id"
+										  hide-action
+										  :headers="tableHeaders"
+										  >
+
+							</v-data-table>
+						</v-expansion-panel-content>
+					</v-expansion-panel>
+				</v-expansion-panels>
+			</v-col>
+		</v-row>
 		<v-layout row wrap justify-start>
 			<v-flex xs12 class="mb-3">
-				<p class="text-center subheading">Домены из черного списка у которых больше 10 IP-адресов</p>
+				
 			</v-flex>
 			<v-flex xs12>
 				<v-expansion-panels>

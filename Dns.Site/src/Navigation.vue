@@ -57,8 +57,7 @@
 	import Vue from 'vue';
 	import { Component, Prop, PropSync } from 'vue-property-decorator';
 	import Axios from 'axios';
-	import User from './models/user';
-	import Utils from '@/utils/Utils';
+	import IUser from '@/models/user';
 	@Component
 	export default class Navigation extends Vue {
 		@PropSync('navBarState', { type: Boolean, required: true }) public navState: boolean;
@@ -75,8 +74,8 @@
 			{ icon: 'email', title: 'Уведомления', to: '/notification' },
 		];
 
-		get user(): User {
-			return Utils.getUser(this);
+		get user(): IUser {
+			return this.$store.state.user as IUser;
 		}
 
         public isLogged(): boolean {
@@ -91,31 +90,39 @@
         }
 
 		public changeTheme(): void {
-			localStorage.setItem('isDarkMode', String(this.isDarkMode));
 			this.$vuetify.theme.dark = this.isDarkMode;
+			this.$store.dispatch('updateDarkMode', this.isDarkMode);
 		}
 
 		public created() {
-			const isDark = localStorage.getItem('isDarkMode');
-			if (isDark !== null && isDark === 'false') {
-				this.isDarkMode = false;
-			} else {
-				this.isDarkMode = true;
-			}
+
+			this.isDarkMode = this.$store.state.darkMode as boolean;
+
 			this.changeTheme();
 
 			if (!this.isLogged()) {
-                Axios.get('api/account/GetUserInfo')
-                    .then((res) => res.data)
-					.then((data) => {
-						Utils.setUser(this,
-							{ canChangePass: !!data.canChangePass,
-                            name: data.name,
-                            changePassUrl: data.resetPasswordUrl,
-                            logoutUrl: data.logoutUrl,
-                            isDnsAdmin: data.isDnsAdmin,
-                        });
-                    });
+				if (process.env.NODE_ENV === 'development') {
+					this.$store.dispatch('updateUser', {
+						canChangePass: !!false,
+						name: 'Тестович',
+						changePassUrl: '',
+						logoutUrl: '',
+						isDnsAdmin: true,
+					} as IUser);
+				} else {
+					Axios.get('api/account/GetUserInfo')
+						.then((res) => res.data)
+						.then((data) => {
+							this.$store.dispatch('updateUser', {
+								canChangePass: !!data.canChangePass,
+								name: data.name,
+								changePassUrl: data.resetPasswordUrl,
+								logoutUrl: data.logoutUrl,
+								isDnsAdmin: data.isDnsAdmin,
+							} as IUser);
+						});
+				}
+
             }
 		}
 	}

@@ -1,14 +1,18 @@
 ﻿<template>
-	<v-list-tile-title class="height-auto">
-		<v-layout row wrap>
-			<v-flex xs5 wrap class="body-2">
-				{{ title | format }}:
-			</v-flex>
-			<v-flex xs7 wrap class="body-1 text-wrap-word">
-				{{ desc | format }}
-			</v-flex>
-		</v-layout>
-	</v-list-tile-title>
+	<v-list-item class="height-28">
+		<v-list-item-content class="pa-0">
+			<v-container fluid class="pa-0">
+				<v-row no-gutters>
+					<v-col col="5" class="body-2">
+						{{ title | format }}:
+					</v-col>
+					<v-col col="7" class="body-1 text-wrap-word">
+						{{ desc | format }}
+					</v-col>
+				</v-row>
+			</v-container>
+		</v-list-item-content>
+	</v-list-item>
 </template>
 
 <script lang="ts">
@@ -27,7 +31,7 @@ import isValid from 'date-fns/isValid';
 			else if (typeof value === 'string') {
 				if (isValid(new Date(value))) {
 					const date = parseISO(value);
-					return fnsFormat(date, 'DD.MM.YYYY HH:mm');
+					return fnsFormat(date, 'dd.MM.yyyy HH:mm');
 				} else {
 					return value as string;
 				}
@@ -39,7 +43,7 @@ import isValid from 'date-fns/isValid';
 					return 'Нет';
 				}
 			} else if (value instanceof Date) {
-				return fnsFormat(value, 'DD.MM.YYYY HH:mm');
+				return fnsFormat(value, 'dd.MM.yyyy HH:mm');
 			} else if (typeof value === 'number') {
 				return value.toString();
 			} else if (Array.isArray(value)) {
@@ -60,7 +64,7 @@ export default class InfoRow extends Vue {
 		word-break: break-word;
 	}
 
-	.height-auto {
-		height: auto;
+	.height-28 {
+		min-height: 28px;
 	}
 </style>

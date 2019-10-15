@@ -1,11 +1,7 @@
 ﻿import Utils from '@/utils/Utils';
+import IAttackTableFilters from './attack-table-filters';
 
-interface IAttackTableFilters {
-	showDynamic: boolean;
-	showCompleted: boolean;
-}
-
-class DnsLocalStorage {
+export default class DnsLocalStorage {
 	public static getSavedDateRange(): ({ from: Date, to: Date }) {
 		const rangeJson = localStorage.getItem('DNS_DateRange');
 		if (!!rangeJson) {
@@ -46,4 +42,3 @@ class DnsLocalStorage {
 		localStorage.setItem('DNS_TableFilter', json);
 	}
 }
-export { IAttackTableFilters, DnsLocalStorage };

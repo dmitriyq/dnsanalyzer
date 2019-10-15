@@ -8,26 +8,18 @@ import 'es6-shim';
 import './plugins/axios';
 
 import Vue from 'vue';
+import Vuex from 'vuex';
 import 'vuetify/dist/vuetify.min.css';
 import vuetify from '@/plugins/vuetify';
 import App from './App.vue';
 
 import router from './router';
-import Store from '@/models/store';
-
-const store: Store = {
-	user: {
-		canChangePass: false,
-		name: null,
-		changePassUrl: null,
-		logoutUrl: null,
-		isDnsAdmin: false,
-	},
-};
+import store from './store';
 
 const app = new Vue({
 	el: '#app',
 	render: (h) => h(App),
+	store,
 	router,
 	vuetify,
 	data: store,

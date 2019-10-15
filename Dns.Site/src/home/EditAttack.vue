@@ -1,63 +1,69 @@
 ﻿<template>
-	<div style="width:100%;">
-		<v-dialog v-model="dialog" lazy persistent max-width="700px" style="float:right;">
-			<v-btn slot="activator" color="secondary">{{ buttonText }}</v-btn>
-			<v-form v-model="formValid" ref="editStatusForm">
-				<v-card>
-					<v-card-title>
-						<span class="headline">{{ dialogTitle }}</span>
-					</v-card-title>
-					<v-card-text>
-						<v-container grid-list-md>
-							<v-layout wrap align-center justify-space-between row fill-height>
-								<v-flex xs12 v-if="isMultiply" v-for="att in attacks" :key="att.id">
-									<p class="mb-0">
-										<span class="subheading font-weight-bold">
-											Текущий статус {{ att.whiteDomain }} - {{ att.blackDomain }}:
-										</span>
-										<span class="subheading" v-text="getSelectStatus(att.status).text"></span>
-									</p>
-								</v-flex>
-								<v-flex xs12 sm4 v-if="!isMultiply">
-									<span class="subheading font-weight-bold">Текущий статус:</span>
-								</v-flex>
-								<v-flex xs12 sm8 v-if="!isMultiply">
-									<span class="subheading" v-text="getSelectStatus(attackObj.status).text"></span>
-								</v-flex>
-								<v-flex xs12 sm4 v-if="isStatusDlg">
-									<span class="subheading font-weight-bold">Изменить на:</span>
-								</v-flex>
-								<v-flex xs12 sm8 v-if="isStatusDlg">
-									<v-select :items="statusList"
-											  v-model="selectedStatus"
-											  required
-											  :rules="statusRules"
-											  label="Выберите статус"></v-select>
-								</v-flex>
-								<v-flex xs12 sm4>
-									<span class="subheading font-weight-bold">Комментарий:</span>
-								</v-flex>
-								<v-flex xs12 sm8>
-									<v-textarea solo
-												label="Введите комментарий"
-												auto-grow
-												box
-												:rules="commentRules"
-												v-model="comment">
-									</v-textarea>
-								</v-flex>
-							</v-layout>
-						</v-container>
-					</v-card-text>
-					<v-card-actions>
-						<v-spacer></v-spacer>
-						<v-btn color="blue darken-1" flat @click="dialog = false">Закрыть</v-btn>
-						<v-btn color="blue darken-1" flat @click="onSubmit">Сохранить</v-btn>
-					</v-card-actions>
-				</v-card>
-			</v-form>
-		</v-dialog>
-	</div>
+	<v-dialog v-model="dialog" persistent max-width="700px">
+		<template v-slot:activator="{ on }">
+			<v-btn slot="activator" color="secondary" v-on="on">{{ buttonText }}</v-btn>
+		</template>
+		<v-form v-model="formValid" ref="editStatusForm">
+			<v-card>
+				<v-card-title>
+					<span class="headline">{{ dialogTitle }}</span>
+				</v-card-title>
+				<v-card-text>
+					<v-container>
+						<v-row justify="space-between">
+							<v-col cols="12" class="pa-1" v-if="isMultiply" v-for="att in attacks" :key="att.id">
+								<p class="mb-0">
+									<span class="subheading font-weight-bold">
+										Текущий статус {{ att.whiteDomain }} - {{ att.blackDomain }}:
+									</span>
+									<span class="subheading" v-text="getSelectStatus(att.status).text"></span>
+								</p>
+							</v-col>
+						</v-row>
+						<v-row justify="space-between">
+							<v-col cols="12" sm="4" v-if="!isMultiply">
+								<span class="subheading font-weight-bold">Текущий статус:</span>
+							</v-col>
+							<v-col cols="12" sm="8" v-if="!isMultiply">
+								<span class="subheading" v-text="getSelectStatus(attackObj.status).text"></span>
+							</v-col>
+						</v-row>
+						<v-row justify="space-between">
+							<v-col cols="12" sm="4" v-if="isStatusDlg">
+								<span class="subheading font-weight-bold">Изменить на:</span>
+							</v-col>
+							<v-col cols="12" sm="8">
+								<v-select :items="statusList"
+										  v-model="selectedStatus"
+										  required
+										  :rules="statusRules"
+										  label="Выберите статус" />
+							</v-col>
+						</v-row>
+						<v-row justify="space-between">
+							<v-col cols="12" sm="4">
+								<span class="subheading font-weight-bold">Комментарий:</span>
+							</v-col>
+							<v-col cols="12" sm="8">
+								<v-textarea solo
+											label="Введите комментарий"
+											auto-grow
+											filled
+											:rules="commentRules"
+											v-model="comment">
+								</v-textarea>
+							</v-col>
+						</v-row>
+					</v-container>
+				</v-card-text>
+				<v-card-actions>
+					<v-spacer></v-spacer>
+					<v-btn color="info" text @click="dialog = false">Закрыть</v-btn>
+					<v-btn color="success" text @click="onSubmit">Сохранить</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-form>
+	</v-dialog>
 </template>
 
 <script lang="ts">
@@ -169,6 +175,3 @@
 		}
 	}
 </script>
-
-<style scoped>
-</style>

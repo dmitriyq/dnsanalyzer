@@ -225,7 +225,7 @@ namespace Dns.Site.Controllers
 		{
 			await Task.CompletedTask.ConfigureAwait(false);
 			var model = _dnsDb.vSuspectDomains
-				.AsEnumerable()
+				.ToList()
 				.GroupBy(x => x.Domain)
 				.Select(x => new SuspectDomainViewModel
 				{

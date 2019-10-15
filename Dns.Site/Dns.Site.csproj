@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="src\models\attack-table-filters.ts" />
     <None Remove="src\models\health-status.ts" />
     <None Remove="src\plugins\vuetify.ts" />
   </ItemGroup>
