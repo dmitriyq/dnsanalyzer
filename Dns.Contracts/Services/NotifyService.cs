@@ -13,6 +13,7 @@ using Grfc.Library.Common.Extensions;
 using Grfc.Library.Notification.Models;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Dns.Contracts.Services
@@ -37,42 +38,46 @@ namespace Dns.Contracts.Services
 		private const string EMAIL_SUBJECT = "[Система выявления DNS атак]";
 
 		private readonly ILogger<NotifyService> _logger;
-		private readonly DnsDbContext _dbContext;
+		private readonly IServiceProvider _serviceProvider;
 		private readonly string _emailFrom;
 
-		public NotifyService(ILogger<NotifyService> logger, DnsDbContext dbContext, string emailFrom)
+		public NotifyService(ILogger<NotifyService> logger, IServiceProvider serviceProvider, string emailFrom)
 		{
 			_logger = logger;
-			_dbContext = dbContext;
+			_serviceProvider = serviceProvider;
 			_emailFrom = emailFrom;
 		}
 
-		public async Task<NotificationBase> BuildAttackMessage(string user, params int[] attackIds)
+		public NotificationBase BuildAttackMessage(string user, params int[] attackIds)
 		{
 			_logger.LogInformation("Consctructing attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
-			var attacksToNotify = await _dbContext
+			using var scope = _serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
+			var attacksToNotify = db
 				.DnsAttacks
 				.Where(x => attackIds.Contains(x.Id))
 				.Include(x => x.Histories)
-				.ToListAsync().ConfigureAwait(false);
+				.ToList();
 
 			notify.Email = BuildAttackEmailMessage(attacksToNotify);
 			return notify;
 		}
 
-		public async Task<NotificationBase> BuildGroupMessage(string user, params int[] attackIds)
+		public NotificationBase BuildGroupMessage(string user, params int[] attackIds)
 		{
 			_logger.LogInformation("Consctructing group attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
-			List<AttackGroups> attacksToNotify = await _dbContext
+			using var scope = _serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
+			List<AttackGroups> attacksToNotify = db
 				.AttackGroups
 				.Where(x => attackIds.Contains(x.Id))
 				.Include(x => x.GroupHistories)
 				.Include(x => x.Attacks)
-				.ToListAsync().ConfigureAwait(false);
+				.ToList();
 
 			notify.Email = BuildGroupEmailMessage(attacksToNotify);
 			return notify;

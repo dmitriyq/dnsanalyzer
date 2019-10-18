@@ -42,13 +42,13 @@ namespace Dns.Resolver.Analyzer.Messages
 				var attackId = await _analyzeService.UpdateAttackAsync(message).ConfigureAwait(true);
 				if (attackId != null)
 				{
-					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, attackId.Value).ConfigureAwait(true);
+					var redisMsg = _notifyService.BuildAttackMessage(string.Empty, attackId.Value);
 					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
 				}
 				var groupIds = await _analyzeService.UpdateAttackGroupAsync(message).ConfigureAwait(true);
 				if (groupIds.Any())
 				{
-					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, groupIds.ToArray()).ConfigureAwait(true);
+					var redisMsg = _notifyService.BuildAttackMessage(string.Empty, groupIds.ToArray());
 					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
 				}
 			}

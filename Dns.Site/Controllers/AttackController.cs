@@ -77,7 +77,7 @@ namespace Dns.Site.Controllers
 					await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 
-					var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attack.Id).ConfigureAwait(false);
+					var attackMessage = _notifyService.BuildAttackMessage(string.Empty, attack.Id);
 					await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
 
 					return new JsonResult("Ok");
@@ -135,7 +135,7 @@ namespace Dns.Site.Controllers
 					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 				}
 
-				var attackMessage = await _notifyService.BuildAttackMessage(string.Empty, attacks.Select(x => x.Id).ToArray()).ConfigureAwait(false);
+				var attackMessage = _notifyService.BuildAttackMessage(string.Empty, attacks.Select(x => x.Id).ToArray());
 				await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
 
 				return new JsonResult("Ok");

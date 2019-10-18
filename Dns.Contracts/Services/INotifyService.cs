@@ -8,7 +8,7 @@ namespace Dns.Contracts.Services
 {
 	public interface INotifyService
 	{
-		Task<NotificationBase> BuildAttackMessage(string user, params int[] attackIds);
-		Task<NotificationBase> BuildGroupMessage(string user, params int[] attackIds);
+		NotificationBase BuildAttackMessage(string user, params int[] attackIds);
+		NotificationBase BuildGroupMessage(string user, params int[] attackIds);
 	}
 }

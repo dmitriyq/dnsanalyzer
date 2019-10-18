@@ -46,7 +46,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					var updatedAttackIds = await _analyzeService.CheckForExpiredAttacksAsync().ConfigureAwait(false);
 					if (updatedAttackIds.Any())
 					{
-						var msg = await _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray()).ConfigureAwait(false);
+						var msg = _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray());
 						await _redis.PublishAsync(_notifyChannel, msg.ProtoSerialize()).ConfigureAwait(false);
 					}
 					_logger.LogInformation($"Job completed.");

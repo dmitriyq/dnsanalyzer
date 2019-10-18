@@ -84,9 +84,8 @@ namespace Dns.Resolver.Analyzer
 					services.AddTransient<INotifyService, NotifyService>(sp =>
 					{
 						var logger = sp.GetRequiredService<ILogger<NotifyService>>();
-						var db = sp.GetRequiredService<DnsDbContext>();
 						var emailFrom = EnvironmentExtensions.GetVariable(NOTIFICATION_EMAIL_FROM);
-						return new NotifyService(logger, db, emailFrom);
+						return new NotifyService(logger, sp, emailFrom);
 					});
 					services.AddTransient<ICacheService, CacheService>(sp =>
 					{
