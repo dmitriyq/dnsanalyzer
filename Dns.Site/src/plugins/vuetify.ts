@@ -2,8 +2,15 @@ import Vue from 'vue';
 import Vuetify from 'vuetify/lib';
 import colors from 'vuetify/lib/util/colors';
 import ru from 'vuetify/src/locale/ru';
+// @ts-ignore
+import { Ripple, Touch } from 'vuetify/lib/directives';
 
-Vue.use(Vuetify);
+Vue.use(Vuetify, {
+	directives: {
+		Ripple,
+		Touch,
+	},
+});
 
 const vuetify = new Vuetify({
 	icons: {
