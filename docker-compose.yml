@@ -96,7 +96,7 @@ services:
     env_file:
       - .env
     deploy:
-      replicas: 2
+      replicas: 1
       labels:
         traefik.frontend.rule: "Host:${SITE_HOSTNAME:-dns.cmim.ru}"
         traefik.enable: "true"

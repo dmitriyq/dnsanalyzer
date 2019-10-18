@@ -89,12 +89,11 @@ namespace Dns.Site
 			services.AddControllersWithViews()
 				.AddNewtonsoftJson();
 
-			services.AddSignalR(opts => {
+			services.AddSignalR(opts =>
+			{
 				opts.EnableDetailedErrors = true;
 				opts.MaximumReceiveMessageSize = int.MaxValue;
-			})
-			.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
-					opt.Configuration.ChannelPrefix = "Dns_Sote_SignalR_");
+			});
 
 			if (!EnvironmentExtensions.GetVariable(Program.DISABLE_AUTH).ToBool())
 			{

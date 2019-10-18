@@ -74,14 +74,10 @@ namespace Dns.Resolver.Analyzer
 
 					services.AddEasyNetQ(EnvironmentExtensions.GetVariable(RABBITMQ_CONNECTION));
 
-					services.AddDbContext<DnsDbContext>(optionsAction: opt =>
-						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")),
-						contextLifetime: ServiceLifetime.Transient,
-						optionsLifetime: ServiceLifetime.Transient);
-					services.AddDbContext<DnsReadOnlyDbContext>(optionsAction: opt =>
-						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)),
-						contextLifetime: ServiceLifetime.Transient,
-						optionsLifetime: ServiceLifetime.Transient);
+					services.AddDbContextPool<DnsDbContext>(optionsAction: opt =>
+						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
+					services.AddDbContextPool<DnsReadOnlyDbContext>(optionsAction: opt =>
+						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
 
 					services.AddTransient<INotifyService, NotifyService>(sp =>
 					{
