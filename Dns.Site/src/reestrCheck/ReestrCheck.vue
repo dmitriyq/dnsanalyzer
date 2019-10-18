@@ -1,65 +1,42 @@
 ﻿<template>
-	<v-container container--fluid grid-list-md>
-		<v-layout align-start row wrap container--fluid>
-			<v-flex xs12>
+	<v-container fluid>
+		<v-row>
+			<v-col cols="12">
 				<p class="text-center font-weight-bold">Поиск в Реестре</p>
-			</v-flex>
-			<v-flex xs12 sm6 align-self-baseline>
+			</v-col>
+		</v-row>
+		<v-row>
+			<v-col xs="12" sm="6">
 				<v-text-field v-model="search"
 							  label="Домен / IP"
 							  clearable></v-text-field>
-			</v-flex>
-			<v-flex xs6 sm3>
+			</v-col>
+			<v-col xs="6" sm="3">
 				<v-btn left color="info" :disabled="canSearch" @click="searchReestr">Поиск</v-btn>
-			</v-flex>
-			<v-flex xs6 sm3>
+			</v-col>
+			<v-col xs="6" sm="3">
 				<v-checkbox label="Нечеткий поиск"
 							v-model="containsSearch"></v-checkbox>
-			</v-flex>
-			<v-flex xs12>
-				<v-data-table :headers="tableHeaders"
-							  :items="reestr"
+			</v-col>
+		</v-row>
+		<v-row>
+			<v-col cols="12">
+				<v-data-table class="elevation-1"
+							  fixed-header
 							  :loading="loading"
-							  :server-items-length="pagination.totalItems"
-							  :rowsPerPage="pagination.rowsPerPage"
-							  :page="pagination.page">
-					<template slot="items" slot-scope="props">
-						<tr :class="highLightRow(props.index) + ' rowHover'">
-							<td class="text-center">{{ props.item.created }}</td>
-							<td class="text-center">{{ props.item.domain }}</td>
-							<td class="text-left">{{ props.item.urlRkn }}</td>
-							<td class="text-center">{{ props.item.ip }}</td>
-							<td class="text-center">{{ props.item.subnet }}</td>
-							<td class="text-left">{{ props.item.urlMinjust }}</td>
-						</tr>
-					</template>
-					<template slot="no-data">
-						<v-alert :value="true" color="primary" outlined>
-							Ничего не найдено
-						</v-alert>
-					</template>
+							  loading-text="Получение данных"
+							  locale="ru-RU"
+							  no-data-text="Нет данных"
+							  no-results-text="Не найдено данных, подходящих под условие запроса"
+							  :headers="tableHeaders"
+							  :items="reestr"
+							  item-key="idRkn"
+							  :items-per-page="25"
+							  :footer-props="tableFooterOpts">
+					<v-progress-linear slot="progress" color="blue" indeterminate/>
 				</v-data-table>
-				<div class="text-center" v-if="totalPages > 1">
-					<v-container container--fluid class="p-0">
-						<v-layout justify-center>
-							<v-flex xs12>
-								<v-card>
-									<v-card-text>
-										<v-layout justify-center wrap row>
-											<v-flex xs12>
-												<v-pagination v-model="pagination.page"
-															  color="green darken-1"
-															  :length="totalPages"></v-pagination>
-											</v-flex>
-										</v-layout>
-									</v-card-text>
-								</v-card>
-							</v-flex>
-						</v-layout>
-					</v-container>
-				</div>
-			</v-flex>
-		</v-layout>
+			</v-col>
+		</v-row>
 	</v-container>
 </template>
 
@@ -67,8 +44,7 @@
 import Vue from 'vue';
 import { Component } from 'vue-property-decorator';
 import IDataTableHeaders from '@/models/data-table';
-import IReestrRecord from '@/models/reestr-record';
-import { IPagination } from '@/models/select-model';
+import IReestrRecord from '@/reestrCheck/reestr-record';
 import Axios from 'axios';
 
 @Component
@@ -85,17 +61,18 @@ export default class ReestrCheck extends Vue {
 		{ text: 'Подсеть', value: 'subnet', align: 'center' },
 		{ text: 'Минюст URL', value: 'urlMinjust', width: '60px', align: 'center' },
 	];
-	public pagination: IPagination = {
-		totalItems: 0,
-		rowsPerPage: 10,
-		page: 1,
+
+	public tableFooterOpts = {
+		'showFirstLastPage': true,
+		'show-current-page': true,
+		'items-per-page-all-text': 'Все',
+		'items-per-page-options': [10, 25, 100, -1],
+		'items-per-page-text': 'Кол-во на странице',
+		'page-text': 'записей',
 	};
 
 	public get canSearch(): boolean {
 		return this.search.trim().length <= 0;
-	}
-	public get totalPages(): number {
-		return Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage);
 	}
 
 	public searchReestr(): void {
@@ -106,15 +83,6 @@ export default class ReestrCheck extends Vue {
 					this.loading = false;
 					this.reestr = resp.data as IReestrRecord[];
 				});
-	}
-
-	public highLightRow(id: number): string {
-		// tslint:disable-next-line:no-bitwise
-		if (id & 1) {
-			return 'blue lighten-5';
-		} else {
-			return '';
-		}
 	}
 
 	public created() {

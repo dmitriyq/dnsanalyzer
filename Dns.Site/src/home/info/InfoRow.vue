@@ -19,7 +19,8 @@
 
 import Vue from 'vue';
 import { Component, Prop } from 'vue-property-decorator';
-import { format as fnsFormat, parseISO } from 'date-fns';
+import format from 'date-fns/format';
+import parseISO from 'date-fns/parseISO';
 import isValid from 'date-fns/isValid';
 
 @Component({
@@ -31,7 +32,7 @@ import isValid from 'date-fns/isValid';
 			else if (typeof value === 'string') {
 				if (isValid(new Date(value))) {
 					const date = parseISO(value);
-					return fnsFormat(date, 'dd.MM.yyyy HH:mm');
+					return format(date, 'dd.MM.yyyy HH:mm');
 				} else {
 					return value as string;
 				}
@@ -43,7 +44,7 @@ import isValid from 'date-fns/isValid';
 					return 'Нет';
 				}
 			} else if (value instanceof Date) {
-				return fnsFormat(value, 'dd.MM.yyyy HH:mm');
+				return format(value, 'dd.MM.yyyy HH:mm');
 			} else if (typeof value === 'number') {
 				return value.toString();
 			} else if (Array.isArray(value)) {

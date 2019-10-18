@@ -36,7 +36,7 @@
 <script lang="ts">
 	import Vue from 'vue';
 	import { Component, PropSync } from 'vue-property-decorator';
-	import IAttackTableFilters from '@/models/attack-table-filters';
+	import IAttackTableFilters from '@/home/attack-table-filters';
 	@Component({
 		filters: {
 			boolYesNo(val: boolean) {

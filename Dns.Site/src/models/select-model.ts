@@ -2,11 +2,3 @@
 	text: string;
 	value: T;
 }
-
-interface IPagination {
-	page: number;
-	rowsPerPage: number;
-	totalItems: number;
-}
-
-export { IPagination };

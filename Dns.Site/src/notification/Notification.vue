@@ -1,44 +1,46 @@
 ﻿<template>
-	<v-container container--fluid>
-		<v-form v-model="formValid" ref="notifyForm">
-			<v-layout row wrap justify-start fill-height>
-				<v-flex xs12>
-					<p class="display-1 text-center">Настройки уведомлений</p>
-				</v-flex>
-				<v-flex xs12 sm3>
-					<v-layout xs6 row wrap justify-start v-for="item in notifies"
-							  :key="item.id">
-						<v-flex xs10>
+	<v-form v-model="formValid" ref="notifyForm">
+		<v-container fluid>
+			<v-row>
+				<v-col cols="12">
+					<p class="text-center subheading">Настройки уведомлений</p>
+				</v-col>
+			</v-row>
+			<v-row v-for="item in notifies" :key="item.id">
+				<v-col sm="12" md="6">
+					<v-row>
+						<v-col cols="8">
 							<v-text-field v-model="item.value"
 										  placeholder="E-mail или телефон"
 										  :rules="noifyRules"
 										  solo>
 							</v-text-field>
-						</v-flex>
-						<v-flex xs2>
+						</v-col>
+						<v-col cols="4">
 							<v-btn text outlined color="error" icon left @click="delRow(item.id)">
 								<v-icon>delete</v-icon>
 							</v-btn>
-						</v-flex>
-					</v-layout>
-				</v-flex>
-				<v-flex sm9></v-flex>
-				<v-flex xs12 sm3>
-					<v-layout xs6 row wrap align-center justify-space-between>
-						<v-flex xs6>
+						</v-col>
+					</v-row>
+				</v-col>
+			</v-row>
+			<v-row>
+				<v-col sm="12" md="6">
+					<v-row>
+						<v-col cols="8">
 							<v-btn text outlined color="primary" icon @click="addRow">
 								<v-icon>add</v-icon>
 							</v-btn>
-						</v-flex>
-						<v-flex xs6>
+						</v-col>
+						<v-col cols="4">
 							<v-btn text outlined color="primary" @click="saveNotify">
 								Сохранить
 							</v-btn>
-						</v-flex>
-					</v-layout>
-				</v-flex>
-			</v-layout>
-		</v-form>
+						</v-col>
+					</v-row>
+				</v-col>
+			</v-row>
+		</v-container>
 		<v-snackbar v-model="snackbar"
 					top
 					multi-line
@@ -46,13 +48,12 @@
 					:timeout="2000">
 			<p class="title text-center">Настройки уведомлений сохранены.</p>
 		</v-snackbar>
-	</v-container>
+	</v-form>
 </template>
 
 <script lang="ts">
     import Vue from 'vue';
     import { Component } from 'vue-property-decorator';
-    import ISelectModel from '@/models/select-model';
     import Axios from 'axios';
 
     @Component

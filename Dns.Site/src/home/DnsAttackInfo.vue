@@ -26,7 +26,7 @@
 	import IpBlock from '@/home/info/IpBlock.vue';
 	import DomainBlock from '@/home/info/DomainBlock.vue';
 	import { Component, Prop, Watch } from 'vue-property-decorator';
-	import { IDnsAttackInfo } from '@/models/dns-attack';
+	import { IDnsAttackInfo } from '@/home/dns-attack';
 	import { EventBus } from '@/utils/event-bus';
 	import ISelectModel from '@/models/select-model';
 	import Axios from 'axios';

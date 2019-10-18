@@ -46,13 +46,13 @@
 	import EditAttack from '@/home/EditAttack.vue';
 	import InfoContainer from '@/home/InfoContainer.vue';
 	import AttackTable from '@/home/AttackTable.vue';
-	import DnsAttack from '@/models/dns-attack';
-	import { format as fnsFormat } from 'date-fns';
+	import DnsAttack from '@/home/dns-attack';
+	import format from 'date-fns/format';
 	import Utils from '@/utils/Utils';
 	import * as signalR from '@microsoft/signalr';
 	import { EventBus } from '@/utils/event-bus';
 	import DnsLocalStorage from '@/models/local-storage';
-	import IAttackTableFilters from '@/models/attack-table-filters';
+	import IAttackTableFilters from '@/home/attack-table-filters';
 
 	@Component({
 		components: {
@@ -66,7 +66,7 @@
 				return Utils.getStatusIcon(status);
 			},
 			formatDate(value: Date) {
-				return fnsFormat(value, 'DD.MM.YYYY HH:mm');
+				return format(value, 'DD.MM.YYYY HH:mm');
 			},
 		},
 	})

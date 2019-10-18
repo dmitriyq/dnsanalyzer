@@ -2,7 +2,7 @@
 	<v-app>
 		<Navigation :navBarState="navigationState"></Navigation>
 		<v-app-bar class="primary white--text" app :clipped-left="true">
-			<v-app-bar-nav-icon class="white--text" @click.stop="navigationState = !navigationState"></v-app-bar-nav-icon>
+			<v-app-bar-nav-icon class="white--text" @click.stop="navigationState = !navigationState"/>
 			<v-toolbar-title>DNS анализатор</v-toolbar-title>
 		</v-app-bar>
 		<v-content>

@@ -2,7 +2,7 @@
 	<v-container fluid>
 		<v-row>
 			<v-col cols="12" class="pa-0">
-				<p class="text-center headline">Белый список</p>
+				<p class="text-center subheading">Белый список</p>
 			</v-col>
 		</v-row>
 		<v-row>

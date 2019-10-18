@@ -42,10 +42,10 @@
 <script lang="ts">
 	import Vue from 'vue';
 	import { Component, Prop, PropSync, Watch } from 'vue-property-decorator';
-	import DnsAttack from '@/models/dns-attack';
+	import DnsAttack from '@/home/dns-attack';
 	import Utils from '@/utils/Utils';
 	import IDataTableHeaders from '@/models/data-table';
-	import IAttackTableFilters from '@/models/attack-table-filters';
+	import IAttackTableFilters from '@/home/attack-table-filters';
 
 	@Component({
 		filters: {

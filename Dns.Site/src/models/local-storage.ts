@@ -1,5 +1,5 @@
 ﻿import Utils from '@/utils/Utils';
-import IAttackTableFilters from './attack-table-filters';
+import IAttackTableFilters from '../home/attack-table-filters';
 
 export default class DnsLocalStorage {
 	public static getSavedDateRange(): ({ from: Date, to: Date }) {

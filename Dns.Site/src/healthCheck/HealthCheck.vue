@@ -1,27 +1,21 @@
 ﻿<template>
-	<v-container container--fluid>
-		<v-layout row wrap justify-start>
-			<v-flex xs12 class="mb-3">
+	<v-container fluid>
+		<v-row>
+			<v-col cols="12">
 				<p class="text-center subheading">Статус компонентов системы</p>
-			</v-flex>
-			<v-flex xs12>
+			</v-col>
+		</v-row>
+		<v-row>
+			<v-col cols="12">
 				<v-data-table :headers="tableHeaders"
 							  :items="statuses"
+							  no-data-text="Нет данных"
+							  no-results-text="Не найдено данных, подходящих под условие запроса"
 							  hide-default-footer
-							  :rowsPerPage="pagination.rowsPerPage">
-					<template slot="items" slot-scope="props">
-						<td class="text-center">{{ props.item.service }}</td>
-						<td class="text-center">{{ props.item.creationDate }}</td>
-						<td class="text-left">{{ props.item.currentAction }}</td>
-					</template>
-					<template slot="no-data">
-						<v-alert :value="true" color="primary" outlined>
-							Ничего не найдено
-						</v-alert>
-					</template>
+							  :items-per-page="-1">
 				</v-data-table>
-			</v-flex>
-		</v-layout>
+			</v-col>
+		</v-row>
 	</v-container>
 </template>
 
@@ -30,7 +24,7 @@
 	import { Component } from 'vue-property-decorator';
 	import IDataTableHeaders from '@/models/data-table';
 	import * as signalR from '@microsoft/signalr';
-	import { HealthStatus } from '@/models/health-status';
+	import { HealthStatus } from '@/healthCheck/health-status';
 
 	@Component({})
 	export default class HealthCheck extends Vue {
@@ -39,9 +33,9 @@
 		public panelDomains: boolean[] = [];
 		public pagination = { rowsPerPage: -1 };
 		public tableHeaders: IDataTableHeaders[] = [
-			{ text: 'Компонент', value: 'service', align: 'left', width: '200px' },
-			{ text: 'Время', value: 'creationDate', align: 'left', width: '150px' },
-			{ text: 'Статус', value: 'currentAction', align: 'left' },
+			{ text: 'Компонент', value: 'service', align: 'center', width: '250px' },
+			{ text: 'Время', value: 'creationDate', align: 'center', width: '150px' },
+			{ text: 'Статус', value: 'currentAction', align: 'center' },
 		];
 
 		public created() {

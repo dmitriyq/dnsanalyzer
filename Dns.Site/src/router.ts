@@ -2,11 +2,10 @@ import Vue from 'vue';
 import Router, { Route } from 'vue-router';
 
 import Home from './home/Home.vue';
-import DomainCheck from './domainCheck/DomainCheck.vue';
 import Notification from './notification/Notification.vue';
 import DnsAttackInfo from './home/DnsAttackInfo.vue';
 import ReestrCheck from './reestrCheck/ReestrCheck.vue';
-import Stats from './stats/Stats.vue';
+import StatTables from './stats/StatTables.vue';
 import Suspect from './suspect/Suspect.vue';
 import Export from './export/Export.vue';
 import WhiteList from './whiteList/WhiteList.vue';
@@ -29,10 +28,6 @@ const routes = [
 		],
 	},
 	{
-		path: '/domainCheck',
-		component: DomainCheck,
-	},
-	{
 		path: '/reestrCheck',
 		component: ReestrCheck,
 	},
@@ -42,7 +37,7 @@ const routes = [
 	},
 	{
 		path: '/stat',
-		component: Stats,
+		component: StatTables,
 	},
 	{
 		path: '/suspect',

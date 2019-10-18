@@ -69,7 +69,7 @@
 <script lang="ts">
 	import Vue from 'vue';
 	import { Component, Prop, Watch } from 'vue-property-decorator';
-	import IDnsAttack, { IDnsAttackInfo } from '@/models/dns-attack';
+	import IDnsAttack, { IDnsAttackInfo } from '@/home/dns-attack';
 	import SelectModel from '@/models/select-model';
 	import Utils from '@/utils/Utils';
 	import { EventBus } from '@/utils/event-bus';

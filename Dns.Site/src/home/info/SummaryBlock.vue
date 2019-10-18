@@ -64,7 +64,7 @@
 	import StatusRow from '@/home/info/StatusRow.vue';
 	import EditAttack from '@/home/EditAttack.vue';
 	import { Component, Prop } from 'vue-property-decorator';
-	import { IDnsAttackInfo } from '@/models/dns-attack';
+	import { IDnsAttackInfo } from '@/home/dns-attack';
 	import Utils from '@/utils/Utils';
 	import ISelectModel from '@/models/select-model';
 	import Axios from 'axios';

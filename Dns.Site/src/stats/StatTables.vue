@@ -1,30 +1,24 @@
 ﻿<template>
-	<v-layout row wrap justify-start>
-		<v-flex sm6 xs12>
-			<p style="font-size:16px;text-align:center">Статистика по атакам</p>
-			<v-data-table class="elevation-1"
-						  hide-default-footer
-						  :headers="theaders"
-						  :items="groups">
-				<template slot="items" slot-scope="props">
-					<td class="text-center">{{ props.item.name }}</td>
-					<td class="text-center">{{ props.item.count }}</td>
-				</template>
-			</v-data-table>
-		</v-flex>
-		<v-flex sm6 xs12>
-			<p style="font-size:16px;text-align:center">Статистика по IP адресам</p>
-			<v-data-table class="elevation-1"
-						  hide-default-footer
-						  :headers="theaders"
-						  :items="attacks">
-				<template slot="items" slot-scope="props">
-					<td class="text-center">{{ props.item.name }}</td>
-					<td class="text-center">{{ props.item.count }}</td>
-				</template>
-			</v-data-table>
-		</v-flex>
-	</v-layout>
+	<v-container fluid>
+		<v-row>
+			<v-col xs="12" sm="6">
+				<p style="font-size:16px;text-align:center">Статистика по атакам</p>
+				<v-data-table class="elevation-1"
+							  hide-default-footer
+							  :headers="theaders"
+							  :items="groups">
+				</v-data-table>
+			</v-col>
+			<v-col xs="12" sm="6">
+				<p style="font-size:16px;text-align:center">Статистика по IP адресам</p>
+				<v-data-table class="elevation-1"
+							  hide-default-footer
+							  :headers="theaders"
+							  :items="attacks">
+				</v-data-table>
+			</v-col>
+		</v-row>
+	</v-container>
 </template>
 
 <script lang="ts">

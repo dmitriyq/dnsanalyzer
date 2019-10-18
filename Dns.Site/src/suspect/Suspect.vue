@@ -65,7 +65,7 @@
 	import Vue from 'vue';
 	import { Component } from 'vue-property-decorator';
 	import Axios from 'axios';
-	import { ISuspectDomain } from '@/models/suspect-domain';
+	import { ISuspectDomain } from '@/suspect/suspect-domain';
 	import IDataTableHeaders from '@/models/data-table';
 
 	@Component({})

@@ -53,7 +53,7 @@
 	import InfoRow from '@/home/info/InfoRow.vue';
 	import StatusRow from '@/home/info/StatusRow.vue';
 	import { Component, Prop } from 'vue-property-decorator';
-	import { IDnsAttackInfo, IAttackInfo } from '@/models/dns-attack';
+	import { IDnsAttackInfo, IAttackInfo } from '@/home/dns-attack';
 	import Utils from '@/utils/Utils';
 	import ISelectModel from '../../models/select-model';
 	import Axios from 'axios';

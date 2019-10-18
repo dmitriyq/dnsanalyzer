@@ -48,7 +48,7 @@
 	import Vue from 'vue';
 	import InfoRow from '@/home/info/InfoRow.vue';
 	import { Component, Prop } from 'vue-property-decorator';
-	import { IDomainInfo } from '@/models/dns-attack';
+	import { IDomainInfo } from '@/home/dns-attack';
 	import ISelectModel from '../../models/select-model';
 
 	@Component({
