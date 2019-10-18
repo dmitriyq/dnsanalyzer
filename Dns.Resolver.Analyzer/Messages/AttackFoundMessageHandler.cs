@@ -36,20 +36,20 @@ namespace Dns.Resolver.Analyzer.Messages
 		public async Task Handle(AttackFoundMessage message)
 		{
 			_logger.LogInformation($"Handle message {message.WhiteDomain} - {message.BlackDomain}");
-			await SendHealthCheckAsync($"Обновление атаки [{message.WhiteDomain} - {message.BlackDomain} - {message.Ip}]");
-			if (!await _analyzeService.IsExcludedAsync(message).ConfigureAwait(false))
+			await SendHealthCheckAsync($"Обновление атаки [{message.WhiteDomain} - {message.BlackDomain} - {message.Ip}]").ConfigureAwait(true);
+			if (!await _analyzeService.IsExcludedAsync(message).ConfigureAwait(true))
 			{
-				var attackId = await _analyzeService.UpdateAttackAsync(message).ConfigureAwait(false);
+				var attackId = await _analyzeService.UpdateAttackAsync(message).ConfigureAwait(true);
 				if (attackId != null)
 				{
-					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, attackId.Value).ConfigureAwait(false);
-					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(false);
+					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, attackId.Value).ConfigureAwait(true);
+					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
 				}
-				var groupIds = await _analyzeService.UpdateAttackGroupAsync(message).ConfigureAwait(false);
+				var groupIds = await _analyzeService.UpdateAttackGroupAsync(message).ConfigureAwait(true);
 				if (groupIds.Any())
 				{
-					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, groupIds.ToArray()).ConfigureAwait(false);
-					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(false);
+					var redisMsg = await _notifyService.BuildAttackMessage(string.Empty, groupIds.ToArray()).ConfigureAwait(true);
+					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
 				}
 			}
 		}

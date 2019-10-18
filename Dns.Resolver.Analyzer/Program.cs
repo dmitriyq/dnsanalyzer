@@ -110,7 +110,7 @@ namespace Dns.Resolver.Analyzer
 						var intervals = (expire: TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL))),
 							closing: TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_CLOSE_INTERVAL))),
 							falsePositive: TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_FALSE_POSITIVE_INTERVAL))));
-						return new AnalyzeService(dbContext, readOnlyDbContext, logger, cache,
+						return new AnalyzeService(sp, logger, cache,
 							expireInterval: intervals.expire,
 							closingInterval: intervals.closing,
 							falsePositiveInterval: intervals.falsePositive);
