@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Dns.Contracts.Messages;
 using Dns.Contracts.Services;
 using Dns.DAL;
@@ -39,6 +40,7 @@ namespace Dns.Resolver.Analyzer
 
 		public static void Main(string[] args)
 		{
+			ThreadPool.SetMinThreads(50, 150);
 			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
 				entryPointArgs: args,
 				requiredEnvVars: new string[]

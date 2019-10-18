@@ -40,7 +40,7 @@ services:
       - redis-net
       - rabbitmq_rabbitmq-net
     deploy:
-      replicas: 1
+      replicas: 5
 
   resolver-blacklist:
     image: ${RESOLVER_BLACKLIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-blacklist}
