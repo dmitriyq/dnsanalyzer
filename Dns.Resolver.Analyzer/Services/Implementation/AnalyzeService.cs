@@ -40,7 +40,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		public async Task<bool> IsExcludedAsync(AttackFoundMessage attack)
 		{
 			using var scope = _serviceProvider.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<DnsReadOnlyDbContext>();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 			var isExcluded = await db.DomainExcludedNames
 				.AnyAsync(x => x.BlackDomain == attack.BlackDomain && x.WhiteDomain == attack.WhiteDomain);
 			return isExcluded;

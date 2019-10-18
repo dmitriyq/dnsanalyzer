@@ -76,8 +76,8 @@ namespace Dns.Resolver.Analyzer
 
 					services.AddDbContextPool<DnsDbContext>(optionsAction: opt =>
 						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
-					services.AddDbContextPool<DnsReadOnlyDbContext>(optionsAction: opt =>
-						opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
+					//services.AddDbContextPool<DnsReadOnlyDbContext>(optionsAction: opt =>
+					//	opt.UseNpgsql(EnvironmentExtensions.GetVariable(PG_CONNECTION_STRING_READ)));
 
 					services.AddTransient<INotifyService, NotifyService>(sp =>
 					{
@@ -98,8 +98,6 @@ namespace Dns.Resolver.Analyzer
 					});
 					services.AddTransient<IAnalyzeService, AnalyzeService>(sp =>
 					{
-						var dbContext = sp.GetRequiredService<DnsDbContext>();
-						var readOnlyDbContext = sp.GetRequiredService<DnsReadOnlyDbContext>();
 						var logger = sp.GetRequiredService<ILogger<AnalyzeService>>();
 						var cache = sp.GetRequiredService<ICacheService>();
 
