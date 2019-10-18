@@ -6,7 +6,7 @@ namespace Dns.DAL
 {
 	public class DnsDbContext : DbContext
 	{
-		public DnsDbContext()
+		protected DnsDbContext()
 		{
 		}
 

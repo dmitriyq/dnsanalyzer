@@ -11,7 +11,7 @@ namespace Dns.DAL
 	{
 		private const string READ_ONLY_ERROR = "This context is read-only.";
 
-		public DnsReadOnlyDbContext()
+		protected DnsReadOnlyDbContext()
 		{
 		}
 
