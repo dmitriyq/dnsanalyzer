@@ -40,10 +40,14 @@ namespace Dns.Site
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<DnsDbContext>(opt =>
-				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")));
-			services.AddDbContext<DnsReadOnlyDbContext>(opt =>
-				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_READ)));
+			services.AddDbContext<DnsDbContext>(optionsAction: opt =>
+				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_WRITE), dbOpt => dbOpt.MigrationsAssembly("Dns.DAL")),
+				contextLifetime: ServiceLifetime.Transient,
+				optionsLifetime: ServiceLifetime.Transient);
+			services.AddDbContext<DnsReadOnlyDbContext>(optionsAction: opt =>
+				opt.UseNpgsql(EnvironmentExtensions.GetVariable(Program.PG_CONNECTION_STRING_READ)),
+				contextLifetime: ServiceLifetime.Transient,
+				optionsLifetime: ServiceLifetime.Transient);
 
 			services.AddSingleton<ConnectionMultiplexer>(__ =>
 			{
@@ -85,8 +89,11 @@ namespace Dns.Site
 			services.AddControllersWithViews()
 				.AddNewtonsoftJson();
 
-			services.AddSignalR(opts => opts.EnableDetailedErrors = true)
-				.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
+			services.AddSignalR(opts => {
+				opts.EnableDetailedErrors = true;
+				opts.MaximumReceiveMessageSize = int.MaxValue;
+			})
+			.AddStackExchangeRedis(EnvironmentExtensions.GetVariable(Program.REDIS_CONNECTION), opt =>
 					opt.Configuration.ChannelPrefix = "Dns_Sote_SignalR_");
 
 			if (!EnvironmentExtensions.GetVariable(Program.DISABLE_AUTH).ToBool())
