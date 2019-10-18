@@ -52,7 +52,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			bool needNotify = false;
 			Attacks? storedAttack = null;
 			using var scope = _serviceProvider.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<DnsReadOnlyDbContext>();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 
 			var attacks = db.DnsAttacks.Include(x => x.AttackGroup);
 
@@ -144,7 +144,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		public async Task<IEnumerable<int>> UpdateAttackGroupAsync(AttackFoundMessage attack)
 		{
 			using var scope = _serviceProvider.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<DnsReadOnlyDbContext>();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 
 			var completedAttack = new List<AttackGroups>();
 			var attackGroups = await db.AttackGroups
@@ -235,7 +235,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		public async Task<IEnumerable<int>> CheckForExpiredAttacksAsync()
 		{
 			using var scope = _serviceProvider.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<DnsReadOnlyDbContext>();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 
 			var changedAttackIds = new List<int>();
 
