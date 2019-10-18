@@ -127,8 +127,9 @@ namespace Dns.Resolver.Analyzer
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
 						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
+						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
-						return new AttackFoundMessageHandler(logger, analyze, notify, redis, notifyChannel);
+						return new AttackFoundMessageHandler(logger, analyze, notify, redis, messageBus, notifyChannel);
 					});
 				},
 				beforeHostStartAction: services =>

@@ -80,8 +80,7 @@ namespace Dns.Site
 				opts.InstanceName = typeof(Dns.Site.Startup).Namespace;
 			});
 
-			services.AddMessageBus(EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION));
-			services.AddSingleton<IMessageQueue, MessageQueueEasyNetQ>();
+			services.AddEasyNetQ(EnvironmentExtensions.GetVariable(Program.RABBITMQ_CONNECTION));
 
 			services.AddControllersWithViews()
 				.AddNewtonsoftJson();

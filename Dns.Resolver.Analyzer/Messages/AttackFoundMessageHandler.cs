@@ -20,20 +20,23 @@ namespace Dns.Resolver.Analyzer.Messages
 		private readonly INotifyService _notifyService;
 		private readonly IDatabase _redis;
 		private readonly string _notifyChannel;
+		private readonly IMessageQueue _messageQueue;
 
 		public AttackFoundMessageHandler(ILogger<AttackFoundMessageHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
-			ConnectionMultiplexer redis, string notifyChannel)
+			ConnectionMultiplexer redis, IMessageQueue messageQueue, string notifyChannel)
 		{
 			_logger = logger;
 			_analyzeService = analyzeService;
 			_notifyService = notifyService;
 			_redis = redis.GetDatabase();
+			_messageQueue = messageQueue;
 			_notifyChannel = notifyChannel;
 		}
 
 		public async Task Handle(AttackFoundMessage message)
 		{
 			_logger.LogInformation($"Handle message {message.WhiteDomain} - {message.BlackDomain}");
+			await SendHealthCheckAsync($"Обновление атаки [{message.WhiteDomain} - {message.BlackDomain} - {message.Ip}]");
 			if (!await _analyzeService.IsExcludedAsync(message).ConfigureAwait(false))
 			{
 				var attackId = await _analyzeService.UpdateAttackAsync(message).ConfigureAwait(false);
@@ -50,5 +53,8 @@ namespace Dns.Resolver.Analyzer.Messages
 				}
 			}
 		}
+
+		private Task SendHealthCheckAsync(string action)
+			=> _messageQueue.PublishAsync(new DnsAnalyzerHealthCheckMessage(typeof(Program).Namespace!, action));
 	}
 }
