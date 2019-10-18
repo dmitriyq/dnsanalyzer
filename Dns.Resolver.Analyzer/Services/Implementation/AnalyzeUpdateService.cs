@@ -33,16 +33,13 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 
 		public async Task RunJobAsync()
 		{
-			_logger.LogInformation($"Update job has scheduled to executing.");
 			var startDate = DateTime.Now;
 			var firstStart = startDate.RoundUp(_refreshInterval);
-			_logger.LogInformation($"First start at {firstStart}");
 			await Task.Delay(firstStart - startDate).ConfigureAwait(false);
 			while (true)
 			{
 				try
 				{
-					_logger.LogInformation($"Job starting.");
 					var updatedAttackIds = await _analyzeService.CheckForExpiredAttacksAsync().ConfigureAwait(false);
 					if (updatedAttackIds.Any())
 					{

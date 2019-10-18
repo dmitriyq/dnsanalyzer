@@ -50,7 +50,6 @@ namespace Dns.Contracts.Services
 
 		public NotificationBase BuildAttackMessage(string user, params int[] attackIds)
 		{
-			_logger.LogInformation("Consctructing attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
 			using var scope = _serviceProvider.CreateScope();
@@ -67,7 +66,6 @@ namespace Dns.Contracts.Services
 
 		public NotificationBase BuildGroupMessage(string user, params int[] attackIds)
 		{
-			_logger.LogInformation("Consctructing group attack message");
 			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
 
 			using var scope = _serviceProvider.CreateScope();
