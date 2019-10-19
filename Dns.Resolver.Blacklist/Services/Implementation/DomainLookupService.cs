@@ -46,7 +46,7 @@ namespace Dns.Resolver.Blacklist.Services.Implementation
 				}
 				catch { throw; }
 			}
-			_logger.LogWarning($"Timeout for {domain} [{retryCount}]");
+			//_logger.LogWarning($"Timeout for {domain} [{retryCount}]");
 			return (ips: new HashSet<string>(), code: ResponseCode.NotImplemented);
 		}
 
