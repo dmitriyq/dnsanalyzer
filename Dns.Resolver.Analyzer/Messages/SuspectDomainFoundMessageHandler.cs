@@ -5,23 +5,30 @@ using System.Text;
 using System.Threading.Tasks;
 using Dns.Contracts.Messages;
 using Dns.DAL;
+using Dns.Resolver.Analyzer.Services.Interfaces;
 using Grfc.Library.EventBus.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Analyzer.Messages
 {
 	public class SuspectDomainFoundMessageHandler : IAmqpMessageHandler<SuspectDomainFoundMessage>
 	{
-		private readonly DnsDbContext _dnsDb;
+		private readonly ILogger<SuspectDomainFoundMessageHandler> _logger;
+		private readonly IMessageQueue _messageQueue;
+		private readonly IBatchingAttackService<SuspectDomainFoundMessage> _batchingAttack;
 
-		public SuspectDomainFoundMessageHandler(DnsDbContext dnsDb)
+		public SuspectDomainFoundMessageHandler(ILogger<SuspectDomainFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingAttackService<SuspectDomainFoundMessage> batchingAttack)
 		{
-			_dnsDb = dnsDb;
+			_logger = logger;
+			_messageQueue = messageQueue;
+			_batchingAttack = batchingAttack;
 		}
 
 		public Task Handle(SuspectDomainFoundMessage message)
 		{
-			throw new NotImplementedException();
+			_batchingAttack.Add(message);
+			return Task.CompletedTask;
 		}
 	}
 }

@@ -31,6 +31,10 @@ namespace Dns.Resolver.Blacklist.Messages
 				var whiteDomains = await _cacheService.GetWhiteListAsync().ConfigureAwait(false);
 				if (whiteDomains != null)
 				{
+					if (resolve.ips.Count >= 10)
+					{
+						await _messageQueue.PublishAsync(new SuspectDomainFoundMessage(message.Domain, resolve.ips.ToHashSet()));
+					}
 					foreach (var ip in resolve.ips)
 					{
 						if (whiteDomains.Any(x => x.IPAddresses.Contains(ip)))

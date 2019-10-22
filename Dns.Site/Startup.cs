@@ -132,6 +132,7 @@ namespace Dns.Site
 				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.VIGRUZKI_SERVICE_URL)));
 
 			services.AddTransient<DnsAnalyzerHealthCheckMessageHandler>();
+			services.AddTransient<UpdatedAttackMessageHandler>();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -167,6 +168,10 @@ namespace Dns.Site
 			var healthCheckEventHandler = app.ApplicationServices.GetRequiredService<DnsAnalyzerHealthCheckMessageHandler>();
 			var healthQueue = EnvironmentExtensions.GetVariable(Program.RABBITMQ_HEALTH_QUEUE);
 			messageQueue.Subscribe<DnsAnalyzerHealthCheckMessage, DnsAnalyzerHealthCheckMessageHandler>(healthQueue, healthCheckEventHandler);
+
+			var updateAttackHandler = app.ApplicationServices.GetRequiredService<UpdatedAttackMessageHandler>();
+			var updateAttackSubId = EnvironmentExtensions.GetVariable(Program.RABBITMQ_ATTACK_UPDATE_QUEUE);
+			messageQueue.Subscribe<UpdatedAttackMessage, UpdatedAttackMessageHandler>(updateAttackSubId, updateAttackHandler);
 		}
 
 		private void MigrateDataBase(IServiceProvider provider)

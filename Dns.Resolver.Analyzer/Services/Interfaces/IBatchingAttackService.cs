@@ -5,8 +5,8 @@ using Dns.Contracts.Messages;
 
 namespace Dns.Resolver.Analyzer.Services.Interfaces
 {
-	public interface IBatchingAttackService
+	public interface IBatchingAttackService<T> where T: class
 	{
-		void Add(AttackFoundMessage message);
+		void Add(T message);
 	}
 }

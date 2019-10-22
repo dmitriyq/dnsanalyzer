@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Timers;
 using Dns.Contracts.Messages;
@@ -10,20 +11,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Analyzer.Services.Implementation
 {
-	public class BatchingAttackService : IBatchingAttackService
+	public class BatchingAttackService<T> : IBatchingAttackService<T> where T: class
 	{
 		private readonly Timer _timer;
-		private readonly ILogger<BatchingAttackService> _logger;
+		private readonly ILogger<BatchingAttackService<T>> _logger;
 		private readonly IMessageQueue _messageQueue;
 		private readonly TimeSpan _timeOut;
-		private readonly ConcurrentBag<AttackFoundMessage> _items;
+		private readonly ConcurrentBag<T> _items;
 
-		public BatchingAttackService(ILogger<BatchingAttackService> logger, TimeSpan timeout, IMessageQueue messageQueue)
+		public BatchingAttackService(ILogger<BatchingAttackService<T>> logger, TimeSpan timeout, IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_timeOut = timeout;
 			_messageQueue = messageQueue;
-			_items = new ConcurrentBag<AttackFoundMessage>();
+			_items = new ConcurrentBag<T>();
 			_timer = new Timer(_timeOut.TotalMilliseconds)
 			{
 				AutoReset = true
@@ -32,14 +33,22 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				if (!_items.IsEmpty)
 				{
 					_logger.LogInformation($"For {_timeOut} interval was collected {_items.Count} messages");
-					_messageQueue.Publish(new AttackBatchCreatedMessage(_items.ToArray()));
-					_items.Clear();
+					T? checkType = default;
+					if (checkType is AttackFoundMessage)
+					{
+						_messageQueue.Publish(new AttackBatchCreatedMessage(_items.ToArray().OfType<AttackFoundMessage>().ToArray()));
+						_items.Clear();
+					} else if (checkType is SuspectDomainFoundMessage)
+					{
+						_messageQueue.Publish(new AttackBatchCreatedMessage(_items.ToArray().OfType<AttackFoundMessage>().ToArray()));
+						_items.Clear();
+					}
 				}
 			};
 			_timer.Start();
 		}
 
-		public void Add(AttackFoundMessage message)
+		public void Add(T message)
 		{
 			_items.Add(message);
 		}
