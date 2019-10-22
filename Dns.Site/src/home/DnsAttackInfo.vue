@@ -9,9 +9,14 @@
 		</v-container>
 		<v-container fluid class="pa-0" v-else>
 			<v-row class="elevation-4 mb-4">
-				<v-col cols="12" class="headline text-center white--text primary" style="height:64px;">
+				<v-col cols="10" class="headline text-center white--text primary" style="height:64px;">
 					Информация об атаке
 				</v-col>
+        <v-col cols="2" class="headline text-center white--text primary">
+          <v-btn icon color="white" to="Home">
+            <v-icon large>close</v-icon>
+          </v-btn>
+        </v-col>
 			</v-row>
 			<SummaryBlock :attack="attack" />
 			<DomainBlock :whiteDomain="attack.whiteDomainInfo" :blackDomain="attack.blackDomainInfo" />

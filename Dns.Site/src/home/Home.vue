@@ -22,8 +22,7 @@
 		</v-row>
 		<v-row>
 			<v-col cols="12">
-				<AttackTable @showattackinfo="showInfo"
-							 :attacks.sync="dnsAttacks"
+				<AttackTable :attacks.sync="dnsAttacks"
 							 :selectedAttacks.sync="selected"
 							 :filterExpr="search"
 							 :tableUpdating="tableUpdating"
@@ -85,19 +84,9 @@
 		};
 
 		public created() {
-			this.tableFilters = DnsLocalStorage.getTableFilters();
-			this.initHub();
-			if (this.isSideModalOpened && this.$route.query.id === undefined) {
-				this.isSideModalOpened = false;
-			}
-		}
-		public beforeMount() {
-			const urlQuery = this.$router.currentRoute.query;
-			const id = urlQuery.id as string;
-			if (urlQuery && id) {
-				this.showInfo(parseInt(id, 10));
-			}
-		}
+      this.tableFilters = DnsLocalStorage.getTableFilters();
+      this.initHub();
+    }
 
 		get isDnsAdmin(): boolean {
 			return this.$store.getters.isAdmin as boolean;
@@ -108,22 +97,6 @@
 		}
 		set isSideModalOpened(val: boolean) {
 			this.$store.dispatch('updateSideDialogState', val);
-		}
-
-		public showInfo(id: number) {
-
-			if (id === this.selectedId) {
-				this.isSideModalOpened = !this.isSideModalOpened;
-			} else {
-				this.isSideModalOpened = true;
-			}
-			if (!this.isSideModalOpened) {
-				this.selectedId = null;
-				this.$router.push('/');
-			} else {
-				this.selectedId = id;
-				this.$router.push({ name: 'DnsAttackInfo', params: { id: this.selectedId.toString() } });
-			}
 		}
 
 		@Watch('tableFilters', { deep: true })

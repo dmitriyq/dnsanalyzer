@@ -51,7 +51,8 @@ services:
       <<: *shared-variables
       <<: *redis-variables
       MAX_CONCURRENT_RESOLVE: '100'
-      REFRESH_INTERVAL: '240'
+      REFRESH_INTERVAL: '180'
+      IS_LEADER: 'false'
     env_file:
       - .env
     networks:
@@ -60,6 +61,23 @@ services:
       - rabbitmq_net
     deploy:
       replicas: 10
+
+  resolver-blacklist-leader:
+    image: ${RESOLVER_BLACKLIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-blacklist}
+    environment:
+      <<: *shared-variables
+      <<: *redis-variables
+      MAX_CONCURRENT_RESOLVE: '100'
+      REFRESH_INTERVAL: '180'
+      IS_LEADER: 'true'
+    env_file:
+      - .env
+    networks:
+      - net
+      - redis-net
+      - rabbitmq_net
+    deploy:
+      replicas: 1
 
   resolver-whitelist:
     image: ${RESOLVER_WHITELIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-whitelist}

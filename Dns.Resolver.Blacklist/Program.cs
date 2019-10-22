@@ -27,6 +27,7 @@ namespace Dns.Resolver.Blacklist
 		public const string HYPERLOCAL_SERVER = nameof(HYPERLOCAL_SERVER);
 		public const string MAX_CONCURRENT_RESOLVE = nameof(MAX_CONCURRENT_RESOLVE);
 
+		public const string IS_LEADER = nameof(IS_LEADER);
 		public const string REFRESH_INTERVAL = nameof(REFRESH_INTERVAL);
 
 		public static void Main(string[] args)
@@ -43,7 +44,8 @@ namespace Dns.Resolver.Blacklist
 					RABBITMQ_WHITE_DOMAIN_LIST_UPDATE_QUEUE,
 					HYPERLOCAL_SERVER,
 					MAX_CONCURRENT_RESOLVE,
-					REFRESH_INTERVAL
+					REFRESH_INTERVAL,
+					IS_LEADER
 				},
 				configureServices: (_, services) =>
 				{
@@ -82,12 +84,11 @@ namespace Dns.Resolver.Blacklist
 					});
 					services.AddTransient<IBlacklistUpdateService, BlacklistUpdateService>(sp =>
 					{
-						var disCache = sp.GetRequiredService<IDistributedCache>();
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						var cacheSvc = sp.GetRequiredService<ICacheService>();
 						var logger = sp.GetRequiredService<ILogger<BlacklistUpdateService>>();
 						var updateInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(REFRESH_INTERVAL)));
-						return new BlacklistUpdateService(disCache, messageBus, cacheSvc, logger, updateInterval);
+						return new BlacklistUpdateService(messageBus, cacheSvc, logger, updateInterval);
 					});
 					services.AddTransient<WhiteListUpdatedMessageHandler>();
 					services.AddTransient<BlackDomainResolveNeededMessageHandler>();
@@ -104,8 +105,11 @@ namespace Dns.Resolver.Blacklist
 					var blackDomainId = EnvironmentExtensions.GetVariable(RABBITMQ_BLACK_DOMAIN_RESOLVE_QUEUE);
 					messageBus.Subscribe<BlackDomainResolveNeededMessage, BlackDomainResolveNeededMessageHandler>(blackDomainId, blackDomainHandler);
 
-					var updateService = services.GetRequiredService<IBlacklistUpdateService>();
-					_ = updateService.RunJobAsync();
+					if (EnvironmentExtensions.GetVariable(IS_LEADER).ToBool(false))
+					{
+						var updateService = services.GetRequiredService<IBlacklistUpdateService>();
+						_ = updateService.RunJobAsync();
+					}
 				});
 		}
 	}

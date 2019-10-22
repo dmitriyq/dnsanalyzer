@@ -8,7 +8,7 @@
 				  no-data-text="Нет данных"
 				  no-results-text="Не найдено данных, подходящих под условие запроса"
 				  show-group-by
-				  :show-select="isAdmin"
+				  :show-select="isAdmin && !this.$vuetify.breakpoint.xs"
 				  :headers="tableHeaders"
 				  :items="dnsAttacks"
 				  item-key="id"
@@ -32,9 +32,9 @@
 			</span>
 		</template>
 		<template v-slot:item.info="{ item }">
-			<a @click="showInfo(item.id);">
+			<v-btn icon :to="{ name: 'DnsAttackInfo', params: {id: item.id}}">
 				<v-icon x-large>more_horiz</v-icon>
-			</a>
+			</v-btn>
 		</template>
 	</v-data-table>
 </template>
@@ -103,14 +103,10 @@
 			{ text: 'Подробнее', value: 'info', width: '120px', align: 'center', class: 'no-grouppable', filterable: false },
 		];
 
-		public showInfo(id: number) {
-			this.$emit('showattackinfo', id);
-		}
-
 		public getColorStatus(status: number): string { return Utils.getStatusColor(status); }
 		public getColorIpStatus(status: number): string { return Utils.getStatusIpColor(status); }
 
-		get isAdmin(): boolean {
+    get isAdmin(): boolean {
 			return this.$store.getters.isAdmin;
 		}
 

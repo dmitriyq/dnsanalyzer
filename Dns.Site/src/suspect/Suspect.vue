@@ -45,13 +45,7 @@
 								<v-flex xs6>{{domain.domain}}</v-flex>
 								<v-flex xs6>{{domain.ips.length}} IP</v-flex>
 							</template>
-							<v-data-table :items="domain.ips" :headers="tableHeaders" hide-action :pagination.sync="pagination">
-								<template v-slot:items="props">
-									<td>{{ props.item.ip }}</td>
-									<td>{{ props.item.subnet }}</td>
-									<td>{{ props.item.country }}</td>
-									<td>{{ props.item.company }}</td>
-								</template>
+							<v-data-table :items="domain.ips" :headers="tableHeaders" hide-default-footer>
 							</v-data-table>
 						</v-expansion-panel-content>
 					</v-expansion-panel>
@@ -71,10 +65,9 @@
 	@Component({})
 	export default class Suspect extends Vue {
 		public panelDomains: boolean[] = [];
-		public pagination = { rowsPerPage: -1 };
 		public tableHeaders: IDataTableHeaders[] = [
 			{ text: 'IP', value: 'ip', align: 'left', width: '150px' },
-			{ text: 'Подсеть', value: 'subnet', align: 'left', width: '150px' },
+			{ text: 'Подсеть', value: 'subnet', align: 'left', width: '150px'},
 			{ text: 'Страна', value: 'country', align: 'left', width: '150px'},
 			{ text: 'Организация', value: 'company', align: 'left' },
 		];

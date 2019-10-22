@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Router, { Route } from 'vue-router';
+import store from './store';
 
 import Home from './home/Home.vue';
 import Notification from './notification/Notification.vue';
@@ -75,7 +76,7 @@ const router = new Router({
 	routes,
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to: Route, from: Route, next: (opts?: any) => void) => {
 	if (to.path.startsWith('/auth')) {
 		return next();
 	} else {
@@ -90,6 +91,13 @@ router.beforeEach(async (to, from, next) => {
 		if (authResponse.redirected) {
 			return next({ path: '/auth', query: { url: authResponse.url } });
 		} else {
+			if (from.name === 'DnsAttackInfo' && to.name !== 'DnsAttackInfo') {
+				store.dispatch('updateSideDialogState', false);
+			} else if (to.name === 'DnsAttackInfo') {
+				store.dispatch('updateSideDialogState', true);
+			} else if (to.name === 'Home' && to.query.id !== undefined) {
+				next({ name: 'DnsAttackInfo', params: { id: to.query.id } });
+			}
 			return next();
 		}
 	}
