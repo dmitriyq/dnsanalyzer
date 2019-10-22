@@ -124,19 +124,19 @@ namespace Dns.Resolver.Analyzer
 						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
 						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify, redis, notifyChannel);
 					});
-					services.AddSingleton<IBatchingAttackService<AttackFoundMessage>, BatchingAttackService<AttackFoundMessage>>(sp =>
+					services.AddSingleton<IBatchingService<AttackFoundMessage>, BatchingAttackService>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<BatchingAttackService<AttackFoundMessage>>>();
+						var logger = sp.GetRequiredService<ILogger<BatchingAttackService>>();
 						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL))).Divide(3d);
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						return new BatchingAttackService<AttackFoundMessage>(logger, refreshInterval, messageBus);
+						return new BatchingAttackService(logger, refreshInterval, messageBus);
 					});
-					services.AddSingleton<IBatchingAttackService<SuspectDomainFoundMessage>, BatchingAttackService<SuspectDomainFoundMessage>>(sp =>
+					services.AddSingleton<IBatchingService<SuspectDomainFoundMessage>, BatchingSuspectService>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<BatchingAttackService<SuspectDomainFoundMessage>>>();
+						var logger = sp.GetRequiredService<ILogger<BatchingSuspectService>>();
 						var refreshInterval = TimeSpan.FromMinutes(10);
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						return new BatchingAttackService<SuspectDomainFoundMessage>(logger, refreshInterval, messageBus);
+						return new BatchingSuspectService(logger, refreshInterval, messageBus);
 					});
 					services.AddTransient<AttackBatchCreatedMessageHandler>(sp =>
 					{
@@ -151,7 +151,7 @@ namespace Dns.Resolver.Analyzer
 					{
 						var logger = sp.GetRequiredService<ILogger<AttackFoundMessageHandler>>();
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						var batchService = sp.GetRequiredService<IBatchingAttackService<AttackFoundMessage>>();
+						var batchService = sp.GetRequiredService<IBatchingService<AttackFoundMessage>>();
 						return new AttackFoundMessageHandler(logger, messageBus, batchService);
 					});
 					services.AddTransient<SuspectBatchCreatedMessageHandler>(sp =>
@@ -164,7 +164,7 @@ namespace Dns.Resolver.Analyzer
 					{
 						var logger = sp.GetRequiredService<ILogger<SuspectDomainFoundMessageHandler>>();
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						var batchService = sp.GetRequiredService<IBatchingAttackService<SuspectDomainFoundMessage>>();
+						var batchService = sp.GetRequiredService<IBatchingService<SuspectDomainFoundMessage>>();
 						return new SuspectDomainFoundMessageHandler(logger, messageBus, batchService);
 					});
 				},

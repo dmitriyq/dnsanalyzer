@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Timers;
 using Dns.Contracts.Messages;
@@ -11,20 +10,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Analyzer.Services.Implementation
 {
-	public class BatchingAttackService : IBatchingService<AttackFoundMessage>
+	public class BatchingSuspectService : IBatchingService<SuspectDomainFoundMessage>
 	{
 		private readonly Timer _timer;
-		private readonly ILogger<BatchingAttackService> _logger;
+		private readonly ILogger<BatchingSuspectService> _logger;
 		private readonly IMessageQueue _messageQueue;
 		private readonly TimeSpan _timeOut;
-		private readonly ConcurrentBag<AttackFoundMessage> _items;
+		private readonly ConcurrentBag<SuspectDomainFoundMessage> _items;
 
-		public BatchingAttackService(ILogger<BatchingAttackService> logger, TimeSpan timeout, IMessageQueue messageQueue)
+		public BatchingSuspectService(ILogger<BatchingSuspectService> logger, TimeSpan timeout, IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_timeOut = timeout;
 			_messageQueue = messageQueue;
-			_items = new ConcurrentBag<AttackFoundMessage>();
+			_items = new ConcurrentBag<SuspectDomainFoundMessage>();
 			_timer = new Timer(_timeOut.TotalMilliseconds)
 			{
 				AutoReset = true
@@ -33,14 +32,14 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				if (!_items.IsEmpty)
 				{
 					_logger.LogInformation($"For {_timeOut} interval was collected {_items.Count} messages");
-					_messageQueue.Publish(new AttackBatchCreatedMessage(_items.ToArray()));
+					_messageQueue.Publish(new SuspectBatchCreatedMessage(_items.ToArray()));
 					_items.Clear();
 				}
 			};
 			_timer.Start();
 		}
 
-		public void Add(AttackFoundMessage message)
+		public void Add(SuspectDomainFoundMessage message)
 		{
 			_items.Add(message);
 		}

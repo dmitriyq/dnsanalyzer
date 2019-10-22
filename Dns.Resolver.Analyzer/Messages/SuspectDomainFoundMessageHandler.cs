@@ -16,9 +16,9 @@ namespace Dns.Resolver.Analyzer.Messages
 	{
 		private readonly ILogger<SuspectDomainFoundMessageHandler> _logger;
 		private readonly IMessageQueue _messageQueue;
-		private readonly IBatchingAttackService<SuspectDomainFoundMessage> _batchingAttack;
+		private readonly IBatchingService<SuspectDomainFoundMessage> _batchingAttack;
 
-		public SuspectDomainFoundMessageHandler(ILogger<SuspectDomainFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingAttackService<SuspectDomainFoundMessage> batchingAttack)
+		public SuspectDomainFoundMessageHandler(ILogger<SuspectDomainFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingService<SuspectDomainFoundMessage> batchingAttack)
 		{
 			_logger = logger;
 			_messageQueue = messageQueue;
