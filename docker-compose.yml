@@ -4,7 +4,7 @@ x-shared-variables: &shared-variables
   PG_CONNECTION_STRING_WRITE: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5432;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};'
   PG_CONNECTION_STRING_READ: 'Server=${SWARM_MANAGER:-127.0.0.1};Port=5433;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};'
   REDIS_CONNECTION: '${REDIS_CONNECTION:-redis-master,redis-slave}'
-  RABBITMQ_CONNECTION: 'host=rmq;username=${RABBITMQ_USER};password=${RABBITMQ_PASS}'
+  RABBITMQ_CONNECTION: 'host=rabbitmq-01,rabbitmq-02,rabbitmq-03;username=${RABBITMQ_USER};password=${RABBITMQ_PASS}'
   ASPNETCORE_ENVIRONMENT: '${ENVIRONMENT:-Development}'
   NOTIFICATION_EMAIL_FROM: 'dns@cmim.ru'
   NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'

@@ -40,7 +40,7 @@ namespace Dns.Resolver.Analyzer
 
 		public static void Main(string[] args)
 		{
-			ThreadPool.SetMinThreads(8, 50);
+			ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount * 10);
 			Grfc.Library.Common.Extensions.ServiceCollectionExtensions.StartAsConsoleApplication<Program>(
 				entryPointArgs: args,
 				requiredEnvVars: new string[]
