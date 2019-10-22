@@ -8,9 +8,9 @@ namespace Dns.Resolver.Analyzer.Services.Interfaces
 {
 	public interface IAnalyzeService
 	{
-		Task<bool> IsExcludedAsync(AttackFoundMessage attack);
-		Task<int?> UpdateAttackAsync(AttackFoundMessage attack);
-		Task<IEnumerable<int>> UpdateAttackGroupAsync(AttackFoundMessage attack);
+		Task<AttackFoundMessage[]> ExcludeAsync(AttackFoundMessage[] attacks);
+		Task<IEnumerable<int>> UpdateAttackAsync(AttackFoundMessage[] attacks);
+		Task<IEnumerable<int>> UpdateAttackGroupAsync();
 		Task<IEnumerable<int>> CheckForExpiredAttacksAsync();
 	}
 }

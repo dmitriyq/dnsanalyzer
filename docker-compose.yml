@@ -43,7 +43,7 @@ services:
       placement:
         constraints:
         - node.role == worker
-      replicas: 4
+      replicas: 1
 
   resolver-blacklist:
     image: ${RESOLVER_BLACKLIST_IMAGE:-registry.cmim.ru/grfc/dns-analyzer/resolver-blacklist}

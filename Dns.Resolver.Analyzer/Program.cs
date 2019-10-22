@@ -24,6 +24,7 @@ namespace Dns.Resolver.Analyzer
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 
 		public const string RABBITMQ_ANALYZE_QUEUE = nameof(RABBITMQ_ANALYZE_QUEUE);
+		public const string RABBITMQ_ANALYZE_BATCH_QUEUE = nameof(RABBITMQ_ANALYZE_BATCH_QUEUE);
 
 		public const string PG_CONNECTION_STRING_WRITE = nameof(PG_CONNECTION_STRING_WRITE);
 		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);
@@ -48,6 +49,7 @@ namespace Dns.Resolver.Analyzer
 					REDIS_CONNECTION,
 					RABBITMQ_CONNECTION,
 					RABBITMQ_ANALYZE_QUEUE,
+					RABBITMQ_ANALYZE_BATCH_QUEUE,
 					PG_CONNECTION_STRING_WRITE,
 					PG_CONNECTION_STRING_READ,
 					NOTIFICATION_EMAIL_FROM,
@@ -118,15 +120,28 @@ namespace Dns.Resolver.Analyzer
 						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
 						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify, redis, notifyChannel);
 					});
-					services.AddTransient<AttackFoundMessageHandler>(sp =>
+					services.AddSingleton<IBatchingAttackService, BatchingAttackService>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<AttackFoundMessageHandler>>();
+						var logger = sp.GetRequiredService<ILogger<BatchingAttackService>>();
+						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL))).Divide(3d);
+						var messageBus = sp.GetRequiredService<IMessageQueue>();
+						return new BatchingAttackService(logger, refreshInterval, messageBus);
+					});
+					services.AddTransient<AttackBatchCreatedMessageHandler>(sp =>
+					{
+						var logger = sp.GetRequiredService<ILogger<AttackBatchCreatedMessageHandler>>();
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
 						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
-						return new AttackFoundMessageHandler(logger, analyze, notify, redis, messageBus, notifyChannel);
+						return new AttackBatchCreatedMessageHandler(logger, analyze, notify, redis, notifyChannel);
+					});
+					services.AddTransient<AttackFoundMessageHandler>(sp =>
+					{
+						var logger = sp.GetRequiredService<ILogger<AttackFoundMessageHandler>>();
+						var messageBus = sp.GetRequiredService<IMessageQueue>();
+						var batchService = sp.GetRequiredService<IBatchingAttackService>();
+						return new AttackFoundMessageHandler(logger, messageBus, batchService);
 					});
 				},
 				beforeHostStartAction: services =>
@@ -134,9 +149,13 @@ namespace Dns.Resolver.Analyzer
 					services.ApplyDbMigration<DnsDbContext>();
 
 					var messageBus = services.GetRequiredService<IMessageQueue>();
-					var handler = services.GetRequiredService<AttackFoundMessageHandler>();
-					var subId = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
-					messageBus.Subscribe<AttackFoundMessage, AttackFoundMessageHandler>(subId, handler);
+					var attackFoundHandler = services.GetRequiredService<AttackFoundMessageHandler>();
+					var attackFroundSubId = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_QUEUE);
+					messageBus.Subscribe<AttackFoundMessage, AttackFoundMessageHandler>(attackFroundSubId, attackFoundHandler);
+
+					var batchHandler = services.GetRequiredService<AttackBatchCreatedMessageHandler>();
+					var batchSubId = EnvironmentExtensions.GetVariable(RABBITMQ_ANALYZE_BATCH_QUEUE);
+					messageBus.Subscribe<AttackBatchCreatedMessage, AttackBatchCreatedMessageHandler>(batchSubId, batchHandler);
 
 					var updateSvc = services.GetRequiredService<IAnalyzeUpdateService>();
 					_ = updateSvc.RunJobAsync();

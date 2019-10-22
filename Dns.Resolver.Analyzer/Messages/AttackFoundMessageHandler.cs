@@ -16,42 +16,20 @@ namespace Dns.Resolver.Analyzer.Messages
 	public class AttackFoundMessageHandler : IAmqpMessageHandler<AttackFoundMessage>
 	{
 		private readonly ILogger<AttackFoundMessageHandler> _logger;
-		private readonly IAnalyzeService _analyzeService;
-		private readonly INotifyService _notifyService;
-		private readonly IDatabase _redis;
-		private readonly string _notifyChannel;
 		private readonly IMessageQueue _messageQueue;
+		private readonly IBatchingAttackService _batchingAttack;
 
-		public AttackFoundMessageHandler(ILogger<AttackFoundMessageHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
-			ConnectionMultiplexer redis, IMessageQueue messageQueue, string notifyChannel)
+		public AttackFoundMessageHandler(ILogger<AttackFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingAttackService batchingAttack)
 		{
 			_logger = logger;
-			_analyzeService = analyzeService;
-			_notifyService = notifyService;
-			_redis = redis.GetDatabase();
 			_messageQueue = messageQueue;
-			_notifyChannel = notifyChannel;
+			_batchingAttack = batchingAttack;
 		}
 
 		public async Task Handle(AttackFoundMessage message)
 		{
-			_logger.LogInformation($"Handle message {message.WhiteDomain} - {message.BlackDomain}");
+			_batchingAttack.Add(message);
 			await SendHealthCheckAsync($"Обновление атаки [{message.WhiteDomain} - {message.BlackDomain} - {message.Ip}]").ConfigureAwait(true);
-			if (!await _analyzeService.IsExcludedAsync(message).ConfigureAwait(true))
-			{
-				var attackId = await _analyzeService.UpdateAttackAsync(message).ConfigureAwait(true);
-				if (attackId != null)
-				{
-					var redisMsg = _notifyService.BuildAttackMessage(string.Empty, attackId.Value);
-					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
-				}
-				var groupIds = await _analyzeService.UpdateAttackGroupAsync(message).ConfigureAwait(true);
-				if (groupIds.Any())
-				{
-					var redisMsg = _notifyService.BuildAttackMessage(string.Empty, groupIds.ToArray());
-					await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
-				}
-			}
 		}
 
 		private Task SendHealthCheckAsync(string action)
