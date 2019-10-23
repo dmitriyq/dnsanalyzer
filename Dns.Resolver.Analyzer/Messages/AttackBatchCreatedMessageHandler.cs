@@ -19,16 +19,18 @@ namespace Dns.Resolver.Analyzer.Messages
 		private readonly IAnalyzeService _analyzeService;
 		private readonly INotifyService _notifyService;
 		private readonly IDatabase _redis;
+		private readonly IMessageQueue _messageQueue;
 		private readonly string _notifyChannel;
 
 		public AttackBatchCreatedMessageHandler(ILogger<AttackBatchCreatedMessageHandler> logger, IAnalyzeService analyzeService, INotifyService notifyService,
-			ConnectionMultiplexer redis, string notifyChannel)
+			ConnectionMultiplexer redis, string notifyChannel, IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_analyzeService = analyzeService;
 			_notifyService = notifyService;
 			_redis = redis.GetDatabase();
 			_notifyChannel = notifyChannel;
+			_messageQueue = messageQueue;
 		}
 
 		public async Task Handle(AttackBatchCreatedMessage message)
@@ -37,15 +39,18 @@ namespace Dns.Resolver.Analyzer.Messages
 			var updatedAttackIds = await _analyzeService.UpdateAttackAsync(attacks).ConfigureAwait(false);
 			var updatedGroupIds = await _analyzeService.UpdateAttackGroupAsync().ConfigureAwait(false);
 
+			var updateMessage = new UpdatedAttackMessage(updatedAttackIds.ToList(), updatedGroupIds.ToList());
+			await _messageQueue.PublishAsync(updateMessage).ConfigureAwait(false);
+
 			if (updatedAttackIds.Any())
 			{
 				var redisMsg = _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray());
-				await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
+				await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(false);
 			}
 			if (updatedGroupIds.Any())
 			{
 				var redisMsg = _notifyService.BuildGroupMessage(string.Empty, updatedGroupIds.ToArray());
-				await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(true);
+				await _redis.PublishAsync(_notifyChannel, redisMsg.ProtoSerialize()).ConfigureAwait(false);
 			}
 			_logger.LogInformation("Batch update complete");
 		}
