@@ -16,29 +16,47 @@
 								</div>
 							</v-expansion-panel-header>
 							<v-expansion-panel-content>
-								<v-list dense>
-									<InfoRow title="Ограцнизация" :desc="ip.ipInfo && ip.ipInfo.company"></InfoRow>
-									<InfoRow title="Страна" :desc="ip.ipInfo && ip.ipInfo.country"></InfoRow>
-									<InfoRow title="Подсеть" :desc="ip.ipInfo && ip.ipInfo.subnet"></InfoRow>
-									<InfoRow title="IP в реестре" :desc="ip.ipBlocked"></InfoRow>
-									<InfoRow title="Подсеть в реестре" :desc="ip.subnetBlocked"></InfoRow>
-									<v-list-item>
-										<v-list-item-content class="pa-0">
-											<v-container fluid class="pa-0">
-												<v-row no-gutters>
-													<v-col col="5" class="body-2">
-														IPv4Info:
-													</v-col>
-													<v-col col="7" class="body-1 text-wrap-word">
-														<v-btn color="info" :href="'http://ipv4info.ru/?act=check&ip='+ip.ip" target="_blank" style="float:right;">
-															Просмотреть
-														</v-btn>
-													</v-col>
-												</v-row>
-											</v-container>
-										</v-list-item-content>
-									</v-list-item>
-								</v-list>
+                <v-list dense>
+                  <InfoRow title="Ограцнизация" :desc="ip.ipInfo && ip.ipInfo.company"></InfoRow>
+                  <InfoRow title="Страна" :desc="ip.ipInfo && ip.ipInfo.country"></InfoRow>
+                  <InfoRow title="Подсеть" :desc="ip.ipInfo && ip.ipInfo.subnet"></InfoRow>
+                  <InfoRow title="IP в реестре" :desc="ip.ipBlocked"></InfoRow>
+                  <InfoRow title="Подсеть в реестре" :desc="ip.subnetBlocked"></InfoRow>
+                  <v-list-item>
+                    <v-list-item-content class="pa-0">
+                      <v-container fluid class="pa-0">
+                        <v-row no-gutters>
+                          <v-col col="5" class="body-2">
+                            IPv4Info:
+                          </v-col>
+                          <v-col col="7" class="body-1 text-wrap-word">
+                            <v-btn color="info" :href="'http://ipv4info.ru/?act=check&ip='+ip.ip" target="_blank" style="float:right;">
+                              Просмотреть
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <v-expansion-panels multiple>
+                        <v-expansion-panel>
+                          <v-expansion-panel-header class="pa-1">
+                            <div class="subtitle-1">История изменений</div>
+                          </v-expansion-panel-header>
+                          <v-expansion-panel-content>
+                            <v-list dense>
+                              <InfoRow v-for="history in attack.attacks.histories" :key="history.id"
+                                       :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
+                              </InfoRow>
+                            </v-list>
+                          </v-expansion-panel-content>
+                        </v-expansion-panel>
+                      </v-expansion-panels>
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
 							</v-expansion-panel-content>
 						</v-expansion-panel>
 					</v-expansion-panels>

@@ -50,11 +50,10 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		public async Task<IEnumerable<int>> UpdateAttackAsync(AttackFoundMessage[] attacks)
 		{
 			var newAttacks = new List<Attacks>();
-			var ignoreAttacks = new List<Attacks>();
 
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
-			var storedAttacks = await db.DnsAttacks.Include(x => x.AttackGroup).ToListAsync();
+			var storedAttacks = await db.DnsAttacks.Include(x => x.AttackGroup).ToListAsync().ConfigureAwait(true);
 
 			var vigruzkiIps = await _cacheService.GetVigruzkiIps().ConfigureAwait(true);
 			var vigruzkiSubnets = await _cacheService.GetVigruzkiSubnets().ConfigureAwait(true);
@@ -64,20 +63,27 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				bool needNotify = false;
 				Attacks? storedAttack = null;
 
-				var similarGroup = storedAttacks
+				var similarGroups = storedAttacks
 				.Where(x => x.BlackDomain == recentAttack.BlackDomain && x.WhiteDomain == recentAttack.WhiteDomain)
-				.Select(x => x.AttackGroup);
+				.Select(x => x.AttackGroup).ToList();
 
-				bool existingGroup = similarGroup.Any();
+				bool existingGroup = similarGroups.Count > 0;
 				if (existingGroup)
 				{
-					var latestGroup = similarGroup.OrderBy(x => x.Id).Last();
+					var latestGroup = similarGroups.OrderByDescending(x => x.Id).First();
 					bool isCompletedAttack = latestGroup.StatusEnum == AttackGroupStatusEnum.Complete;
 					if (isCompletedAttack)
 					{
-						var group = CreateNewAttackGroup(recentAttack);
-						db.AttackGroups.Add(group);
-						latestGroup = group;
+						var newGroup = CreateNewAttackGroup();
+						db.Entry(newGroup).State = EntityState.Added;
+						var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
+						newGroup.GroupHistories.Add(newGroupHistory);
+						var newAttack = AddNewAttack(recentAttack);
+						var newAttackHistory = AddNewAttackHistory(newAttack.StatusEnum, AttackStatusEnum.None);
+						newAttack.Histories.Add(newAttackHistory);
+						newGroup.Attacks.Add(newAttack);
+						db.AttackGroups.Add(newGroup);
+						latestGroup = newGroup;
 						storedAttack = latestGroup.Attacks.Last();
 						needNotify = true;
 					}
@@ -92,18 +98,17 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 							{
 								var prevStatus = (AttackStatusEnum)storedAttack.Status;
 								storedAttack.Status = (int)AttackStatusEnum.Intersection;
-								var history = AddNewAttackHistory(storedAttack, prevStatus);
+								var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, prevStatus);
+								storedAttack.Histories.Add(newHistory);
 								needNotify = true;
-							}
-							else
-							{
-								ignoreAttacks.Add(storedAttack);
 							}
 						}
 						else
 						{
-							storedAttack = AddNewAttack(recentAttack, latestGroup);
-							var history = AddNewAttackHistory(storedAttack, AttackStatusEnum.None);
+							storedAttack = AddNewAttack(recentAttack);
+							var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, AttackStatusEnum.None);
+							storedAttack.Histories.Add(newHistory);
+							db.Entry(storedAttack).State = EntityState.Added;
 							needNotify = true;
 						}
 						latestGroup.LastUpdate = DateTimeOffset.UtcNow;
@@ -111,9 +116,16 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				}
 				else
 				{
-					var group = CreateNewAttackGroup(recentAttack);
-					db.AttackGroups.Add(group);
-					storedAttack = group.Attacks.Last();
+					var newGroup = CreateNewAttackGroup();
+					db.Entry(newGroup).State = EntityState.Added;
+					var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
+					newGroup.GroupHistories.Add(newGroupHistory);
+					var newAttack = AddNewAttack(recentAttack);
+					var newAttackHistory = AddNewAttackHistory(newAttack.StatusEnum, AttackStatusEnum.None);
+					newAttack.Histories.Add(newAttackHistory);
+					newGroup.Attacks.Add(newAttack);
+					db.AttackGroups.Add(newGroup);
+					storedAttack = newGroup.Attacks.Last();
 					needNotify = true;
 				}
 				if (storedAttack != null)
@@ -176,7 +188,10 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var prevStatus = group.StatusEnum;
 						group.Status = (int)AttackGroupStatusEnum.Complete;
 						group.DateClose = DateTimeOffset.UtcNow;
-						AddNewAttackGroupHistory(group, prevStatus);
+						var newHistory = AddNewAttackGroupHistory(group.StatusEnum, prevStatus);
+						newHistory.AttackGroupId = group.Id;
+						group.GroupHistories.Add(newHistory);
+						db.Entry(newHistory).State = EntityState.Added;
 						completedAttack.Add(group);
 					}
 				}
@@ -211,13 +226,15 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					if (lastStatus == AttackStatusEnum.Intersection)
 					{
 						attack.Status = (int)AttackStatusEnum.Closing;
-						AddNewAttackHistory(attack, AttackStatusEnum.Intersection);
+						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Intersection);
+						attack.Histories.Add(newHistory);
 						changedAttackIds.Add(attack.AttackGroupId);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing && group.LastUpdate < closingThreshold)
 					{
 						attack.Status = (int)AttackStatusEnum.Completed;
-						AddNewAttackHistory(attack, AttackStatusEnum.Closing);
+						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Closing);
+						attack.Histories.Add(newHistory);
 						changedAttackIds.Add(attack.AttackGroupId);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing)
@@ -263,61 +280,45 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			return changedAttackIds;
 		}
 
-		private AttackGroups CreateNewAttackGroup(AttackFoundMessage model)
+		private AttackGroups CreateNewAttackGroup()
 		{
-			var newGroup = new AttackGroups
+			return new AttackGroups
 			{
 				DateBegin = DateTimeOffset.UtcNow,
 				Status = (int)AttackGroupStatusEnum.PendingCheck,
 				LastUpdate = DateTimeOffset.UtcNow
 			};
-			_ = AddNewAttackGroupHistory(newGroup, AttackGroupStatusEnum.None);
-			var attack = AddNewAttack(model, newGroup);
-			_ = AddNewAttackHistory(attack, AttackStatusEnum.None);
-			return newGroup;
 		}
 
-		private Attacks AddNewAttack(AttackFoundMessage model, AttackGroups attackGroups)
+		private Attacks AddNewAttack(AttackFoundMessage model)
 		{
-			var attack = new Attacks
+			return new Attacks
 			{
 				BlackDomain = model.BlackDomain,
 				Ip = model.Ip,
 				Status = (int)AttackStatusEnum.Intersection,
 				WhiteDomain = model.WhiteDomain,
-				AttackGroup = attackGroups,
-				AttackGroupId = attackGroups.Id
 			};
-			attackGroups.Attacks.Add(attack);
-			return attack;
 		}
 
-		private AttackHistories AddNewAttackHistory(Attacks attack, AttackStatusEnum prevStatus)
+		private AttackHistories AddNewAttackHistory(AttackStatusEnum currentStatus, AttackStatusEnum prevStatus)
 		{
-			var history = new AttackHistories
+			return new AttackHistories
 			{
 				Date = DateTimeOffset.UtcNow,
-				CurrentStatus = attack.Status,
+				CurrentStatus = (int)currentStatus,
 				PrevStatus = (int)prevStatus,
-				Attack = attack,
-				AttackId = attack.Id
 			};
-			attack.Histories.Add(history);
-			return history;
 		}
 
-		private AttackGroupHistories AddNewAttackGroupHistory(AttackGroups attackGroups, AttackGroupStatusEnum prevStatus)
+		private AttackGroupHistories AddNewAttackGroupHistory(AttackGroupStatusEnum currentStatus, AttackGroupStatusEnum prevStatus)
 		{
-			var history = new AttackGroupHistories
+			return new AttackGroupHistories
 			{
 				Date = DateTimeOffset.UtcNow,
-				CurrentStatus = attackGroups.Status,
+				CurrentStatus = (int)currentStatus,
 				PrevStatus = (int)prevStatus,
-				AttackGroup = attackGroups,
-				AttackGroupId = attackGroups.Id
 			};
-			attackGroups.GroupHistories.Add(history);
-			return history;
 		}
 	}
 }
