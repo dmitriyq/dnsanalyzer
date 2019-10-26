@@ -40,7 +40,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			{
 				try
 				{
-					var updatedAttackIds = await _analyzeService.CheckForExpiredAttacksAsync().ConfigureAwait(false);
+					var updatedAttackIds = _analyzeService.CheckForExpiredAttacks();
 					if (updatedAttackIds.Any())
 					{
 						var msg = _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray());

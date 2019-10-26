@@ -33,7 +33,7 @@ namespace Dns.Resolver.Blacklist.Messages
 				{
 					if (resolve.ips.Count >= 10)
 					{
-						await _messageQueue.PublishAsync(new SuspectDomainFoundMessage(message.Domain, resolve.ips.ToHashSet()));
+						await _messageQueue.PublishAsync(new SuspectDomainFoundMessage(message.Domain, resolve.ips.ToHashSet())).ConfigureAwait(false);
 					}
 					foreach (var ip in resolve.ips)
 					{

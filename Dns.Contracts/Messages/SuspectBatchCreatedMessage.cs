@@ -9,6 +9,7 @@ namespace Dns.Contracts.Messages
 	public class SuspectBatchCreatedMessage: AmqpMessage
 	{
 		public SuspectDomainFoundMessage[] SuspectDomainMessages { get; set; }
+
 		public SuspectBatchCreatedMessage(SuspectDomainFoundMessage[] suspectDomains)
 		{
 			SuspectDomainMessages = suspectDomains.ToArray();

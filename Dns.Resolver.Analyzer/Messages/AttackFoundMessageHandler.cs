@@ -15,13 +15,11 @@ namespace Dns.Resolver.Analyzer.Messages
 {
 	public class AttackFoundMessageHandler : IAmqpMessageHandler<AttackFoundMessage>
 	{
-		private readonly ILogger<AttackFoundMessageHandler> _logger;
 		private readonly IMessageQueue _messageQueue;
 		private readonly IBatchingService<AttackFoundMessage> _batchingAttack;
 
-		public AttackFoundMessageHandler(ILogger<AttackFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingService<AttackFoundMessage> batchingAttack)
+		public AttackFoundMessageHandler(IMessageQueue messageQueue, IBatchingService<AttackFoundMessage> batchingAttack)
 		{
-			_logger = logger;
 			_messageQueue = messageQueue;
 			_batchingAttack = batchingAttack;
 		}

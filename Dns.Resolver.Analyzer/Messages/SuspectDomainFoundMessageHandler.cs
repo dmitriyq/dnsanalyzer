@@ -14,14 +14,10 @@ namespace Dns.Resolver.Analyzer.Messages
 {
 	public class SuspectDomainFoundMessageHandler : IAmqpMessageHandler<SuspectDomainFoundMessage>
 	{
-		private readonly ILogger<SuspectDomainFoundMessageHandler> _logger;
-		private readonly IMessageQueue _messageQueue;
 		private readonly IBatchingService<SuspectDomainFoundMessage> _batchingAttack;
 
-		public SuspectDomainFoundMessageHandler(ILogger<SuspectDomainFoundMessageHandler> logger, IMessageQueue messageQueue, IBatchingService<SuspectDomainFoundMessage> batchingAttack)
+		public SuspectDomainFoundMessageHandler(IBatchingService<SuspectDomainFoundMessage> batchingAttack)
 		{
-			_logger = logger;
-			_messageQueue = messageQueue;
 			_batchingAttack = batchingAttack;
 		}
 

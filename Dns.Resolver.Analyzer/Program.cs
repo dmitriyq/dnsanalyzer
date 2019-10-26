@@ -87,9 +87,8 @@ namespace Dns.Resolver.Analyzer
 
 					services.AddTransient<INotifyService, NotifyService>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<NotifyService>>();
 						var emailFrom = EnvironmentExtensions.GetVariable(NOTIFICATION_EMAIL_FROM);
-						return new NotifyService(logger, sp, emailFrom);
+						return new NotifyService(sp, emailFrom);
 					});
 					services.AddTransient<ICacheService, CacheService>(sp =>
 					{
@@ -145,14 +144,14 @@ namespace Dns.Resolver.Analyzer
 						var notify = sp.GetRequiredService<INotifyService>();
 						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
 						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
-						return new AttackBatchCreatedMessageHandler(logger, analyze, notify, redis, notifyChannel);
+						var messageBus = sp.GetRequiredService<IMessageQueue>();
+						return new AttackBatchCreatedMessageHandler(logger, analyze, notify, redis, notifyChannel, messageBus);
 					});
 					services.AddTransient<AttackFoundMessageHandler>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<AttackFoundMessageHandler>>();
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						var batchService = sp.GetRequiredService<IBatchingService<AttackFoundMessage>>();
-						return new AttackFoundMessageHandler(logger, messageBus, batchService);
+						return new AttackFoundMessageHandler(messageBus, batchService);
 					});
 					services.AddTransient<SuspectBatchCreatedMessageHandler>(sp =>
 					{
@@ -162,10 +161,8 @@ namespace Dns.Resolver.Analyzer
 					});
 					services.AddTransient<SuspectDomainFoundMessageHandler>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<SuspectDomainFoundMessageHandler>>();
-						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						var batchService = sp.GetRequiredService<IBatchingService<SuspectDomainFoundMessage>>();
-						return new SuspectDomainFoundMessageHandler(logger, messageBus, batchService);
+						return new SuspectDomainFoundMessageHandler(batchService);
 					});
 				},
 				beforeHostStartAction: services =>

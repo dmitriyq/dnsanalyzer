@@ -37,9 +37,8 @@ namespace Dns.Resolver.Analyzer.Messages
 				newSuspects[i].Id = i;
 			}
 			_dnsDbContext.SuspectDomains.AddRange(newSuspects);
-			await _dnsDbContext.SaveChangesAsync();
+			await _dnsDbContext.SaveChangesAsync().ConfigureAwait(false);
 			_logger.LogInformation($"Suspect domains ({newSuspects.Count}) updated");
-
 		}
 	}
 }

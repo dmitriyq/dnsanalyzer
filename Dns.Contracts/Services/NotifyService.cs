@@ -37,13 +37,11 @@ namespace Dns.Contracts.Services
 
 		private const string EMAIL_SUBJECT = "[Система выявления DNS атак]";
 
-		private readonly ILogger<NotifyService> _logger;
 		private readonly IServiceProvider _serviceProvider;
 		private readonly string _emailFrom;
 
-		public NotifyService(ILogger<NotifyService> logger, IServiceProvider serviceProvider, string emailFrom)
+		public NotifyService(IServiceProvider serviceProvider, string emailFrom)
 		{
-			_logger = logger;
 			_serviceProvider = serviceProvider;
 			_emailFrom = emailFrom;
 		}

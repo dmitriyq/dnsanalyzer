@@ -112,9 +112,8 @@ namespace Dns.Site
 			services.AddTransient<AttackService>();
 			services.AddTransient<INotifyService, NotifyService>(sp =>
 			{
-				var logger = sp.GetRequiredService<ILogger<NotifyService>>();
 				var emailFrom = EnvironmentExtensions.GetVariable(Program.NOTIFICATION_EMAIL_FROM);
-				return new NotifyService(logger, sp, emailFrom);
+				return new NotifyService(sp, emailFrom);
 			});
 			services.AddTransient<IExcelService, ExcelService>();
 			services.AddSingleton<IRedisService, RedisService>(sp =>

@@ -27,7 +27,7 @@ namespace Dns.Site.EventHandlers
 
 		public async Task Handle(UpdatedAttackMessage message)
 		{
-			if (message.AttackIds.Any())
+			if (message.AttackIds.Count > 0)
 			{
 				var groups = await _dnsDb.DnsAttacks.Where(x => message.AttackIds.Contains(x.Id))
 					.Include(x => x.AttackGroup)
@@ -41,7 +41,7 @@ namespace Dns.Site.EventHandlers
 					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(true);
 				}
 			}
-			if (message.GroupIds.Any())
+			if (message.GroupIds.Count > 0)
 			{
 				var groups = await _dnsDb.AttackGroups.Where(x => message.AttackIds.Contains(x.Id))
 					.Distinct()

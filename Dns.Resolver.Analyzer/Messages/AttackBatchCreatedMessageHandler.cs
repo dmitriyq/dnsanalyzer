@@ -35,9 +35,9 @@ namespace Dns.Resolver.Analyzer.Messages
 
 		public async Task Handle(AttackBatchCreatedMessage message)
 		{
-			var attacks = await _analyzeService.ExcludeAsync(message.AttackMessages).ConfigureAwait(false);
+			var attacks = _analyzeService.Exclude(message.AttackMessages);
 			var updatedAttackIds = await _analyzeService.UpdateAttackAsync(attacks).ConfigureAwait(false);
-			var updatedGroupIds = await _analyzeService.UpdateAttackGroupAsync().ConfigureAwait(false);
+			var updatedGroupIds = _analyzeService.UpdateAttackGroup();
 
 			var updateMessage = new UpdatedAttackMessage(updatedAttackIds.ToList(), updatedGroupIds.ToList());
 			await _messageQueue.PublishAsync(updateMessage).ConfigureAwait(false);
