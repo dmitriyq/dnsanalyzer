@@ -47,128 +47,108 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				.ToArray();
 		}
 
-		public async Task<IEnumerable<int>> UpdateAttackAsync(AttackFoundMessage[] attacks)
+		public async Task<IEnumerable<int>> UpdateAttackAsync(AttackFoundMessage[] messages)
 		{
-			var newAttacks = new List<Attacks>();
-
-			using var scope = _serviceProvider.CreateScope();
-			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
-			var storedAttacks = db.DnsAttacks.Include(x => x.AttackGroup);
+			var notifyAttacks = new List<int>();
 
 			var vigruzkiIps = await _cacheService.GetVigruzkiIps().ConfigureAwait(true);
 			var vigruzkiSubnets = await _cacheService.GetVigruzkiSubnets().ConfigureAwait(true);
 
-			foreach (var recentAttack in attacks)
+			using var scope = _serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
+
+			foreach (var message in messages)
 			{
-				bool needNotify = false;
-				Attacks? storedAttack = null;
-
-				var similarGroups = storedAttacks
-				.Where(x => x.BlackDomain == recentAttack.BlackDomain && x.WhiteDomain == recentAttack.WhiteDomain)
-				.Select(x => x.AttackGroup).ToList();
-
-				bool existingGroup = similarGroups.Count > 0;
-				if (existingGroup)
+				var ipBlocked = vigruzkiIps.Contains(message.Ip);
+				string? subnetBlocked = default;
+				try
 				{
-					var latestGroup = similarGroups.OrderByDescending(x => x.Id).First();
-					bool isCompletedAttack = latestGroup.StatusEnum == AttackGroupStatusEnum.Complete;
-					if (isCompletedAttack)
+					subnetBlocked = vigruzkiSubnets
+						.Select(IPAddressRange.Parse)
+						.FirstOrDefault(x => x.Contains(IPAddress.Parse(message.Ip)))
+						?.ToCidrString();
+				}
+				catch { }
+
+
+				var groupIdWithSameDomains = db.DnsAttacks
+					.Include(x => x.AttackGroup)
+					.Where(x => x.BlackDomain == message.BlackDomain && x.WhiteDomain == message.WhiteDomain)
+					.Select(x => x.AttackGroupId)
+					.DefaultIfEmpty(-1)
+					.Max();
+
+				if (groupIdWithSameDomains != -1)
+				{
+					var group = db.AttackGroups
+						.Include(x => x.Attacks)
+						.First(x => x.Id == groupIdWithSameDomains);
+					if (group.Status != (int)AttackGroupStatusEnum.Complete)
 					{
-						var newGroup = CreateNewAttackGroup();
-						var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
-						newGroup.GroupHistories.Add(newGroupHistory);
-						var newAttack = AddNewAttack(recentAttack);
-						var newAttackHistory = AddNewAttackHistory(newAttack.StatusEnum, AttackStatusEnum.None);
-						newAttack.Histories.Add(newAttackHistory);
-						newGroup.Attacks.Add(newAttack);
-						db.AttackGroups.Add(newGroup);
-						db.GroupHistories.Add(newGroupHistory);
-						db.DnsAttacks.Add(newAttack);
-						db.AttackHistories.Add(newAttackHistory);
-						latestGroup = newGroup;
-						storedAttack = latestGroup.Attacks.Last();
-						needNotify = true;
-					}
-					else
-					{
-						storedAttack = latestGroup.Attacks.FirstOrDefault(x => x.Ip == recentAttack.Ip);
-						bool existingAttack = storedAttack != null;
-						if (existingAttack)
+						var attackWithSameIp = group.Attacks
+							.FirstOrDefault(x => x.Ip == message.Ip);
+						if (attackWithSameIp == default)
 						{
-							bool hasChanges = storedAttack!.StatusEnum != AttackStatusEnum.Intersection;
-							if (hasChanges)
+							var newAttack = new Attacks
 							{
-								var prevStatus = (AttackStatusEnum)storedAttack.Status;
-								storedAttack.Status = (int)AttackStatusEnum.Intersection;
-								var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, prevStatus);
-								db.AttackHistories.Add(newHistory);
-								storedAttack.Histories.Add(newHistory);
-								needNotify = true;
-							}
+								BlackDomain = message.BlackDomain,
+								WhiteDomain = message.WhiteDomain,
+								Ip = message.Ip,
+								Status = (int)AttackStatusEnum.Intersection
+							};
+							db.DnsAttacks.Add(newAttack);
+							newAttack.Histories.Add(new AttackHistories
+							{
+								CurrentStatus = (int)AttackStatusEnum.Intersection,
+								PrevStatus = (int)AttackStatusEnum.None,
+								Date = DateTimeOffset.UtcNow
+							});
+							group.Attacks.Add(newAttack);
+							newAttack.IpBlocked = ipBlocked;
+							newAttack.SubnetBlocked = subnetBlocked;
+							db.SaveChanges();
+							notifyAttacks.Add(newAttack.Id);
 						}
 						else
 						{
-							storedAttack = AddNewAttack(recentAttack);
-							var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, AttackStatusEnum.None);
-							db.DnsAttacks.Add(storedAttack);
-							latestGroup.Attacks.Add(storedAttack);
-							db.AttackHistories.Add(newHistory);
-							storedAttack.Histories.Add(newHistory);
-							needNotify = true;
+							if (attackWithSameIp.Status != (int)AttackStatusEnum.Intersection)
+							{
+								attackWithSameIp.Histories.Add(new AttackHistories
+								{
+									CurrentStatus = (int)AttackStatusEnum.Intersection,
+									PrevStatus = (int)attackWithSameIp.Status,
+									Date = DateTimeOffset.UtcNow
+								});
+								attackWithSameIp.Status = (int)AttackStatusEnum.Intersection;
+								attackWithSameIp.IpBlocked = ipBlocked;
+								attackWithSameIp.SubnetBlocked = subnetBlocked;
+								db.SaveChanges();
+								notifyAttacks.Add(attackWithSameIp.Id);
+							}
 						}
-						latestGroup.LastUpdate = DateTimeOffset.UtcNow;
+					}
+					else
+					{
+						var newGroup = CreateNewGroup(db, message);
+						var newAttack = newGroup.Attacks.First();
+						newAttack.IpBlocked = ipBlocked;
+						newAttack.SubnetBlocked = subnetBlocked;
+						db.SaveChanges();
+						notifyAttacks.Add(newAttack.Id);
 					}
 				}
 				else
 				{
-					var newGroup = CreateNewAttackGroup();
-					var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
-					newGroup.GroupHistories.Add(newGroupHistory);
-					var newAttack = AddNewAttack(recentAttack);
-					var newAttackHistory = AddNewAttackHistory(newAttack.StatusEnum, AttackStatusEnum.None);
-					newAttack.Histories.Add(newAttackHistory);
-					newGroup.Attacks.Add(newAttack);
-					db.AttackGroups.Add(newGroup);
-					db.GroupHistories.Add(newGroupHistory);
-					db.DnsAttacks.Add(newAttack);
-					db.AttackHistories.Add(newAttackHistory);
-					storedAttack = newGroup.Attacks.Last();
-					needNotify = true;
-				}
-				if (storedAttack != null)
-				{
-					storedAttack.IpBlocked = vigruzkiIps.Contains(recentAttack.Ip);
-					try
-					{
-						storedAttack.SubnetBlocked = vigruzkiSubnets
-							.Select(IPAddressRange.Parse)
-							.FirstOrDefault(x => x.Contains(IPAddress.Parse(recentAttack.Ip)))
-							?.ToCidrString();
-					}
-					catch (Exception ex)
-					{
-						_logger.LogWarning(ex, ex.Message);
-					}
-					try
-					{
-						db.SaveChanges();
-					}
-					catch (DbUpdateConcurrencyException e)
-					{
-						_logger.LogWarning(e, e.Message);
-						db.SaveChanges();
-					}
-					catch (Exception e)
-					{
-						_logger.LogCritical(e, e.Message);
-						throw;
-					}
-					if (needNotify)
-						newAttacks.Add(storedAttack);
+					var newGroup = CreateNewGroup(db, message);
+					var newAttack = newGroup.Attacks.First();
+					newAttack.IpBlocked = ipBlocked;
+					newAttack.SubnetBlocked = subnetBlocked;
+					db.SaveChanges();
+					notifyAttacks.Add(newAttack.Id);
 				}
 			}
 			_logger.LogInformation("Update DNS Attacks complete");
-			return newAttacks.Select(x => x.Id).AsEnumerable();
+			return notifyAttacks;
 		}
 
 		public IEnumerable<int> UpdateAttackGroup()
@@ -286,6 +266,39 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			db.SaveChanges();
 			_logger.LogInformation("Check for expired attacks complete");
 			return changedAttackIds;
+		}
+
+		private AttackGroups CreateNewGroup(DnsDbContext db, AttackFoundMessage message)
+		{
+			var newGroup = new AttackGroups
+			{
+				DateBegin = DateTimeOffset.UtcNow,
+				LastUpdate = DateTimeOffset.UtcNow,
+				Status = (int)AttackGroupStatusEnum.PendingCheck,
+			};
+			db.AttackGroups.Add(newGroup);
+			newGroup.GroupHistories.Add(new AttackGroupHistories
+			{
+				CurrentStatus = (int)AttackGroupStatusEnum.PendingCheck,
+				PrevStatus = (int)AttackGroupStatusEnum.None,
+				Date = DateTimeOffset.UtcNow
+			});
+			var newAttack = new Attacks
+			{
+				BlackDomain = message.BlackDomain,
+				WhiteDomain = message.WhiteDomain,
+				Ip = message.Ip,
+				Status = (int)AttackStatusEnum.Intersection
+			};
+			db.DnsAttacks.Add(newAttack);
+			newAttack.Histories.Add(new AttackHistories
+			{
+				CurrentStatus = (int)AttackStatusEnum.Intersection,
+				PrevStatus = (int)AttackStatusEnum.None,
+				Date = DateTimeOffset.UtcNow
+			});
+			newGroup.Attacks.Add(newAttack);
+			return newGroup;
 		}
 
 		private AttackGroups CreateNewAttackGroup()

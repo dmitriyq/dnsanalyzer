@@ -29,27 +29,30 @@ namespace Dns.Site.EventHandlers
 		{
 			if (message.AttackIds.Count > 0)
 			{
-				var groups = await _dnsDb.DnsAttacks.Where(x => message.AttackIds.Contains(x.Id))
-					.Include(x => x.AttackGroup)
-					.Select(x => x.AttackGroup)
+				var groupIds = _dnsDb.DnsAttacks.Where(x => message.AttackIds.Contains(x.Id))
+					.Select(x => x.AttackGroupId).ToList();
+				var groups = _dnsDb.AttackGroups
+					.Include(x => x.Attacks)
+					.Where(x => groupIds.Contains(x.Id))
 					.Distinct()
-					.ToListAsync()
-					.ConfigureAwait(true);
-
+					.ToList();
 				foreach (var attack in groups)
 				{
-					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(true);
+					var model = _attackService.CastToViewModel(attack);
+					await _hubContext.Clients.All.SendAsync("UpdateAttack", model).ConfigureAwait(false);
 				}
 			}
 			if (message.GroupIds.Count > 0)
 			{
-				var groups = await _dnsDb.AttackGroups.Where(x => message.AttackIds.Contains(x.Id))
+				var groups = _dnsDb.AttackGroups
+					.Include(x => x.Attacks)
+					.Where(x => message.GroupIds.Contains(x.Id))
 					.Distinct()
-					.ToListAsync()
-					.ConfigureAwait(true);
+					.ToList();
 				foreach (var attack in groups)
 				{
-					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(true);
+					var model = _attackService.CastToViewModel(attack);
+					await _hubContext.Clients.All.SendAsync("UpdateAttack", model).ConfigureAwait(true);
 				}
 			}
 		}

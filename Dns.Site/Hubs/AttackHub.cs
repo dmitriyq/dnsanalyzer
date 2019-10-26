@@ -24,25 +24,11 @@ namespace Dns.Site.Hubs
 			_attackService = attackService;
 		}
 
-		public async Task AttackList(DateTimeOffset? from, DateTimeOffset? to)
+		public async Task AttackList()
 		{
-			List<AttackGroups> attacks = null;
-			if (!from.HasValue && !to.HasValue)
-			{
-				attacks = await _dbContext.AttackGroups
+			var attacks = await _dbContext.AttackGroups
 					.Include(x => x.Attacks)
 					.ToListAsync().ConfigureAwait(false);
-			}
-			else
-			{
-				var fromD = from?.Date ?? DateTimeOffset.UtcNow.Date;
-				var toD = to?.Date.AddDays(1).AddMilliseconds(-1) ?? DateTimeOffset.UtcNow.Date.AddDays(1).AddMilliseconds(-1);
-
-				await _dbContext.AttackGroups
-					.Include(x => x.Attacks)
-					.Where(x => x.DateBegin >= fromD && x.DateBegin <= toD)
-					.ToListAsync().ConfigureAwait(false);
-			}
 			var attackModels = attacks
 				.OrderBy(x => x.Status)
 				.ThenByDescending(x => x.DateBegin)

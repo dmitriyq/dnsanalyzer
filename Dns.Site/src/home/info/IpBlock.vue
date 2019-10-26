@@ -47,7 +47,7 @@
                           </v-expansion-panel-header>
                           <v-expansion-panel-content>
                             <v-list dense>
-                              <InfoRow v-for="history in attack.attacks.histories" :key="history.id"
+                              <InfoRow v-for="history in ip.histories" :key="history.id"
                                        :title="history.create" :desc="changeStatusText(history.prevStatus, history.currentStatus)">
                               </InfoRow>
                             </v-list>

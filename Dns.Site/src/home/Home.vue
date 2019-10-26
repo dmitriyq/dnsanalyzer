@@ -45,7 +45,7 @@
 	import EditAttack from '@/home/EditAttack.vue';
 	import InfoContainer from '@/home/InfoContainer.vue';
 	import AttackTable from '@/home/AttackTable.vue';
-	import DnsAttack from '@/home/dns-attack';
+	import IDnsAttackGroup from '@/home/dns-attack';
 	import format from 'date-fns/format';
 	import Utils from '@/utils/Utils';
 	import * as signalR from '@microsoft/signalr';
@@ -71,8 +71,8 @@
 	})
 	export default class HomeComponent extends Vue {
 
-		public dnsAttacks: DnsAttack[] = [];
-		public selected: DnsAttack[] = [];
+		public dnsAttacks: IDnsAttackGroup[] = [];
+		public selected: IDnsAttackGroup[] = [];
 		public tableUpdating: boolean = true;
 		public selectedId: number | null;
 		public attackHub: signalR.HubConnection;
@@ -115,11 +115,11 @@
 				})// tslint:disable-next-line:no-console
 				.catch((err: any) => console.error(err));
 
-			this.attackHub.on('Attacks', (attackList: DnsAttack[]) => {
+			this.attackHub.on('Attacks', (attackList: IDnsAttackGroup[]) => {
 				this.dnsAttacks = attackList;
 				this.tableUpdating = false;
 			});
-			this.attackHub.on('UpdateAttack', (updatedAttack: DnsAttack) => {
+			this.attackHub.on('UpdateAttack', (updatedAttack: IDnsAttackGroup) => {
 				const oldInfo = this.dnsAttacks.findIndex((val) => val.id === updatedAttack.id);
 				if (oldInfo !== -1) {
 					this.dnsAttacks.splice(oldInfo, 1, updatedAttack);
