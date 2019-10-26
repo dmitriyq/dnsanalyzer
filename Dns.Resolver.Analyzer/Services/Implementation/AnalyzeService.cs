@@ -70,7 +70,6 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				}
 				catch { }
 
-
 				var groupIdWithSameDomains = db.DnsAttacks
 					.Include(x => x.AttackGroup)
 					.Where(x => x.BlackDomain == message.BlackDomain && x.WhiteDomain == message.WhiteDomain)
@@ -300,27 +299,6 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			});
 			newGroup.Attacks.Add(newAttack);
 			return newGroup;
-		}
-
-		private AttackGroups CreateNewAttackGroup()
-		{
-			return new AttackGroups
-			{
-				DateBegin = DateTimeOffset.UtcNow,
-				Status = (int)AttackGroupStatusEnum.PendingCheck,
-				LastUpdate = DateTimeOffset.UtcNow
-			};
-		}
-
-		private Attacks AddNewAttack(AttackFoundMessage model)
-		{
-			return new Attacks
-			{
-				BlackDomain = model.BlackDomain,
-				Ip = model.Ip,
-				Status = (int)AttackStatusEnum.Intersection,
-				WhiteDomain = model.WhiteDomain,
-			};
 		}
 
 		private AttackHistories AddNewAttackHistory(AttackStatusEnum currentStatus, AttackStatusEnum prevStatus)

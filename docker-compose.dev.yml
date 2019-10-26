@@ -14,7 +14,6 @@ x-redis-variables: &redis-variables
   REDIS_VIGRUZKI_SUBNETS: 'Vigruzki_Subnets' 
   REDIS_BLACK_DOMAIN_RESOLVED: 'DNS_Resolved_Black'
   REDIS_WHITE_DOMAIN_RESOLVED: 'DNS_Resolved_White'
-  NOTIFY_SEND_CHANNEL: 'Notification_Send_Message'
 
 x-rabbitmq-variables: &rabbitmq-variables
   RABBITMQ_CONNECTION: 'rabbitmq'

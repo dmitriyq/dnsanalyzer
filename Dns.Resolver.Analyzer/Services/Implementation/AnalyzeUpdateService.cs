@@ -17,18 +17,14 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		private readonly TimeSpan _refreshInterval;
 		private readonly IAnalyzeService _analyzeService;
 		private readonly INotifyService _notifyService;
-		private readonly IDatabase _redis;
-		private readonly string _notifyChannel;
 
 		public AnalyzeUpdateService(ILogger<AnalyzeUpdateService> logger, TimeSpan refreshInterval, IAnalyzeService analyzeService,
-			INotifyService notifyService, ConnectionMultiplexer redis, string notifyChannel)
+			INotifyService notifyService)
 		{
 			_logger = logger;
 			_refreshInterval = refreshInterval;
 			_analyzeService = analyzeService;
 			_notifyService = notifyService;
-			_redis = redis.GetDatabase();
-			_notifyChannel = notifyChannel;
 		}
 
 		public async Task RunJobAsync()
@@ -40,11 +36,11 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			{
 				try
 				{
-					var updatedAttackIds = _analyzeService.CheckForExpiredAttacks();
-					if (updatedAttackIds.Any())
+					var updatedGroupIds = _analyzeService.CheckForExpiredAttacks();
+					if (updatedGroupIds.Any())
 					{
-						var msg = _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray());
-						await _redis.PublishAsync(_notifyChannel, msg.ProtoSerialize()).ConfigureAwait(false);
+						var msg = _notifyService.BuildGroupMessage(string.Empty, updatedGroupIds.ToArray());
+						await _notifyService.SendAsync(msg).ConfigureAwait(false);
 					}
 					_logger.LogInformation($"Job completed.");
 					var now = DateTime.Now;

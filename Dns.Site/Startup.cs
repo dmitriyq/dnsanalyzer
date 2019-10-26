@@ -116,12 +116,6 @@ namespace Dns.Site
 				return new NotifyService(sp, emailFrom);
 			});
 			services.AddTransient<IExcelService, ExcelService>();
-			services.AddSingleton<IRedisService, RedisService>(sp =>
-			{
-				var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-				var redisChannel = EnvironmentExtensions.GetVariable(Program.NOTIFY_SEND_CHANNEL);
-				return new RedisService(redis, redisChannel);
-			});
 			services.AddHttpClient<IUserService, AuthService.Client>((_, client) =>
 				client.BaseAddress = new Uri(EnvironmentExtensions.GetVariable(Program.AUTH_SERVER_URL)));
 

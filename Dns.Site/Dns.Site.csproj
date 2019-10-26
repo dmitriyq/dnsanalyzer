@@ -20,10 +20,10 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.94.2" />
-    <PackageReference Include="Grfc.Library.Auth" Version="0.0.3.13" />
-    <PackageReference Include="Grfc.Library.Common" Version="0.0.3.13" />
-    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.3.13" />
-    <PackageReference Include="Grfc.Library.Notification" Version="0.0.3.13" />
+    <PackageReference Include="Grfc.Library.Auth" Version="0.0.3.14" />
+    <PackageReference Include="Grfc.Library.Common" Version="0.0.3.14" />
+    <PackageReference Include="Grfc.Library.EventBus" Version="0.0.3.14" />
+    <PackageReference Include="Grfc.Library.Notification" Version="0.0.3.14" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.16" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="3.0.0" />
@@ -34,12 +34,12 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.6.3">
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="3.6.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="protobuf-net" Version="2.4.1" />
-    <PackageReference Include="Roslynator.Analyzers" Version="2.1.0">
+    <PackageReference Include="Roslynator.Analyzers" Version="2.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

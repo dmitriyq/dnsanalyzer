@@ -20,21 +20,17 @@ namespace Dns.Site.Controllers
 	[ApiController]
 	public class WhiteListController : AuthorizedController
 	{
-		private readonly ILogger<WhiteListController> _logger;
 		private readonly DnsDbContext _dnsDb;
 
-		public WhiteListController(ILogger<WhiteListController> logger, DnsDbContext dnsDb)
+		public WhiteListController(DnsDbContext dnsDb)
 		{
-			_logger = logger;
 			_dnsDb = dnsDb;
 		}
 
 		[HttpGet]
 		public async Task<IActionResult> GetWhiteList()
 		{
-			await Task.CompletedTask;
 			var entities = await _dnsDb.WhiteDomains.Select(x => CastToModel(x)).ToListAsync().ConfigureAwait(false);
-			//var domains = await CastToModel(entities.Select(x => x)).ToListAsync().ConfigureAwait(false);
 			return new JsonResult(entities);
 		}
 
@@ -161,9 +157,6 @@ namespace Dns.Site.Controllers
 
 		private static WhiteDomainViewModel CastToModel(WhiteDomains item)
 			=> new WhiteDomainViewModel { DateAdded = item.DateAdded, Domain = item.Domain, Id = item.Id };
-
-		private static IQueryable<WhiteDomainViewModel> CastToModel(IQueryable<WhiteDomains> items)
-			=> items.Select(x => CastToModel(x));
 
 		public class ErrorMessage
 		{

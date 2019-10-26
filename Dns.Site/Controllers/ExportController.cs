@@ -16,15 +16,12 @@ namespace Dns.Site.Controllers
 	[ApiController]
 	public class ExportController : AuthorizedController
 	{
-		private readonly ILogger<ExportController> _logger;
 		private readonly IExcelService _excelService;
 		private readonly DnsDbContext _dnsDb;
 		private readonly IDistributedCache _cache;
 
-		public ExportController(ILogger<ExportController> logger,
-			DnsDbContext dnsDb, IExcelService excelService, IDistributedCache cache)
+		public ExportController(DnsDbContext dnsDb, IExcelService excelService, IDistributedCache cache)
 		{
-			_logger = logger;
 			_dnsDb = dnsDb;
 			_excelService = excelService;
 			_cache = cache;

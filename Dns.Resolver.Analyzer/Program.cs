@@ -32,7 +32,6 @@ namespace Dns.Resolver.Analyzer
 		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);
 
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
-		public const string NOTIFY_SEND_CHANNEL = nameof(NOTIFY_SEND_CHANNEL);
 
 		public const string REDIS_VIGRUZKI_IPS = nameof(REDIS_VIGRUZKI_IPS);
 		public const string REDIS_VIGRUZKI_SUBNETS = nameof(REDIS_VIGRUZKI_SUBNETS);
@@ -57,7 +56,6 @@ namespace Dns.Resolver.Analyzer
 					PG_CONNECTION_STRING_WRITE,
 					PG_CONNECTION_STRING_READ,
 					NOTIFICATION_EMAIL_FROM,
-					NOTIFY_SEND_CHANNEL,
 					REDIS_VIGRUZKI_IPS,
 					REDIS_VIGRUZKI_SUBNETS,
 					ANALYZE_CLOSE_INTERVAL,
@@ -119,9 +117,7 @@ namespace Dns.Resolver.Analyzer
 						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL)));
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
-						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
-						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify, redis, notifyChannel);
+						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify);
 					});
 					services.AddSingleton<IBatchingService<AttackFoundMessage>, BatchingAttackService>(sp =>
 					{
@@ -139,13 +135,10 @@ namespace Dns.Resolver.Analyzer
 					});
 					services.AddTransient<AttackBatchCreatedMessageHandler>(sp =>
 					{
-						var logger = sp.GetRequiredService<ILogger<AttackBatchCreatedMessageHandler>>();
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
-						var redis = sp.GetRequiredService<ConnectionMultiplexer>();
-						var notifyChannel = EnvironmentExtensions.GetVariable(NOTIFY_SEND_CHANNEL);
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						return new AttackBatchCreatedMessageHandler(logger, analyze, notify, redis, notifyChannel, messageBus);
+						return new AttackBatchCreatedMessageHandler(analyze, notify, messageBus);
 					});
 					services.AddTransient<AttackFoundMessageHandler>(sp =>
 					{

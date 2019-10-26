@@ -110,7 +110,7 @@
 			}).withUrl('/attackHub').build();
 			this.attackHub.start()
 				.then(() => {
-					this.attackHub.send('AttackList', null, null)
+					this.attackHub.send('AttackList')
 						.then(() => this.tableUpdating = true);
 				})// tslint:disable-next-line:no-console
 				.catch((err: any) => console.error(err));

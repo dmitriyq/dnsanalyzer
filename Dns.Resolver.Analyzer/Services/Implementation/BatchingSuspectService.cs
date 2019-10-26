@@ -5,6 +5,7 @@ using System.Text;
 using System.Timers;
 using Dns.Contracts.Messages;
 using Dns.Resolver.Analyzer.Services.Interfaces;
+using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -29,10 +30,11 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				AutoReset = true
 			};
 			_timer.Elapsed += (s, e) => {
-				if (!_items.IsEmpty)
+				_logger.LogInformation($"For {_timeOut} interval was collected {_items.Count} messages");
+				if (_items.Count > 0)
 				{
-					_logger.LogInformation($"For {_timeOut} interval was collected {_items.Count} messages");
-					_messageQueue.Publish(new SuspectBatchCreatedMessage(_items.ToArray()));
+					var messages = _items.ToArray();
+					_messageQueue.Publish(new SuspectBatchCreatedMessage(messages));
 					_items.Clear();
 				}
 			};
@@ -41,7 +43,10 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 
 		public void Add(SuspectDomainFoundMessage message)
 		{
-			_items.Add(message);
+			if (!message.Domain.IsBlank() && message.IpAddresses.Count > 0)
+			{
+				_items.Add(message);
+			}
 		}
 	}
 }

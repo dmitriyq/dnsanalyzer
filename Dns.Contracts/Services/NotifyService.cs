@@ -10,7 +10,9 @@ using Dns.DAL.Enums;
 using Dns.DAL.Models;
 using Grfc.Library.Common.Enums;
 using Grfc.Library.Common.Extensions;
-using Grfc.Library.Notification.Models;
+using Grfc.Library.EventBus.Abstractions;
+using Grfc.Library.Notification.Interfaces;
+using Grfc.Library.Notification.Messages;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,17 +40,19 @@ namespace Dns.Contracts.Services
 		private const string EMAIL_SUBJECT = "[Система выявления DNS атак]";
 
 		private readonly IServiceProvider _serviceProvider;
+		private readonly IMessageQueue _messageQueue;
 		private readonly string _emailFrom;
 
 		public NotifyService(IServiceProvider serviceProvider, string emailFrom)
 		{
 			_serviceProvider = serviceProvider;
+			_messageQueue = _serviceProvider.GetRequiredService<IMessageQueue>();
 			_emailFrom = emailFrom;
 		}
 
-		public NotificationBase BuildAttackMessage(string user, params int[] attackIds)
+		public NotificationMessage BuildAttackMessage(string user, params int[] attackIds)
 		{
-			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
+			var notify = new NotificationMessage(user, NotificationTypes.None, SiteTypes.Dns);
 
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
@@ -58,28 +62,28 @@ namespace Dns.Contracts.Services
 				.Include(x => x.Histories)
 				.ToList();
 
-			notify.Email = BuildAttackEmailMessage(attacksToNotify);
+			notify.EmailMessage = BuildAttackEmailMessage(attacksToNotify);
 			return notify;
 		}
 
-		public NotificationBase BuildGroupMessage(string user, params int[] attackIds)
+		public NotificationMessage BuildGroupMessage(string user, params int[] groupIds)
 		{
-			var notify = new NotificationBase() { Login = user, SiteType = SiteTypes.Dns };
+			var notify = new NotificationMessage(user, NotificationTypes.None, SiteTypes.Dns);
 
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 			List<AttackGroups> attacksToNotify = db
 				.AttackGroups
-				.Where(x => attackIds.Contains(x.Id))
+				.Where(x => groupIds.Contains(x.Id))
 				.Include(x => x.GroupHistories)
 				.Include(x => x.Attacks)
 				.ToList();
 
-			notify.Email = BuildGroupEmailMessage(attacksToNotify);
+			notify.EmailMessage = BuildGroupEmailMessage(attacksToNotify);
 			return notify;
 		}
 
-		private NotificationEmail BuildAttackEmailMessage(IEnumerable<Attacks> attacks)
+		private EmailMessage BuildAttackEmailMessage(IEnumerable<Attacks> attacks)
 		{
 			var emailBody = File.ReadAllText(Path.Combine(EmailPath, EMAIL_ATTACK_TEMPLATE));
 			var row = File.ReadAllText(Path.Combine(EmailPath, EMAIL_ATTACK_TEMPLATE_ADDITION));
@@ -105,7 +109,7 @@ namespace Dns.Contracts.Services
 					.Replace(EMAIL_URL_KEY, attack.AttackGroupId.ToString());
 				tableBody.AppendChild(HtmlNode.CreateNode(newRow));
 			}
-			return new NotificationEmail
+			return new EmailMessage
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
 				From = EnvironmentExtensions.GetVariable(_emailFrom),
@@ -113,7 +117,7 @@ namespace Dns.Contracts.Services
 			};
 		}
 
-		private NotificationEmail BuildGroupEmailMessage(IEnumerable<AttackGroups> attacks)
+		private EmailMessage BuildGroupEmailMessage(IEnumerable<AttackGroups> attacks)
 		{
 			var emailBody = File.ReadAllText(Path.Combine(EmailPath, EMAIL_GROUP_TEMPLATE));
 			var row = File.ReadAllText(Path.Combine(EmailPath, EMAIL_GROUP_TEMPLATE_ADDITION));
@@ -140,12 +144,23 @@ namespace Dns.Contracts.Services
 					.Replace(EMAIL_URL_KEY, attack.Id.ToString());
 				tableBody.AppendChild(HtmlNode.CreateNode(newRow));
 			}
-			return new NotificationEmail
+			return new EmailMessage
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
 				From = EnvironmentExtensions.GetVariable(_emailFrom),
 				Subject = EMAIL_SUBJECT
 			};
+		}
+
+		public EmailMessage BuildEmail() => new EmailMessage();
+
+		public SynologyMessage BuildSynology() => new SynologyMessage();
+
+		public TelegramMessage BuildTelegram() => new TelegramMessage();
+
+		public Task SendAsync(NotificationMessage message)
+		{
+			return _messageQueue.PublishAsync(message);
 		}
 	}
 }

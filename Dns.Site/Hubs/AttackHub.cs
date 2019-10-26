@@ -13,13 +13,11 @@ namespace Dns.Site.Hubs
 {
 	public class AttackHub : Hub
 	{
-		private readonly ILogger<AttackHub> _logger;
 		private readonly DnsDbContext _dbContext;
 		private readonly AttackService _attackService;
 
-		public AttackHub(ILogger<AttackHub> logger, DnsDbContext dnsDb, AttackService attackService)
+		public AttackHub(DnsDbContext dnsDb, AttackService attackService)
 		{
-			_logger = logger;
 			_dbContext = dnsDb;
 			_attackService = attackService;
 		}
@@ -33,7 +31,7 @@ namespace Dns.Site.Hubs
 				.ThenByDescending(x => x.DateBegin)
 				.Select(x => _attackService.CastToViewModel(x))
 				.ToList();
-			await Clients.Caller.SendAsync("attacks", attackModels).ConfigureAwait(false);
+			await Clients.Caller.SendAsync("Attacks", attackModels).ConfigureAwait(false);
 		}
 	}
 }

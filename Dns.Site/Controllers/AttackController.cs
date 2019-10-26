@@ -28,21 +28,18 @@ namespace Dns.Site.Controllers
 		private readonly DnsDbContext _dnsDb;
 		private readonly AttackService _attackService;
 		private readonly INotifyService _notifyService;
-		private readonly IRedisService _redisService;
 
 		public AttackController(ILogger<AttackController> logger,
 			IHubContext<AttackHub> hubContext,
 			DnsDbContext dnsDb,
 			AttackService attackService,
-			INotifyService notifyService,
-			IRedisService redis)
+			INotifyService notifyService)
 		{
 			_logger = logger;
 			_hubContext = hubContext;
 			_dnsDb = dnsDb;
 			_attackService = attackService;
 			_notifyService = notifyService;
-			_redisService = redis;
 		}
 
 		[HttpGet]
@@ -90,8 +87,8 @@ namespace Dns.Site.Controllers
 					await _dnsDb.SaveChangesAsync().ConfigureAwait(false);
 					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 
-					var attackMessage = _notifyService.BuildAttackMessage(string.Empty, attack.Id);
-					await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
+					var attackMessage = _notifyService.BuildGroupMessage(string.Empty, attack.Id);
+					await _notifyService.SendAsync(attackMessage).ConfigureAwait(false);
 
 					return new JsonResult("Ok");
 				}
@@ -148,8 +145,8 @@ namespace Dns.Site.Controllers
 					await _hubContext.Clients.All.SendAsync("UpdateAttack", _attackService.CastToViewModel(attack)).ConfigureAwait(false);
 				}
 
-				var attackMessage = _notifyService.BuildAttackMessage(string.Empty, attacks.Select(x => x.Id).ToArray());
-				await _redisService.PublishNotifyMessageAsync(attackMessage).ConfigureAwait(false);
+				var attackMessage = _notifyService.BuildGroupMessage(string.Empty, attacks.Select(x => x.Id).ToArray());
+				await _notifyService.SendAsync(attackMessage).ConfigureAwait(false);
 
 				return new JsonResult("Ok");
 			}
