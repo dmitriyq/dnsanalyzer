@@ -37,11 +37,11 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			_falsePositiveInterval = falsePositiveInterval;
 		}
 
-		public async Task<AttackFoundMessage[]> ExcludeAsync(AttackFoundMessage[] attacks)
+		public AttackFoundMessage[] Exclude(AttackFoundMessage[] attacks)
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
-			var excludedDomains = await db.DomainExcludedNames.ToListAsync().ConfigureAwait(true);
+			var excludedDomains = db.DomainExcludedNames.ToList();
 			return attacks
 				.Where(x => !excludedDomains.Any(z => z.BlackDomain == x.BlackDomain && z.WhiteDomain == x.WhiteDomain))
 				.ToArray();
@@ -53,7 +53,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
-			var storedAttacks = await db.DnsAttacks.Include(x => x.AttackGroup).ToListAsync().ConfigureAwait(true);
+			var storedAttacks = db.DnsAttacks.Include(x => x.AttackGroup);
 
 			var vigruzkiIps = await _cacheService.GetVigruzkiIps().ConfigureAwait(true);
 			var vigruzkiSubnets = await _cacheService.GetVigruzkiSubnets().ConfigureAwait(true);
@@ -75,7 +75,6 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					if (isCompletedAttack)
 					{
 						var newGroup = CreateNewAttackGroup();
-						db.Entry(newGroup).State = EntityState.Added;
 						var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
 						newGroup.GroupHistories.Add(newGroupHistory);
 						var newAttack = AddNewAttack(recentAttack);
@@ -108,7 +107,6 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 							storedAttack = AddNewAttack(recentAttack);
 							var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, AttackStatusEnum.None);
 							storedAttack.Histories.Add(newHistory);
-							db.Entry(storedAttack).State = EntityState.Added;
 							needNotify = true;
 						}
 						latestGroup.LastUpdate = DateTimeOffset.UtcNow;
@@ -117,7 +115,6 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				else
 				{
 					var newGroup = CreateNewAttackGroup();
-					db.Entry(newGroup).State = EntityState.Added;
 					var newGroupHistory = AddNewAttackGroupHistory(newGroup.StatusEnum, AttackGroupStatusEnum.None);
 					newGroup.GroupHistories.Add(newGroupHistory);
 					var newAttack = AddNewAttack(recentAttack);
@@ -144,12 +141,12 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					}
 					try
 					{
-						await db.SaveChangesAsync().ConfigureAwait(true);
+						db.SaveChanges();
 					}
 					catch (DbUpdateConcurrencyException e)
 					{
 						_logger.LogWarning(e, e.Message);
-						await db.SaveChangesAsync().ConfigureAwait(true);
+						db.SaveChanges();
 					}
 					catch (Exception e)
 					{
@@ -164,16 +161,16 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			return newAttacks.Select(x => x.Id).AsEnumerable();
 		}
 
-		public async Task<IEnumerable<int>> UpdateAttackGroupAsync()
+		public IEnumerable<int> UpdateAttackGroup()
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
 
 			var completedAttack = new List<AttackGroups>();
-			var attackGroups = await db.AttackGroups
+			var attackGroups = db.AttackGroups
 				.Where(x => x.Status != (int)AttackGroupStatusEnum.Complete)
 				.Include(x => x.Attacks)
-				.ToListAsync().ConfigureAwait(true);
+				.ToList();
 			foreach (var group in attackGroups)
 			{
 				if (group.Attacks.Count == 0)
@@ -191,17 +188,16 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var newHistory = AddNewAttackGroupHistory(group.StatusEnum, prevStatus);
 						newHistory.AttackGroupId = group.Id;
 						group.GroupHistories.Add(newHistory);
-						db.Entry(newHistory).State = EntityState.Added;
 						completedAttack.Add(group);
 					}
 				}
 			}
-			await db.SaveChangesAsync().ConfigureAwait(true);
+			db.SaveChanges();
 			_logger.LogInformation("Update DNS AttacksGroups complete");
 			return completedAttack.Select(x => x.Id).AsEnumerable();
 		}
 
-		public async Task<IEnumerable<int>> CheckForExpiredAttacksAsync()
+		public IEnumerable<int> CheckForExpiredAttacks()
 		{
 			using var scope = _serviceProvider.CreateScope();
 			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
@@ -213,11 +209,10 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			var threshold = DateTimeOffset.UtcNow.Add(-_expireInterval);
 			var closingThreshold = DateTimeOffset.UtcNow.Add(-_closingInterval);
 			var falsePositiveThreshold = DateTimeOffset.UtcNow.Add(-_falsePositiveInterval);
-			var groups = await db.AttackGroups
+			var groups = db.AttackGroups
 				.Include(x => x.Attacks)
 				.Where(x => x.LastUpdate < threshold && x.Status != (int)AttackGroupStatusEnum.Complete)
-				.ToListAsync()
-				.ConfigureAwait(true);
+				.ToList();
 			foreach (var group in groups)
 			{
 				foreach (var attack in group.Attacks)
@@ -275,7 +270,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				db.AttackGroups.Remove(falseAttack.AttackGroup);
 			}
 
-			await db.SaveChangesAsync().ConfigureAwait(true);
+			db.SaveChanges();
 			_logger.LogInformation("Check for expired attacks complete");
 			return changedAttackIds;
 		}
