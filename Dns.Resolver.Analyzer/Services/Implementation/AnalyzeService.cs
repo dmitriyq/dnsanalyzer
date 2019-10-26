@@ -75,6 +75,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					.Include(x => x.AttackGroup)
 					.Where(x => x.BlackDomain == message.BlackDomain && x.WhiteDomain == message.WhiteDomain)
 					.Select(x => x.AttackGroupId)
+					.AsEnumerable()
 					.DefaultIfEmpty(-1)
 					.Max();
 

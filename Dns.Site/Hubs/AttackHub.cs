@@ -26,10 +26,9 @@ namespace Dns.Site.Hubs
 
 		public async Task AttackList()
 		{
-			var attacks = await _dbContext.AttackGroups
-					.Include(x => x.Attacks)
-					.ToListAsync().ConfigureAwait(false);
-			var attackModels = attacks
+			var attackModels = _dbContext.AttackGroups
+				.Include(x => x.Attacks)
+				.AsEnumerable()
 				.OrderBy(x => x.Status)
 				.ThenByDescending(x => x.DateBegin)
 				.Select(x => _attackService.CastToViewModel(x))
