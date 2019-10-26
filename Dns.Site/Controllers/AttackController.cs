@@ -55,19 +55,6 @@ namespace Dns.Site.Controllers
 			return new JsonResult(attackModels);
 		}
 
-		[HttpGet]
-		public IActionResult Attacks()
-		{
-			var attackModels = _dnsDb.AttackGroups
-				.Include(x => x.Attacks)
-				.AsEnumerable()
-				.OrderBy(x => x.Status)
-				.ThenByDescending(x => x.DateBegin)
-				.Select(x => _attackService.CastToViewModel(x))
-				.ToList();
-			return new JsonResult(attackModels);
-		}
-
 		[HttpGet("[action]")]
 		public IActionResult Info([FromQuery]int id)
 		{
