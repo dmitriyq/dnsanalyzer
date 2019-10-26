@@ -82,6 +82,9 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						newAttack.Histories.Add(newAttackHistory);
 						newGroup.Attacks.Add(newAttack);
 						db.AttackGroups.Add(newGroup);
+						db.GroupHistories.Add(newGroupHistory);
+						db.DnsAttacks.Add(newAttack);
+						db.AttackHistories.Add(newAttackHistory);
 						latestGroup = newGroup;
 						storedAttack = latestGroup.Attacks.Last();
 						needNotify = true;
@@ -98,6 +101,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 								var prevStatus = (AttackStatusEnum)storedAttack.Status;
 								storedAttack.Status = (int)AttackStatusEnum.Intersection;
 								var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, prevStatus);
+								db.AttackHistories.Add(newHistory);
 								storedAttack.Histories.Add(newHistory);
 								needNotify = true;
 							}
@@ -106,6 +110,9 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						{
 							storedAttack = AddNewAttack(recentAttack);
 							var newHistory = AddNewAttackHistory(storedAttack.StatusEnum, AttackStatusEnum.None);
+							db.DnsAttacks.Add(storedAttack);
+							latestGroup.Attacks.Add(storedAttack);
+							db.AttackHistories.Add(newHistory);
 							storedAttack.Histories.Add(newHistory);
 							needNotify = true;
 						}
@@ -122,6 +129,9 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					newAttack.Histories.Add(newAttackHistory);
 					newGroup.Attacks.Add(newAttack);
 					db.AttackGroups.Add(newGroup);
+					db.GroupHistories.Add(newGroupHistory);
+					db.DnsAttacks.Add(newAttack);
+					db.AttackHistories.Add(newAttackHistory);
 					storedAttack = newGroup.Attacks.Last();
 					needNotify = true;
 				}
@@ -186,6 +196,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						group.Status = (int)AttackGroupStatusEnum.Complete;
 						group.DateClose = DateTimeOffset.UtcNow;
 						var newHistory = AddNewAttackGroupHistory(group.StatusEnum, prevStatus);
+						db.GroupHistories.Add(newHistory);
 						newHistory.AttackGroupId = group.Id;
 						group.GroupHistories.Add(newHistory);
 						completedAttack.Add(group);
@@ -223,6 +234,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						attack.Status = (int)AttackStatusEnum.Closing;
 						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Intersection);
 						attack.Histories.Add(newHistory);
+						db.AttackHistories.Add(newHistory);
 						changedAttackIds.Add(attack.AttackGroupId);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing && group.LastUpdate < closingThreshold)
@@ -230,6 +242,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						attack.Status = (int)AttackStatusEnum.Completed;
 						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Closing);
 						attack.Histories.Add(newHistory);
+						db.AttackHistories.Add(newHistory);
 						changedAttackIds.Add(attack.AttackGroupId);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing)
