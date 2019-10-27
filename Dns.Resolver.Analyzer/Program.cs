@@ -117,16 +117,17 @@ namespace Dns.Resolver.Analyzer
 						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL)));
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
-						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify);
+						var messageBus = sp.GetRequiredService<IMessageQueue>();
+						return new AnalyzeUpdateService(logger, refreshInterval, analyze, notify, messageBus);
 					});
-					services.AddSingleton<IBatchingService<AttackFoundMessage>, BatchingAttackService>(sp =>
+					services.AddSingleton<BatchingAttackService>(sp =>
 					{
 						var logger = sp.GetRequiredService<ILogger<BatchingAttackService>>();
 						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL))).Divide(3d);
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
 						return new BatchingAttackService(logger, refreshInterval, messageBus);
 					});
-					services.AddSingleton<IBatchingService<SuspectDomainFoundMessage>, BatchingSuspectService>(sp =>
+					services.AddSingleton<BatchingSuspectService>(sp =>
 					{
 						var logger = sp.GetRequiredService<ILogger<BatchingSuspectService>>();
 						var refreshInterval = TimeSpan.FromMinutes(10);
@@ -143,7 +144,7 @@ namespace Dns.Resolver.Analyzer
 					services.AddTransient<AttackFoundMessageHandler>(sp =>
 					{
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
-						var batchService = sp.GetRequiredService<IBatchingService<AttackFoundMessage>>();
+						var batchService = sp.GetRequiredService<BatchingAttackService>();
 						return new AttackFoundMessageHandler(messageBus, batchService);
 					});
 					services.AddTransient<SuspectBatchCreatedMessageHandler>(sp =>
@@ -154,7 +155,7 @@ namespace Dns.Resolver.Analyzer
 					});
 					services.AddTransient<SuspectDomainFoundMessageHandler>(sp =>
 					{
-						var batchService = sp.GetRequiredService<IBatchingService<SuspectDomainFoundMessage>>();
+						var batchService = sp.GetRequiredService<BatchingSuspectService>();
 						return new SuspectDomainFoundMessageHandler(batchService);
 					});
 				},

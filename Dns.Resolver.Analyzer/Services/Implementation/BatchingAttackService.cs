@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Analyzer.Services.Implementation
 {
-	public class BatchingAttackService : IBatchingService<AttackFoundMessage>
+	public class BatchingAttackService
 	{
 		private readonly Timer _timer;
 		private readonly ILogger<BatchingAttackService> _logger;

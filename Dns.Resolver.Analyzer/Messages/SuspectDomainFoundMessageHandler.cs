@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dns.Contracts.Messages;
 using Dns.DAL;
+using Dns.Resolver.Analyzer.Services.Implementation;
 using Dns.Resolver.Analyzer.Services.Interfaces;
 using Grfc.Library.EventBus.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +15,9 @@ namespace Dns.Resolver.Analyzer.Messages
 {
 	public class SuspectDomainFoundMessageHandler : IAmqpMessageHandler<SuspectDomainFoundMessage>
 	{
-		private readonly IBatchingService<SuspectDomainFoundMessage> _batchingAttack;
+		private readonly BatchingSuspectService _batchingAttack;
 
-		public SuspectDomainFoundMessageHandler(IBatchingService<SuspectDomainFoundMessage> batchingAttack)
+		public SuspectDomainFoundMessageHandler(BatchingSuspectService batchingAttack)
 		{
 			_batchingAttack = batchingAttack;
 		}

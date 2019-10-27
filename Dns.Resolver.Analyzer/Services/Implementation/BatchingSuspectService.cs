@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Dns.Resolver.Analyzer.Services.Implementation
 {
-	public class BatchingSuspectService : IBatchingService<SuspectDomainFoundMessage>
+	public class BatchingSuspectService
 	{
 		private readonly Timer _timer;
 		private readonly ILogger<BatchingSuspectService> _logger;

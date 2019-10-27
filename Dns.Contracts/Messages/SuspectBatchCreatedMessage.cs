@@ -10,7 +10,7 @@ namespace Dns.Contracts.Messages
 	{
 		public SuspectDomainFoundMessage[] SuspectDomainMessages { get; set; }
 
-		public SuspectBatchCreatedMessage(SuspectDomainFoundMessage[] suspectDomains)
+		public SuspectBatchCreatedMessage(ICollection<SuspectDomainFoundMessage> suspectDomains)
 		{
 			SuspectDomainMessages = suspectDomains.ToArray();
 		}

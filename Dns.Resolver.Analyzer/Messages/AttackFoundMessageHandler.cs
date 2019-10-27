@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dns.Contracts.Messages;
 using Dns.Contracts.Services;
+using Dns.Resolver.Analyzer.Services.Implementation;
 using Dns.Resolver.Analyzer.Services.Interfaces;
 using Grfc.Library.Common.Extensions;
 using Grfc.Library.EventBus.Abstractions;
@@ -16,9 +17,9 @@ namespace Dns.Resolver.Analyzer.Messages
 	public class AttackFoundMessageHandler : IAmqpMessageHandler<AttackFoundMessage>
 	{
 		private readonly IMessageQueue _messageQueue;
-		private readonly IBatchingService<AttackFoundMessage> _batchingAttack;
+		private readonly BatchingAttackService _batchingAttack;
 
-		public AttackFoundMessageHandler(IMessageQueue messageQueue, IBatchingService<AttackFoundMessage> batchingAttack)
+		public AttackFoundMessageHandler(IMessageQueue messageQueue, BatchingAttackService batchingAttack)
 		{
 			_messageQueue = messageQueue;
 			_batchingAttack = batchingAttack;
