@@ -12,7 +12,9 @@ namespace Dns.Site
 		public const string NOTIFY_SERVICE_URL = nameof(NOTIFY_SERVICE_URL);
 		public const string VIGRUZKI_SERVICE_URL = nameof(VIGRUZKI_SERVICE_URL);
 		public const string REDIS_CONNECTION = nameof(REDIS_CONNECTION);
+
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
+		public const string SITE_HOSTNAME = nameof(SITE_HOSTNAME);
 
 		public const string RABBITMQ_CONNECTION = nameof(RABBITMQ_CONNECTION);
 		public const string RABBITMQ_HEALTH_QUEUE = nameof(RABBITMQ_HEALTH_QUEUE);
@@ -30,6 +32,7 @@ namespace Dns.Site
 				VIGRUZKI_SERVICE_URL,
 				REDIS_CONNECTION,
 				NOTIFICATION_EMAIL_FROM,
+				SITE_HOSTNAME,
 				RABBITMQ_CONNECTION,
 				RABBITMQ_HEALTH_QUEUE,
 				RABBITMQ_ATTACK_UPDATE_QUEUE,

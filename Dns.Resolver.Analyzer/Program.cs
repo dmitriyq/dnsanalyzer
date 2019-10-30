@@ -32,6 +32,7 @@ namespace Dns.Resolver.Analyzer
 		public const string PG_CONNECTION_STRING_READ = nameof(PG_CONNECTION_STRING_READ);
 
 		public const string NOTIFICATION_EMAIL_FROM = nameof(NOTIFICATION_EMAIL_FROM);
+		public const string SITE_HOSTNAME = nameof(SITE_HOSTNAME);
 
 		public const string REDIS_VIGRUZKI_IPS = nameof(REDIS_VIGRUZKI_IPS);
 		public const string REDIS_VIGRUZKI_SUBNETS = nameof(REDIS_VIGRUZKI_SUBNETS);
@@ -56,6 +57,7 @@ namespace Dns.Resolver.Analyzer
 					PG_CONNECTION_STRING_WRITE,
 					PG_CONNECTION_STRING_READ,
 					NOTIFICATION_EMAIL_FROM,
+					SITE_HOSTNAME,
 					REDIS_VIGRUZKI_IPS,
 					REDIS_VIGRUZKI_SUBNETS,
 					ANALYZE_CLOSE_INTERVAL,
@@ -86,7 +88,8 @@ namespace Dns.Resolver.Analyzer
 					services.AddTransient<INotifyService, NotifyService>(sp =>
 					{
 						var emailFrom = EnvironmentExtensions.GetVariable(NOTIFICATION_EMAIL_FROM);
-						return new NotifyService(sp, emailFrom);
+						var hostname = EnvironmentExtensions.GetVariable(SITE_HOSTNAME);
+						return new NotifyService(sp, emailFrom, hostname);
 					});
 					services.AddTransient<ICacheService, CacheService>(sp =>
 					{

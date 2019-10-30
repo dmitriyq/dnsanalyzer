@@ -215,7 +215,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Intersection);
 						attack.Histories.Add(newHistory);
 						db.AttackHistories.Add(newHistory);
-						changedAttackIds.Add(attack.AttackGroupId);
+						changedAttackIds.Add(attack.Id);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing && group.LastUpdate < closingThreshold)
 					{
@@ -223,7 +223,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var newHistory = AddNewAttackHistory(attack.StatusEnum, AttackStatusEnum.Closing);
 						attack.Histories.Add(newHistory);
 						db.AttackHistories.Add(newHistory);
-						changedAttackIds.Add(attack.AttackGroupId);
+						changedAttackIds.Add(attack.Id);
 					}
 					else if (lastStatus == AttackStatusEnum.Closing)
 					{
@@ -240,7 +240,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 									if (prevHistory != null && prevHistory.Date > falsePositiveThreshold)
 									{
 										falsePositiveAttacks.Add(attack);
-										changedAttackIds.Add(attack.AttackGroupId);
+										changedAttackIds.Add(attack.Id);
 									}
 								}
 								else
@@ -248,7 +248,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 									if (prevChange.Date > falsePositiveThreshold)
 									{
 										falsePositiveAttacks.Add(attack);
-										changedAttackIds.Add(attack.AttackGroupId);
+										changedAttackIds.Add(attack.Id);
 									}
 								}
 							}

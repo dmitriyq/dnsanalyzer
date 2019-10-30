@@ -30,7 +30,7 @@ namespace Dns.Site.EventHandlers
 			if (message.AttackIds.Count > 0)
 			{
 				var groupIds = _dnsDb.DnsAttacks.Where(x => message.AttackIds.Contains(x.Id))
-					.Select(x => x.AttackGroupId).ToList();
+					.Select(x => x.AttackGroupId).Distinct().ToList();
 				var groups = _dnsDb.AttackGroups
 					.Include(x => x.Attacks)
 					.Where(x => groupIds.Contains(x.Id))

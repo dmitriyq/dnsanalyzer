@@ -36,18 +36,21 @@ namespace Dns.Contracts.Services
 		private const string EMAIL_STATUS_KEY = "{{STATUS}}";
 		private const string EMAIL_URL_KEY = "{{ATTACK_ID}}";
 		private const string EMAIL_IP_KEY = "{{IP}}";
+		private const string HOSTNAME_KEY = "{{HOSTNAME}}";
 
 		private const string EMAIL_SUBJECT = "[Система выявления DNS атак]";
 
 		private readonly IServiceProvider _serviceProvider;
 		private readonly IMessageQueue _messageQueue;
 		private readonly string _emailFrom;
+		private readonly string _hostname;
 
-		public NotifyService(IServiceProvider serviceProvider, string emailFrom)
+		public NotifyService(IServiceProvider serviceProvider, string emailFrom, string hostname)
 		{
 			_serviceProvider = serviceProvider;
 			_messageQueue = _serviceProvider.GetRequiredService<IMessageQueue>();
 			_emailFrom = emailFrom;
+			_hostname = hostname;
 		}
 
 		public NotificationMessage BuildAttackMessage(string user, params int[] attackIds)
@@ -106,13 +109,14 @@ namespace Dns.Contracts.Services
 					.Replace(EMAIL_WHITE_DOMAIN_KEY, attack.WhiteDomain)
 					.Replace(EMAIL_STATUS_KEY, statusText)
 					.Replace(EMAIL_IP_KEY, attack.Ip)
+					.Replace(HOSTNAME_KEY, _hostname)
 					.Replace(EMAIL_URL_KEY, attack.AttackGroupId.ToString());
 				tableBody.AppendChild(HtmlNode.CreateNode(newRow));
 			}
 			return new EmailMessage
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
-				From = EnvironmentExtensions.GetVariable(_emailFrom),
+				From = _emailFrom,
 				Subject = "[Система выявления DNS атак]"
 			};
 		}
@@ -147,7 +151,7 @@ namespace Dns.Contracts.Services
 			return new EmailMessage
 			{
 				Body = htmlBody.DocumentNode.OuterHtml,
-				From = EnvironmentExtensions.GetVariable(_emailFrom),
+				From = _emailFrom,
 				Subject = EMAIL_SUBJECT
 			};
 		}

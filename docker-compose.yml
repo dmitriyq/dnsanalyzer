@@ -50,7 +50,7 @@ services:
       <<: *shared-variables
       <<: *redis-variables
       MAX_CONCURRENT_RESOLVE: '100'
-      REFRESH_INTERVAL: '180'
+      REFRESH_INTERVAL: '120'
       IS_LEADER: 'false'
     env_file:
       - .env
@@ -67,7 +67,7 @@ services:
       <<: *shared-variables
       <<: *redis-variables
       MAX_CONCURRENT_RESOLVE: '100'
-      REFRESH_INTERVAL: '180'
+      REFRESH_INTERVAL: '120'
       IS_LEADER: 'true'
     env_file:
       - .env

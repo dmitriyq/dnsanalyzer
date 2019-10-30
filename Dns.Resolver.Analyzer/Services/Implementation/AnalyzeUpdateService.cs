@@ -40,13 +40,13 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 			{
 				try
 				{
-					var updatedGroupIds = _analyzeService.CheckForExpiredAttacks();
-					if (updatedGroupIds.Any())
+					var updatedAttackIds = _analyzeService.CheckForExpiredAttacks();
+					if (updatedAttackIds.Any())
 					{
-						var updateMessage = new UpdatedAttackMessage(new List<int>(), updatedGroupIds.ToList());
+						var updateMessage = new UpdatedAttackMessage(updatedAttackIds.ToList(), new List<int>());
 						await _messageQueue.PublishAsync(updateMessage).ConfigureAwait(false);
 
-						var msg = _notifyService.BuildGroupMessage(string.Empty, updatedGroupIds.ToArray());
+						var msg = _notifyService.BuildAttackMessage(string.Empty, updatedAttackIds.ToArray());
 						await _notifyService.SendAsync(msg).ConfigureAwait(false);
 					}
 					_logger.LogInformation($"Job completed.");

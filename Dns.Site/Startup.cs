@@ -113,7 +113,8 @@ namespace Dns.Site
 			services.AddTransient<INotifyService, NotifyService>(sp =>
 			{
 				var emailFrom = EnvironmentExtensions.GetVariable(Program.NOTIFICATION_EMAIL_FROM);
-				return new NotifyService(sp, emailFrom);
+				var hostname = EnvironmentExtensions.GetVariable(Program.SITE_HOSTNAME);
+				return new NotifyService(sp, emailFrom, hostname);
 			});
 			services.AddTransient<IExcelService, ExcelService>();
 			services.AddHttpClient<IUserService, AuthService.Client>((_, client) =>
