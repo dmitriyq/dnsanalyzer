@@ -145,6 +145,7 @@ namespace Dns.Contracts.Services
 					.Replace(EMAIL_BLACK_DOMAIN_KEY, blackDomain)
 					.Replace(EMAIL_WHITE_DOMAIN_KEY, whiteDomain)
 					.Replace(EMAIL_STATUS_KEY, statusText)
+					.Replace(HOSTNAME_KEY, _hostname)
 					.Replace(EMAIL_URL_KEY, attack.Id.ToString());
 				tableBody.AppendChild(HtmlNode.CreateNode(newRow));
 			}
