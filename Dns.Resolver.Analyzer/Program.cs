@@ -117,7 +117,7 @@ namespace Dns.Resolver.Analyzer
 					services.AddTransient<IAnalyzeUpdateService, AnalyzeUpdateService>(sp =>
 					{
 						var logger = sp.GetRequiredService<ILogger<AnalyzeUpdateService>>();
-						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL)));
+						var refreshInterval = TimeSpan.FromSeconds(int.Parse(EnvironmentExtensions.GetVariable(ANALYZE_EXPIRE_INTERVAL))).Multiply(3d);
 						var analyze = sp.GetRequiredService<IAnalyzeService>();
 						var notify = sp.GetRequiredService<INotifyService>();
 						var messageBus = sp.GetRequiredService<IMessageQueue>();
