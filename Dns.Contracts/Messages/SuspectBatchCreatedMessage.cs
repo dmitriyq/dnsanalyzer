@@ -10,6 +10,12 @@ namespace Dns.Contracts.Messages
 	{
 		public SuspectDomainFoundMessage[] SuspectDomainMessages { get; set; }
 
+#pragma warning disable CS8618
+		public SuspectBatchCreatedMessage()
+#pragma warning restore CS8618
+		{
+		}
+
 		public SuspectBatchCreatedMessage(ICollection<SuspectDomainFoundMessage> suspectDomains)
 		{
 			SuspectDomainMessages = suspectDomains.ToArray();
