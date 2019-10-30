@@ -27,7 +27,6 @@ namespace Dns.Resolver.Analyzer.Messages
 		public async Task Handle(SuspectBatchCreatedMessage message)
 		{
 			_dnsDbContext.RemoveRange(_dnsDbContext.SuspectDomains);
-			_logger.LogInformation($"Suspect domains - {string.Join('\n', message.SuspectDomainMessages.Select(x => $"[{x.Domain} - {string.Join(',', x.IpAddresses)}]"))}");
 			var newSuspects = message.SuspectDomainMessages.SelectMany(x => x.IpAddresses, (domain, ipaddress) => new SuspectDomains
 			{
 				Domain = domain.Domain,

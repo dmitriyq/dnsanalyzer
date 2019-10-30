@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Timers;
 using Dns.Contracts.Messages;
@@ -17,14 +18,14 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		private readonly ILogger<BatchingSuspectService> _logger;
 		private readonly IMessageQueue _messageQueue;
 		private readonly TimeSpan _timeOut;
-		private readonly ConcurrentBag<SuspectDomainFoundMessage> _items;
+		private readonly ConcurrentDictionary<string, SuspectDomainFoundMessage> _items;
 
 		public BatchingSuspectService(ILogger<BatchingSuspectService> logger, TimeSpan timeout, IMessageQueue messageQueue)
 		{
 			_logger = logger;
 			_timeOut = timeout;
 			_messageQueue = messageQueue;
-			_items = new ConcurrentBag<SuspectDomainFoundMessage>();
+			_items = new ConcurrentDictionary<string, SuspectDomainFoundMessage>();
 			_timer = new Timer(_timeOut.TotalMilliseconds)
 			{
 				AutoReset = true
@@ -33,7 +34,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				_logger.LogInformation($"For {_timeOut} interval was collected {_items.Count} messages");
 				if (_items.Count > 0)
 				{
-					var messages = _items.ToArray();
+					var messages = _items.Values.ToArray();
 					_messageQueue.Publish(new SuspectBatchCreatedMessage(messages));
 					_items.Clear();
 				}
@@ -45,7 +46,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 		{
 			if (!message.Domain.IsBlank() && message.IpAddresses.Count > 0)
 			{
-				_items.Add(message);
+				_items.TryAdd(message.Domain, message);
 			}
 		}
 	}
