@@ -12,5 +12,8 @@ namespace Dns.Resolver.Analyzer.Services.Interfaces
 		Task<IEnumerable<int>> UpdateAttackAsync(AttackFoundMessage[] attacks);
 		IEnumerable<int> UpdateAttackGroup();
 		IEnumerable<int> CheckForExpiredAttacks();
+
+		void RefreshAttackLastUpdates(IEnumerable<int> attackIds);
+		void RefreshGroupAttackLastUpdates(IEnumerable<int> groupIds);
 	}
 }

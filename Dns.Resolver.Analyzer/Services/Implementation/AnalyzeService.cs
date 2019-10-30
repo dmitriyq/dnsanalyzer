@@ -127,6 +127,11 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 								db.SaveChanges();
 								notifyAttacks.Add(attackWithSameIp.Id);
 							}
+							else
+							{
+								group.LastUpdate = DateTimeOffset.UtcNow;
+								db.SaveChanges();
+							}
 						}
 					}
 					else
@@ -325,6 +330,32 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				CurrentStatus = (int)currentStatus,
 				PrevStatus = (int)prevStatus,
 			};
+		}
+
+		public void RefreshAttackLastUpdates(IEnumerable<int> attackIds)
+		{
+			using var scope = _serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
+
+			var groupIds = db.DnsAttacks.Where(x => attackIds.Contains(x.Id))
+				.Select(x => x.AttackGroupId).Distinct().AsEnumerable();
+			foreach (var group in db.AttackGroups.Where(x => groupIds.Contains(x.Id)))
+			{
+				group.LastUpdate = DateTimeOffset.UtcNow;
+			}
+			db.SaveChanges();
+		}
+
+		public void RefreshGroupAttackLastUpdates(IEnumerable<int> groupIds)
+		{
+			using var scope = _serviceProvider.CreateScope();
+			var db = scope.ServiceProvider.GetRequiredService<DnsDbContext>();
+
+			foreach (var group in db.AttackGroups.Where(x => groupIds.Contains(x.Id)))
+			{
+				group.LastUpdate = DateTimeOffset.UtcNow;
+			}
+			db.SaveChanges();
 		}
 	}
 }
