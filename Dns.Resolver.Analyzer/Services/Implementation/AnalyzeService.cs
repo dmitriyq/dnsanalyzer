@@ -104,6 +104,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 								Date = DateTimeOffset.UtcNow
 							});
 							group.Attacks.Add(newAttack);
+							group.LastUpdate = DateTimeOffset.UtcNow;
 							newAttack.IpBlocked = ipBlocked;
 							newAttack.SubnetBlocked = subnetBlocked;
 							db.SaveChanges();
@@ -122,6 +123,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 								attackWithSameIp.Status = (int)AttackStatusEnum.Intersection;
 								attackWithSameIp.IpBlocked = ipBlocked;
 								attackWithSameIp.SubnetBlocked = subnetBlocked;
+								group.LastUpdate = DateTimeOffset.UtcNow;
 								db.SaveChanges();
 								notifyAttacks.Add(attackWithSameIp.Id);
 							}
@@ -133,6 +135,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var newAttack = newGroup.Attacks.First();
 						newAttack.IpBlocked = ipBlocked;
 						newAttack.SubnetBlocked = subnetBlocked;
+						newGroup.LastUpdate = DateTimeOffset.UtcNow;
 						db.SaveChanges();
 						notifyAttacks.Add(newAttack.Id);
 					}
@@ -143,6 +146,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 					var newAttack = newGroup.Attacks.First();
 					newAttack.IpBlocked = ipBlocked;
 					newAttack.SubnetBlocked = subnetBlocked;
+					newGroup.LastUpdate = DateTimeOffset.UtcNow;
 					db.SaveChanges();
 					notifyAttacks.Add(newAttack.Id);
 				}
@@ -175,6 +179,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 						var prevStatus = group.StatusEnum;
 						group.Status = (int)AttackGroupStatusEnum.Complete;
 						group.DateClose = DateTimeOffset.UtcNow;
+						group.LastUpdate = DateTimeOffset.UtcNow;
 						var newHistory = AddNewAttackGroupHistory(group.StatusEnum, prevStatus);
 						db.GroupHistories.Add(newHistory);
 						newHistory.AttackGroupId = group.Id;
@@ -298,6 +303,7 @@ namespace Dns.Resolver.Analyzer.Services.Implementation
 				Date = DateTimeOffset.UtcNow
 			});
 			newGroup.Attacks.Add(newAttack);
+			newGroup.LastUpdate = DateTimeOffset.UtcNow;
 			return newGroup;
 		}
 
