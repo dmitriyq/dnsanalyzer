@@ -997,9 +997,9 @@
 			}
 		},
 		"@microsoft/signalr": {
-			"version": "3.1.0-preview1.19508.20",
-			"resolved": "https://registry.npmjs.org/@microsoft/signalr/-/signalr-3.1.0-preview1.19508.20.tgz",
-			"integrity": "sha512-7JOeMFjI+eo6Illp7P4+1GZxzhgoKbnLVfjEZqzdGtjt9eWLY4oZDMrFkJ77aatyFQYyJGU+yxhyF8aNDjgrmQ==",
+			"version": "3.1.0-preview2.19528.8",
+			"resolved": "https://registry.npmjs.org/@microsoft/signalr/-/signalr-3.1.0-preview2.19528.8.tgz",
+			"integrity": "sha512-62e+yobIAMkeJmkzgAHJkn5KQE81ozkwxeMfiM31LXAJ0AY2S8eRV8WDkx2C+7JS6lfZDdwUqA/8tFE1trNlpA==",
 			"requires": {
 				"eventsource": "^1.0.7",
 				"request": "^2.88.0",

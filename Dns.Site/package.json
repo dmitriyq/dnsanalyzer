@@ -13,7 +13,7 @@
     "publish-debug": "vue-cli-service build --mode development && dotnet publish -c Debug"
   },
   "dependencies": {
-    "@microsoft/signalr": "^3.1.0-preview1.19508.20",
+    "@microsoft/signalr": "^3.1.0-preview2.19528.8",
     "axios": "^0.19.0",
     "date-fns": "^2.5.1",
     "vue": "^2.6.10",
